@@ -27,7 +27,7 @@ export function RecordButton({
       <button
         onClick={isRecording ? onStop : onStart}
         disabled={isProcessing}
-        className={`relative w-20 h-20 rounded-full transition-all duration-300 flex items-center justify-center shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
+        className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-full transition-all duration-300 flex items-center justify-center shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
           isRecording
             ? "bg-gradient-to-br from-[#f43f5e] to-[#fb7185] hover:from-[#e11d48] hover:to-[#f43f5e] shadow-[#f43f5e]/50 hover:shadow-xl hover:shadow-[#f43f5e]/70"
             : "bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] hover:from-[#4f46e5] hover:to-[#7c3aed] shadow-[#6366f1]/50 hover:shadow-xl hover:shadow-[#6366f1]/70"
@@ -36,7 +36,7 @@ export function RecordButton({
         {isRecording ? (
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-8 w-8 text-white"
+            className="h-6 w-6 sm:h-8 sm:w-8 text-white"
             fill="currentColor"
             viewBox="0 0 24 24"
           >
@@ -45,7 +45,7 @@ export function RecordButton({
         ) : (
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-10 w-10 text-white"
+            className="h-8 w-8 sm:h-10 sm:w-10 text-white"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"

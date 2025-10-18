@@ -19,17 +19,17 @@ export default function Home() {
   } = useVoiceRecorder();
 
   return (
-    <div className="min-h-screen p-8 relative overflow-hidden">
+    <div className="min-h-screen p-4 sm:p-8 relative overflow-hidden">
       {/* Background gradient glow */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1]/10 via-transparent to-[#f43f5e]/10 pointer-events-none" />
 
       <div className="max-w-3xl mx-auto relative">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-light mb-3 bg-gradient-to-r from-[#818cf8] via-[#c084fc] to-[#fb7185] bg-clip-text text-transparent">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-4xl sm:text-5xl font-light mb-2 sm:mb-3 bg-gradient-to-r from-[#818cf8] via-[#c084fc] to-[#fb7185] bg-clip-text text-transparent">
             Koetori
           </h1>
-          <p className="text-[#94a3b8] text-sm font-light">
+          <p className="text-[#94a3b8] text-xs sm:text-sm font-light">
             Voice Capture & Transcription
           </p>
         </div>
@@ -46,8 +46,8 @@ export default function Home() {
           />
 
           {/* Glass card */}
-          <div className="relative bg-[#14151f]/80 backdrop-blur-xl rounded-2xl border border-slate-700/30 shadow-2xl p-12">
-            <div className="flex flex-col items-center text-center gap-6">
+          <div className="relative bg-[#14151f]/80 backdrop-blur-xl rounded-2xl border border-slate-700/30 shadow-2xl p-8 sm:p-12">
+            <div className="flex flex-col items-center text-center gap-4 sm:gap-6">
               <RecordButton
                 isRecording={isRecording}
                 isProcessing={isProcessing}
@@ -68,11 +68,11 @@ export default function Home() {
 
         {/* Transcription display below the card */}
         {transcription && (
-          <div className="mt-8 space-y-4">
+          <div className="mt-6 sm:mt-8 space-y-3 sm:space-y-4">
             <TranscriptionDisplay text={transcription} />
             <button
               onClick={clearTranscription}
-              className="w-full py-3 px-4 bg-[#14151f]/60 backdrop-blur-xl rounded-xl border border-slate-700/30 text-[#94a3b8] text-sm font-light hover:border-slate-600/50 hover:text-[#cbd5e1] transition-all"
+              className="w-full py-2.5 sm:py-3 px-4 bg-[#14151f]/60 backdrop-blur-xl rounded-xl border border-slate-700/30 text-[#94a3b8] text-xs sm:text-sm font-light hover:border-slate-600/50 hover:text-[#cbd5e1] transition-all active:scale-98"
             >
               Clear & Record Again
             </button>

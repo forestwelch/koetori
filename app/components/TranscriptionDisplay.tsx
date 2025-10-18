@@ -16,12 +16,12 @@ export function TranscriptionDisplay({ text }: TranscriptionDisplayProps) {
   };
 
   return (
-    <div className="w-full p-6 bg-[#14151f]/60 backdrop-blur-xl rounded-xl border border-slate-700/30">
+    <div className="w-full p-4 sm:p-6 bg-[#14151f]/60 backdrop-blur-xl rounded-xl border border-slate-700/30">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-[#e2e8f0] text-sm font-light">Transcription</h3>
+        <h3 className="text-[#e2e8f0] text-sm sm:text-base font-light">Transcription</h3>
         <button
           onClick={handleCopy}
-          className="text-xs font-light text-[#818cf8] hover:text-[#6366f1] transition-colors flex items-center gap-1"
+          className="text-xs sm:text-sm font-light text-[#818cf8] hover:text-[#6366f1] transition-colors flex items-center gap-1"
         >
           {copied ? (
             <>
@@ -55,7 +55,7 @@ export function TranscriptionDisplay({ text }: TranscriptionDisplayProps) {
           )}
         </button>
       </div>
-      <p className="text-[#94a3b8] text-sm font-light leading-relaxed">
+      <p className="text-[#94a3b8] text-sm sm:text-base font-light leading-relaxed">
         {text}
       </p>
     </div>
