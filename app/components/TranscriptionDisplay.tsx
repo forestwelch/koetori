@@ -27,7 +27,9 @@ export function TranscriptionDisplay({ text }: TranscriptionDisplayProps) {
         </h3>
         <button
           onClick={handleCopy}
-          aria-label={copied ? "Copied to clipboard" : "Copy transcription to clipboard"}
+          aria-label={
+            copied ? "Copied to clipboard" : "Copy transcription to clipboard"
+          }
           className="text-xs sm:text-sm font-light text-[#818cf8] hover:text-[#6366f1] transition-colors flex items-center gap-1"
         >
           {copied ? (

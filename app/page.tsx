@@ -25,11 +25,7 @@ export default function Home() {
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       // Only trigger if not typing in an input/textarea and transcription isn't showing
-      if (
-        e.code === "Space" &&
-        !transcription &&
-        e.target === document.body
-      ) {
+      if (e.code === "Space" && !transcription && e.target === document.body) {
         e.preventDefault();
         if (isRecording) {
           stopRecording();

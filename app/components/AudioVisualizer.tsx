@@ -7,10 +7,7 @@ interface AudioVisualizerProps {
   stream: MediaStream | null;
 }
 
-export function AudioVisualizer({
-  isRecording,
-  stream,
-}: AudioVisualizerProps) {
+export function AudioVisualizer({ isRecording, stream }: AudioVisualizerProps) {
   const [levels, setLevels] = useState<number[]>(Array(20).fill(0));
   const animationFrameRef = useRef<number | null>(null);
   const analyzerRef = useRef<AnalyserNode | null>(null);

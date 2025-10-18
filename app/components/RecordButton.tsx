@@ -31,8 +31,8 @@ export function RecordButton({
           isRecording
             ? "Stop recording"
             : isProcessing
-            ? "Processing audio"
-            : "Start recording (Press Space)"
+              ? "Processing audio"
+              : "Start recording (Press Space)"
         }
         aria-pressed={isRecording}
         className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-full transition-all duration-300 flex items-center justify-center shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
