@@ -16,10 +16,16 @@ export function StatusMessage({
   };
 
   return (
-    <div className="text-center text-sm sm:text-base text-[#94a3b8] font-light">
+    <div
+      className="text-center text-sm sm:text-base text-[#94a3b8] font-light"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    >
       {isRecording ? (
         <span>
-          Recording... <span className="text-indigo-400">{formatTime(recordingTime)}</span>
+          Recording...{" "}
+          <span className="text-indigo-400">{formatTime(recordingTime)}</span>
         </span>
       ) : isProcessing ? (
         "Processing audio..."

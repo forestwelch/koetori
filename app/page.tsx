@@ -5,6 +5,8 @@ import { RecordButton } from "./components/RecordButton";
 import { StatusMessage } from "./components/StatusMessage";
 import { ErrorAlert } from "./components/ErrorAlert";
 import { TranscriptionDisplay } from "./components/TranscriptionDisplay";
+import { AudioVisualizer } from "./components/AudioVisualizer";
+import { useEffect } from "react";
 
 export default function Home() {
   const {
@@ -13,13 +15,40 @@ export default function Home() {
     error,
     transcription,
     recordingTime,
+    audioStream,
     startRecording,
     stopRecording,
     clearTranscription,
   } = useVoiceRecorder();
 
+  // Keyboard shortcut: Space bar to toggle recording
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Only trigger if not typing in an input/textarea and transcription isn't showing
+      if (
+        e.code === "Space" &&
+        !transcription &&
+        e.target === document.body
+      ) {
+        e.preventDefault();
+        if (isRecording) {
+          stopRecording();
+        } else if (!isProcessing) {
+          startRecording();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, [isRecording, isProcessing, transcription, startRecording, stopRecording]);
+
   return (
-    <div className="min-h-screen p-4 sm:p-8 relative overflow-hidden">
+    <div
+      className="min-h-screen p-4 sm:p-8 relative overflow-hidden"
+      role="main"
+      aria-label="Voice recording and transcription application"
+    >
       {/* Background gradient glow */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1]/10 via-transparent to-[#f43f5e]/10 pointer-events-none" />
 
@@ -55,6 +84,9 @@ export default function Home() {
                 onStop={stopRecording}
               />
 
+              {/* Audio Visualizer */}
+              <AudioVisualizer isRecording={isRecording} stream={audioStream} />
+
               <StatusMessage
                 isRecording={isRecording}
                 isProcessing={isProcessing}
@@ -62,6 +94,17 @@ export default function Home() {
               />
 
               {error && <ErrorAlert message={error} />}
+
+              {/* Keyboard shortcut hint */}
+              {!transcription && !isRecording && !isProcessing && (
+                <p className="text-[#64748b] text-xs font-light mt-2">
+                  Press{" "}
+                  <kbd className="px-2 py-0.5 bg-[#1e1f2a] border border-slate-700/50 rounded text-[#94a3b8]">
+                    Space
+                  </kbd>{" "}
+                  to start
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -72,6 +115,7 @@ export default function Home() {
             <TranscriptionDisplay text={transcription} />
             <button
               onClick={clearTranscription}
+              aria-label="Clear transcription and record again"
               className="w-full py-2.5 sm:py-3 px-4 bg-[#14151f]/60 backdrop-blur-xl rounded-xl border border-slate-700/30 text-[#94a3b8] text-xs sm:text-sm font-light hover:border-slate-600/50 hover:text-[#cbd5e1] transition-all active:scale-98"
             >
               Clear & Record Again

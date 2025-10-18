@@ -27,6 +27,14 @@ export function RecordButton({
       <button
         onClick={isRecording ? onStop : onStart}
         disabled={isProcessing}
+        aria-label={
+          isRecording
+            ? "Stop recording"
+            : isProcessing
+            ? "Processing audio"
+            : "Start recording (Press Space)"
+        }
+        aria-pressed={isRecording}
         className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-full transition-all duration-300 flex items-center justify-center shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
           isRecording
             ? "bg-gradient-to-br from-[#f43f5e] to-[#fb7185] hover:from-[#e11d48] hover:to-[#f43f5e] shadow-[#f43f5e]/50 hover:shadow-xl hover:shadow-[#f43f5e]/70"
@@ -39,6 +47,7 @@ export function RecordButton({
             className="h-6 w-6 sm:h-8 sm:w-8 text-white"
             fill="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <rect x="6" y="6" width="12" height="12" rx="2" />
           </svg>
@@ -49,6 +58,7 @@ export function RecordButton({
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"

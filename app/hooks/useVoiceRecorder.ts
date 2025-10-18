@@ -8,6 +8,7 @@ interface UseVoiceRecorderReturn {
   error: string | null;
   transcription: string | null;
   recordingTime: number;
+  audioStream: MediaStream | null;
   startRecording: () => Promise<void>;
   stopRecording: () => void;
   clearTranscription: () => void;
@@ -19,6 +20,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
   const [error, setError] = useState<string | null>(null);
   const [transcription, setTranscription] = useState<string | null>(null);
   const [recordingTime, setRecordingTime] = useState(0);
+  const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -50,6 +52,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
 
       // Request microphone permission
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setAudioStream(stream);
 
       // Create MediaRecorder instance
       const mediaRecorder = new MediaRecorder(stream);
@@ -71,6 +74,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
 
         // Stop all tracks
         stream.getTracks().forEach((track) => track.stop());
+        setAudioStream(null);
 
         // Upload audio and get transcription
         setIsProcessing(true);
@@ -146,6 +150,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
     error,
     transcription,
     recordingTime,
+    audioStream,
     startRecording,
     stopRecording,
     clearTranscription,
