@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import { useVoiceRecorder } from './hooks/useVoiceRecorder';
-import { RecordButton } from './components/RecordButton';
-import { StatusMessage } from './components/StatusMessage';
-import { ErrorAlert } from './components/ErrorAlert';
-import { TranscriptionDisplay } from './components/TranscriptionDisplay';
-import { FeatureCards } from './components/FeatureCards';
+import { useVoiceRecorder } from "./hooks/useVoiceRecorder";
+import { RecordButton } from "./components/RecordButton";
+import { StatusMessage } from "./components/StatusMessage";
+import { ErrorAlert } from "./components/ErrorAlert";
+import { TranscriptionDisplay } from "./components/TranscriptionDisplay";
+import { FeatureCards } from "./components/FeatureCards";
 
 export default function Home() {
-  const { 
-    isRecording, 
-    isProcessing, 
-    error, 
-    transcription, 
-    startRecording, 
-    stopRecording 
+  const {
+    isRecording,
+    isProcessing,
+    error,
+    transcription,
+    startRecording,
+    stopRecording,
   } = useVoiceRecorder();
 
   return (
@@ -36,11 +36,13 @@ export default function Home() {
         {/* Main card with glass morphism */}
         <div className="relative group">
           {/* Glow effect behind card */}
-          <div className={`absolute -inset-0.5 bg-gradient-to-r rounded-2xl blur transition duration-500 ${
-            isRecording 
-              ? 'from-[#f43f5e] to-[#fb7185] opacity-40 animate-pulse' 
-              : 'from-[#6366f1] to-[#f43f5e] opacity-20 group-hover:opacity-30'
-          }`} />
+          <div
+            className={`absolute -inset-0.5 bg-gradient-to-r rounded-2xl blur transition duration-500 ${
+              isRecording
+                ? "from-[#f43f5e] to-[#fb7185] opacity-40 animate-pulse"
+                : "from-[#6366f1] to-[#f43f5e] opacity-20 group-hover:opacity-30"
+            }`}
+          />
 
           {/* Glass card */}
           <div className="relative bg-[#14151f]/80 backdrop-blur-xl rounded-2xl border border-slate-700/30 shadow-2xl p-12">
@@ -51,11 +53,14 @@ export default function Home() {
                 onStart={startRecording}
                 onStop={stopRecording}
               />
-              
-              <StatusMessage isRecording={isRecording} isProcessing={isProcessing} />
-              
+
+              <StatusMessage
+                isRecording={isRecording}
+                isProcessing={isProcessing}
+              />
+
               {error && <ErrorAlert message={error} />}
-              
+
               {transcription && <TranscriptionDisplay text={transcription} />}
             </div>
           </div>

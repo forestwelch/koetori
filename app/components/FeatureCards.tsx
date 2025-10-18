@@ -1,7 +1,7 @@
 const features = [
   { icon: "🎙️", label: "High Quality" },
   { icon: "⚡", label: "Fast Processing" },
-  { icon: "🔒", label: "Secure" }
+  { icon: "🔒", label: "Secure" },
 ];
 
 export function FeatureCards() {
