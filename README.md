@@ -43,15 +43,15 @@ A Next.js-based voice transcription application with a sleek dark theme design.
 - [x] Display transcription result
 - [x] Handle upload errors with user-friendly messages
 
-### 🚧 Phase 5: Transcription Service (In Progress)
+### ✅ Phase 5: Transcription Service (Complete)
 
-- [ ] Choose transcription service (OpenAI Whisper API recommended)
-- [ ] Add API keys to environment variables
-- [ ] Implement transcription wrapper
-- [ ] Handle audio format conversion if needed
-- [ ] Add rate limiting and error handling
+- [x] Choose transcription service (Groq Whisper)
+- [x] Add API keys to environment variables
+- [x] Implement transcription wrapper
+- [x] Handle audio format conversion if needed
+- [x] Add rate limiting and error handling
 
-### ⏳ Phase 6: UI Polish
+### 🚧 Phase 6: UI Polish (In Progress)
 
 - [ ] Add recording visualization (waveform/pulse animation)
 - [ ] Create transcription history component
