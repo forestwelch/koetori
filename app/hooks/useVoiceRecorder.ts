@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 
 interface UseVoiceRecorderReturn {
   isRecording: boolean;
   isProcessing: boolean;
   error: string | null;
   transcription: string | null;
+  recordingTime: number;
   startRecording: () => Promise<void>;
   stopRecording: () => void;
+  clearTranscription: () => void;
 }
 
 export function useVoiceRecorder(): UseVoiceRecorderReturn {
@@ -16,9 +18,31 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [transcription, setTranscription] = useState<string | null>(null);
+  const [recordingTime, setRecordingTime] = useState(0);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Timer effect
+  useEffect(() => {
+    if (isRecording) {
+      timerRef.current = setInterval(() => {
+        setRecordingTime((prev) => prev + 1);
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+      setRecordingTime(0);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [isRecording]);
 
   const startRecording = useCallback(async () => {
     try {
@@ -111,12 +135,19 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
     }
   }, [isRecording]);
 
+  const clearTranscription = useCallback(() => {
+    setTranscription(null);
+    setError(null);
+  }, []);
+
   return {
     isRecording,
     isProcessing,
     error,
     transcription,
+    recordingTime,
     startRecording,
     stopRecording,
+    clearTranscription,
   };
 }

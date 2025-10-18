@@ -1,21 +1,29 @@
 interface StatusMessageProps {
   isRecording: boolean;
   isProcessing: boolean;
+  recordingTime?: number;
 }
 
 export function StatusMessage({
   isRecording,
   isProcessing,
+  recordingTime = 0,
 }: StatusMessageProps) {
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
   const getStatus = () => {
     if (isProcessing)
       return {
         title: "Processing...",
-        subtitle: "Please wait while we process your recording",
+        subtitle: "Please wait while we transcribe your recording",
       };
     if (isRecording)
       return {
-        title: "Recording...",
+        title: `Recording... ${formatTime(recordingTime)}`,
         subtitle: "Click the button to stop recording",
       };
     return {

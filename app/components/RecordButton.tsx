@@ -13,6 +13,10 @@ export function RecordButton({
 }: RecordButtonProps) {
   return (
     <div className="relative">
+      {/* Outer pulse ring during recording */}
+      {isRecording && (
+        <div className="absolute inset-0 rounded-full bg-[#f43f5e] animate-ping opacity-20" />
+      )}
       <div
         className={`absolute inset-0 rounded-full blur-xl opacity-50 transition-colors duration-300 ${
           isRecording

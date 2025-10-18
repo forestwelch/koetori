@@ -12,8 +12,10 @@ export default function Home() {
     isProcessing,
     error,
     transcription,
+    recordingTime,
     startRecording,
     stopRecording,
+    clearTranscription,
   } = useVoiceRecorder();
 
   return (
@@ -56,6 +58,7 @@ export default function Home() {
               <StatusMessage
                 isRecording={isRecording}
                 isProcessing={isProcessing}
+                recordingTime={recordingTime}
               />
 
               {error && <ErrorAlert message={error} />}
@@ -65,8 +68,14 @@ export default function Home() {
 
         {/* Transcription display below the card */}
         {transcription && (
-          <div className="mt-8">
+          <div className="mt-8 space-y-4">
             <TranscriptionDisplay text={transcription} />
+            <button
+              onClick={clearTranscription}
+              className="w-full py-3 px-4 bg-[#14151f]/60 backdrop-blur-xl rounded-xl border border-slate-700/30 text-[#94a3b8] text-sm font-light hover:border-slate-600/50 hover:text-[#cbd5e1] transition-all"
+            >
+              Clear & Record Again
+            </button>
           </div>
         )}
       </div>
