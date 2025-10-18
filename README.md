@@ -15,18 +15,19 @@ A Next.js-based voice transcription application with a sleek dark theme design.
 - [x] Create basic UI structure
 - [x] Initialize Git repository
 
-### 🚧 Phase 2: Voice Recording (In Progress)
+### ✅ Phase 2: Voice Recording (Complete)
 
-- [ ] Add client-side component with 'use client'
-- [ ] Request microphone permissions
-- [ ] Implement MediaRecorder API
-- [ ] Add start/stop recording functionality
-- [ ] Store audio chunks and create Blob
-- [ ] Display recording state (idle/recording/processing)
-- [ ] Add visual feedback (animated button)
-- [ ] Handle errors (no permissions, unsupported browser)
+- [x] Add client-side component with 'use client'
+- [x] Request microphone permissions
+- [x] Implement MediaRecorder API
+- [x] Add start/stop recording functionality
+- [x] Store audio chunks and create Blob
+- [x] Display recording state (idle/recording/processing)
+- [x] Add visual feedback (animated button)
+- [x] Handle errors (no permissions, unsupported browser)
+- [x] Refactor into reusable components and hooks
 
-### ⏳ Phase 3: Backend API
+### 🚧 Phase 3: Backend API (In Progress)
 
 - [ ] Create `/api/transcribe/route.ts`
 - [ ] Handle multipart/form-data uploads
