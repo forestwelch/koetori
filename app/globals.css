@@ -2,29 +2,29 @@
 
 @theme inline {
   /* Background Colors */
-  --color-bg-primary: #0f172a;
-  --color-bg-secondary: #1e293b;
-  
+  --color-bg-primary: #0a0a0f;
+  --color-bg-secondary: #14151f;
+
   /* Primary Colors (Indigo) */
   --color-primary: #6366f1;
   --color-primary-hover: #4f46e5;
   --color-primary-light: #818cf8;
-  
+
   /* Accent Colors (Rose) */
   --color-accent: #f43f5e;
   --color-accent-hover: #e11d48;
   --color-accent-light: #fb7185;
-  
+
   /* Status Colors */
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
-  
+
   /* Text Colors */
   --color-text-primary: #f8fafc;
   --color-text-secondary: #cbd5e1;
   --color-text-muted: #64748b;
-  
+
   /* Fonts */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -34,6 +34,10 @@ body {
   background: var(--color-bg-primary);
   color: var(--color-text-primary);
   font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  font-weight: 300;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(244, 63, 94, 0.1) 0px, transparent 50%);
 }
 
 /* Utility classes for our design system */
@@ -55,4 +59,22 @@ body {
 
 .text-muted {
   color: var(--color-text-muted);
+}
+
+/* Glass morphism effect */
+.glass {
+  background: rgba(20, 21, 31, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Glow animations */
+@keyframes glow-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
