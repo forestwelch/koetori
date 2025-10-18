@@ -48,15 +48,35 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
         // Stop all tracks
         stream.getTracks().forEach((track) => track.stop());
 
-        // TODO: Upload audio and get transcription (Phase 4)
+        // Upload audio and get transcription
         setIsProcessing(true);
-        // Simulating processing for now
-        setTimeout(() => {
-          setTranscription(
-            "Transcription will appear here once backend is connected."
+
+        try {
+          const formData = new FormData();
+          formData.append("audio", audioBlob, "recording.webm");
+
+          const response = await fetch("/api/transcribe", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || "Failed to transcribe audio");
+          }
+
+          const data = await response.json();
+          setTranscription(data.text);
+        } catch (err) {
+          console.error("Error uploading audio:", err);
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Failed to transcribe audio. Please try again."
           );
+        } finally {
           setIsProcessing(false);
-        }, 2000);
+        }
       };
 
       // Start recording
