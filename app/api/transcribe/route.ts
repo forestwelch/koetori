@@ -1,4 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import Groq from "groq-sdk";
+
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
 
 // Configuration for the route
 export const config = {
@@ -52,20 +57,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Phase 5 - Integrate with transcription service
-    // For now, return a mock response
     console.log(
-      `Received audio file: ${audioFile.type}, size: ${audioFile.size} bytes`
+      `Processing audio file: ${audioFile.type}, size: ${audioFile.size} bytes`
     );
 
-    // Simulate processing time
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    // Convert Blob to File for Groq API
+    const file = new File([audioFile], "recording.webm", {
+      type: audioFile.type,
+    });
 
-    // Mock transcription response
+    // Call Groq Whisper API for transcription
+    const transcription = await groq.audio.transcriptions.create({
+      file: file,
+      model: "whisper-large-v3-turbo",
+      language: "en", // Optional: specify language or let it auto-detect
+      response_format: "json",
+    });
+
     return NextResponse.json({
-      text: "This is a mock transcription. The backend is working! Phase 5 will integrate with a real transcription service like OpenAI Whisper.",
+      text: transcription.text,
       language: "en",
-      duration: audioFile.size / 16000, // Rough estimate
+      duration: audioFile.size / 16000,
     });
   } catch (error) {
     console.error("Error processing audio:", error);
