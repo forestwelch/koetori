@@ -27,23 +27,23 @@ A Next.js-based voice transcription application with a sleek dark theme design.
 - [x] Handle errors (no permissions, unsupported browser)
 - [x] Refactor into reusable components and hooks
 
-### 🚧 Phase 3: Backend API (In Progress)
+### ✅ Phase 3: Backend API (Complete)
 
-- [ ] Create `/api/transcribe/route.ts`
-- [ ] Handle multipart/form-data uploads
-- [ ] Validate file type and size
-- [ ] Add error handling
-- [ ] Create health check endpoint
+- [x] Create `/api/transcribe/route.ts`
+- [x] Handle multipart/form-data uploads
+- [x] Validate file type and size
+- [x] Add error handling
+- [x] Create health check endpoint
 
-### ⏳ Phase 4: Audio Upload
+### ✅ Phase 4: Audio Upload (Complete)
 
-- [ ] Convert audio Blob to FormData
-- [ ] POST to `/api/transcribe` endpoint
-- [ ] Show loading/processing state
-- [ ] Display transcription result
-- [ ] Handle upload errors with user-friendly messages
+- [x] Convert audio Blob to FormData
+- [x] POST to `/api/transcribe` endpoint
+- [x] Show loading/processing state
+- [x] Display transcription result
+- [x] Handle upload errors with user-friendly messages
 
-### ⏳ Phase 5: Transcription Service
+### 🚧 Phase 5: Transcription Service (In Progress)
 
 - [ ] Choose transcription service (OpenAI Whisper API recommended)
 - [ ] Add API keys to environment variables
