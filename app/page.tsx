@@ -5,7 +5,6 @@ import { RecordButton } from "./components/RecordButton";
 import { StatusMessage } from "./components/StatusMessage";
 import { ErrorAlert } from "./components/ErrorAlert";
 import { TranscriptionDisplay } from "./components/TranscriptionDisplay";
-import { FeatureCards } from "./components/FeatureCards";
 
 export default function Home() {
   const {
@@ -60,16 +59,16 @@ export default function Home() {
               />
 
               {error && <ErrorAlert message={error} />}
-
-              {transcription && <TranscriptionDisplay text={transcription} />}
             </div>
           </div>
         </div>
 
-        {/* Feature cards */}
-        <div className="mt-8">
-          <FeatureCards />
-        </div>
+        {/* Transcription display below the card */}
+        {transcription && (
+          <div className="mt-8">
+            <TranscriptionDisplay text={transcription} />
+          </div>
+        )}
       </div>
     </div>
   );
