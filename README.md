@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Koetori - Voice Transcription App
 
-## Getting Started
+A Next.js-based voice transcription application with a sleek dark theme design.
 
-First, run the development server:
+> **Koetori** (声取り) = **koe** (voice) + **tori** (take/capture). Also means "voice bird" 🐦
+
+---
+
+## Current Status
+
+### ✅ Phase 1: Project Setup (Complete)
+
+- [x] Initialize Next.js with TypeScript and Tailwind
+- [x] Set up dark theme design system
+- [x] Create basic UI structure
+- [x] Initialize Git repository
+
+### 🚧 Phase 2: Voice Recording (In Progress)
+
+- [ ] Add client-side component with 'use client'
+- [ ] Request microphone permissions
+- [ ] Implement MediaRecorder API
+- [ ] Add start/stop recording functionality
+- [ ] Store audio chunks and create Blob
+- [ ] Display recording state (idle/recording/processing)
+- [ ] Add visual feedback (animated button)
+- [ ] Handle errors (no permissions, unsupported browser)
+
+### ⏳ Phase 3: Backend API
+
+- [ ] Create `/api/transcribe/route.ts`
+- [ ] Handle multipart/form-data uploads
+- [ ] Validate file type and size
+- [ ] Add error handling
+- [ ] Create health check endpoint
+
+### ⏳ Phase 4: Audio Upload
+
+- [ ] Convert audio Blob to FormData
+- [ ] POST to `/api/transcribe` endpoint
+- [ ] Show loading/processing state
+- [ ] Display transcription result
+- [ ] Handle upload errors with user-friendly messages
+
+### ⏳ Phase 5: Transcription Service
+
+- [ ] Choose transcription service (OpenAI Whisper API recommended)
+- [ ] Add API keys to environment variables
+- [ ] Implement transcription wrapper
+- [ ] Handle audio format conversion if needed
+- [ ] Add rate limiting and error handling
+
+### ⏳ Phase 6: UI Polish
+
+- [ ] Add recording visualization (waveform/pulse animation)
+- [ ] Create transcription history component
+- [ ] Add copy-to-clipboard functionality
+- [ ] Improve mobile responsiveness
+- [ ] Add keyboard shortcuts
+- [ ] Implement accessibility (ARIA labels)
+- [ ] Add loading animations
+
+### ⏳ Phase 7: Error Handling & Production
+
+- [ ] Comprehensive error handling
+- [ ] Input validation
+- [ ] File size/duration limits
+- [ ] Rate limiting
+- [ ] Logging and monitoring
+- [ ] Cleanup temporary files
+- [ ] Performance optimization
+
+---
+
+## Quick Start
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Visit `http://localhost:3000`
