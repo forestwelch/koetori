@@ -5,7 +5,7 @@ interface MemoActionsProps {
   memo: Memo;
   filter: string;
   isEditing: boolean;
-  toggleStar: (id: string) => void;
+  toggleStar: (id: string, currentStarred: boolean) => void;
   startEdit: (memo: Memo) => void;
   handleArchive: (id: string) => void;
   handleRestore: (id: string) => void;
@@ -48,7 +48,7 @@ export function MemoActions({
   return (
     <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex gap-2 z-10">
       <button
-        onClick={() => toggleStar(memo.id)}
+        onClick={() => toggleStar(memo.id, memo.starred || false)}
         className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
           memo.starred
             ? "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30"

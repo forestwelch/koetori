@@ -122,9 +122,9 @@ export function MemoItem({
             isEditing={isEditing}
             startEdit={startEdit}
             toggleStar={toggleStar}
-            softDelete={softDelete}
-            restoreMemo={restoreMemo}
-            hardDelete={hardDelete}
+            handleArchive={softDelete}
+            handleRestore={restoreMemo}
+            handleDeleteForever={hardDelete}
           />
         </div>
       </div>
