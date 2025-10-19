@@ -21,6 +21,11 @@ INSTRUCTIONS:
 3. Extract structured data (title, people, dates, locations, context)
 4. Generate 2-5 relevant tags
 5. Determine if this is actionable (needs follow-up)
+6. Determine if this is URGENT/IMPORTANT/HIGH-PRIORITY (should be starred)
+   - Star if user says: "important", "urgent", "priority", "critical", "star this", "top priority", "asap", "remember this", "don't forget"
+   - Star if expressing high urgency or stress about something
+   - Star if it's a time-sensitive task or deadline
+   - Star if user explicitly requests emphasis
 
 RESPONSE FORMAT (valid JSON only):
 {
@@ -34,7 +39,8 @@ RESPONSE FORMAT (valid JSON only):
     "what": "brief one-sentence summary",
     "actionable": true
   },
-  "tags": ["tag1", "tag2", "tag3"]
+  "tags": ["tag1", "tag2", "tag3"],
+  "starred": false
 }
 
 EXAMPLES:
@@ -91,7 +97,22 @@ Output:
     "what": "Buy groceries and schedule dentist appointment",
     "actionable": true
   },
-  "tags": ["shopping", "groceries", "dentist", "errands"]
+  "tags": ["shopping", "groceries", "dentist", "errands"],
+  "starred": false
+}
+
+Input: "This is really important - I need to submit that grant application by Friday or we lose the funding. Top priority!"
+Output:
+{
+  "category": "todo",
+  "confidence": 0.98,
+  "extracted": {
+    "what": "Submit grant application by Friday",
+    "when": "Friday",
+    "actionable": true
+  },
+  "tags": ["urgent", "grant", "deadline", "funding"],
+  "starred": true
 }
 
 Input: "Today was tough, feeling overwhelmed with work deadlines but grateful for my supportive partner"
@@ -143,6 +164,9 @@ export function validateCategorizationResult(
   // Ensure tags is an array
   const tags = Array.isArray(result.tags) ? result.tags : [];
 
+  // Check if starred
+  const starred = typeof result.starred === "boolean" ? result.starred : false;
+
   // Ensure who is an array if present
   if (extracted.who && !Array.isArray(extracted.who)) {
     extracted.who = [extracted.who as unknown as string];
@@ -153,5 +177,6 @@ export function validateCategorizationResult(
     confidence,
     extracted,
     tags,
+    starred,
   };
 }

@@ -29,6 +29,7 @@ export interface Memo {
   tags: string[];
   timestamp: Date;
   deleted_at?: Date | null; // For soft delete
+  starred?: boolean; // Starred/priority items
 }
 
 export interface CategorizationResult {
@@ -36,6 +37,7 @@ export interface CategorizationResult {
   confidence: number;
   extracted: ExtractedData;
   tags: string[];
+  starred?: boolean; // Auto-star if urgent/important
 }
 
 export interface TranscriptionResponse {
@@ -46,4 +48,5 @@ export interface TranscriptionResponse {
   extracted: ExtractedData;
   tags: string[];
   memo_id: string;
+  starred?: boolean; // Auto-star if urgent/important
 }
