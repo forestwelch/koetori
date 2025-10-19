@@ -28,6 +28,7 @@ export interface Memo {
   extracted: ExtractedData;
   tags: string[];
   timestamp: Date;
+  deleted_at?: Date | null; // For soft delete
 }
 
 export interface CategorizationResult {
