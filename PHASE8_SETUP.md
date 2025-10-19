@@ -53,15 +53,17 @@ npm install @supabase/supabase-js
 ## Step 3: Configure Environment Variables
 
 1. Copy `.env.example` to `.env.local` if you haven't already:
+
    ```bash
    cp .env.example .env.local
    ```
 
 2. Add your Supabase credentials to `.env.local`:
+
    ```env
    # Existing Groq API key
    GROQ_API_KEY=your_groq_api_key_here
-   
+
    # New Supabase credentials
    NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
@@ -168,11 +170,13 @@ You now have a fully functional AI-powered voice memo system! Here's what you ca
 ### Free Tier Limits
 
 **Groq**:
+
 - 14,400 requests/day
 - Each memo uses 2 requests (transcription + categorization)
 - = ~7,200 memos per day (way more than you need!)
 
 **Supabase**:
+
 - 500 MB database
 - 2 GB bandwidth
 - 50 MB file storage (not used yet)

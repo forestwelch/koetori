@@ -133,7 +133,8 @@ export function validateCategorizationResult(
   }
 
   // Ensure confidence is between 0 and 1
-  let confidence = typeof result.confidence === "number" ? result.confidence : 0.5;
+  let confidence =
+    typeof result.confidence === "number" ? result.confidence : 0.5;
   confidence = Math.max(0, Math.min(1, confidence));
 
   // Ensure extracted data exists

@@ -44,8 +44,8 @@ export function MemoDisplay({
                 confidence >= 0.7
                   ? "bg-green-500"
                   : confidence >= 0.5
-                  ? "bg-yellow-500"
-                  : "bg-orange-500"
+                    ? "bg-yellow-500"
+                    : "bg-orange-500"
               }`}
               style={{ width: `${confidence * 100}%` }}
             />
