@@ -56,9 +56,7 @@ export function MemoActions({
         }`}
         title={memo.starred ? "Unstar" : "Star"}
       >
-        <Star
-          className={`w-5 h-5 ${memo.starred ? "fill-amber-400" : ""}`}
-        />
+        <Star className={`w-5 h-5 ${memo.starred ? "fill-amber-400" : ""}`} />
       </button>
       {!isEditing && (
         <button
