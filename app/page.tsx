@@ -27,6 +27,7 @@ export default function Home() {
     recordingTime,
     startRecording,
     stopRecording,
+    cancelRecording,
     clearTranscription,
   } = useVoiceRecorder();
 
@@ -92,42 +93,24 @@ export default function Home() {
     clearTranscription,
   ]);
 
-  // Space bar to toggle recording
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      // Only trigger if not typing in an input field
-      if (e.code === "Space" && e.target === document.body) {
-        e.preventDefault();
-        if (isRecording) {
-          stopRecording();
-        } else if (!isProcessing) {
-          startRecording();
-        }
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyPress);
-    return () => document.removeEventListener("keydown", handleKeyPress);
-  }, [isRecording, isProcessing, startRecording, stopRecording]);
-
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Edit memo
-  const startEdit = (memo: Memo) => {
+  // Edit memo functions
+  const startEdit = useCallback((memo: Memo) => {
     setEditingId(memo.id);
     setEditText(memo.transcript);
-  };
+  }, []);
 
-  const cancelEdit = () => {
+  const cancelEdit = useCallback(() => {
     setEditingId(null);
     setEditText("");
-  };
+  }, []);
 
-  const saveEdit = async (memoId: string) => {
+  const saveEdit = useCallback(async (memoId: string) => {
     try {
       const { error } = await supabase
         .from("memos")
@@ -142,7 +125,40 @@ export default function Home() {
     } catch (err) {
       console.error("Error updating memo:", err);
     }
-  };
+  }, [editText, loadMemos]);
+
+  // Space bar to toggle recording, Escape to cancel
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Only trigger if not typing in an input field or textarea
+      const target = e.target as HTMLElement;
+      const isInputField = target.tagName === "INPUT" || target.tagName === "TEXTAREA";
+      
+      if (e.code === "Space" && e.target === document.body && !isInputField) {
+        e.preventDefault();
+        if (isRecording) {
+          stopRecording();
+        } else if (!isProcessing) {
+          startRecording();
+        }
+      }
+      
+      // Escape to cancel recording (stops without saving)
+      if (e.code === "Escape" && isRecording) {
+        e.preventDefault();
+        cancelRecording();
+      }
+      
+      // Escape to cancel editing
+      if (e.code === "Escape" && editingId) {
+        e.preventDefault();
+        cancelEdit();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, [isRecording, isProcessing, editingId, startRecording, stopRecording, cancelRecording, cancelEdit]);
 
   // Soft delete (move to trash)
   const softDelete = async (memoId: string) => {
@@ -241,11 +257,15 @@ export default function Home() {
                     {formatTime(recordingTime)}
                   </div>
                   <p className="text-[#94a3b8] text-sm mt-2">
-                    Click the button or press{" "}
+                    Press{" "}
                     <kbd className="px-2 py-1 bg-[#1e1f2a] rounded text-xs font-mono">
                       Space
                     </kbd>{" "}
-                    to stop
+                    to stop or{" "}
+                    <kbd className="px-2 py-1 bg-[#1e1f2a] rounded text-xs font-mono">
+                      Esc
+                    </kbd>{" "}
+                    to cancel
                   </p>
                 </div>
               </>

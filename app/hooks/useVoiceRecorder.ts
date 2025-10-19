@@ -19,6 +19,7 @@ interface UseVoiceRecorderReturn {
   maxRecordingTime: number;
   startRecording: () => Promise<void>;
   stopRecording: () => void;
+  cancelRecording: () => void;
   clearTranscription: () => void;
 }
 
@@ -47,14 +48,32 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const retryCountRef = useRef(0);
+  const shouldProcessRef = useRef(true); // Flag to control whether to process on stop
 
   // Define stopRecording early so it can be used in useEffect
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
+      shouldProcessRef.current = true; // Process this recording
       mediaRecorderRef.current.stop();
       setIsRecording(false);
     }
   }, [isRecording]);
+
+  // Cancel recording without saving
+  const cancelRecording = useCallback(() => {
+    if (mediaRecorderRef.current && isRecording) {
+      shouldProcessRef.current = false; // Don't process this recording
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      
+      // Clean up immediately
+      if (audioStream) {
+        audioStream.getTracks().forEach((track) => track.stop());
+        setAudioStream(null);
+      }
+      audioChunksRef.current = [];
+    }
+  }, [isRecording, audioStream]);
 
   // Helper function to upload with retry logic
   const uploadWithRetry = useCallback(
@@ -153,13 +172,19 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
 
       // Handle recording stop
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, {
-          type: "audio/webm",
-        });
-
         // Stop all tracks
         stream.getTracks().forEach((track) => track.stop());
         setAudioStream(null);
+
+        // Only process if not cancelled
+        if (!shouldProcessRef.current) {
+          audioChunksRef.current = [];
+          return;
+        }
+
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: "audio/webm",
+        });
 
         // Upload audio and get transcription + categorization
         setIsProcessing(true);
@@ -240,6 +265,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
     audioStream,
     startRecording,
     stopRecording,
+    cancelRecording,
     clearTranscription,
   };
 }
