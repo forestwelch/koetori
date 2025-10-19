@@ -2,13 +2,7 @@
 
 import { useState, useRef } from "react";
 import { Memo } from "../types/memo";
-import { Star, Archive } from "lucide-react";
-import {
-  getCategoryColor,
-  getCategoryGradient,
-  getCategoryIcon,
-  formatConfidence,
-} from "../lib/ui-utils";
+import { Star } from "lucide-react";
 import { MemoHeader } from "./MemoHeader";
 import { MemoContent } from "./MemoContent";
 import { MemoActions } from "./MemoActions";
