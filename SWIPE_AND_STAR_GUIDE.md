@@ -1,11 +1,13 @@
 # Swipe & Star Feature Guide
 
 ## Overview
+
 This guide covers the new swipe gestures, starred memos, and archive features added to Koetori.
 
 ## New Features
 
 ### 1. **Starred Memos** ⭐
+
 - **Purpose**: Mark important/urgent memos for quick access
 - **How to Star**:
   - 📱 **Swipe right** on a memo (mobile/touch)
@@ -20,12 +22,14 @@ This guide covers the new swipe gestures, starred memos, and archive features ad
   - Or express high urgency/stress
 
 ### 2. **Swipe Gestures** 📱
+
 - **Swipe Left** (← 100px): Archive memo (moves to archive)
 - **Swipe Right** (→ 100px): Toggle star on/off
 - **Visual Feedback**: See ⭐ or 📦 icons while swiping
 - **Works on**: Touch devices (mobile, tablets)
 
 ### 3. **Archive** (formerly "Trash") 📦
+
 - **What Changed**: "Trash" → "Archive" with grey theme
 - **Why**: Less aggressive, more like "set aside for later"
 - **Actions in Archive**:
@@ -33,12 +37,14 @@ This guide covers the new swipe gestures, starred memos, and archive features ad
   - ✕ **Delete Forever**: Permanent deletion (with confirmation)
 
 ### 4. **Filter System**
+
 - **All Memos**: See everything active
 - **⭐ Starred**: Only starred/priority items
 - **Needs Review**: Low-confidence categorizations
 - **Archive**: Archived memos
 
 ### 5. **Accessibility Improvements**
+
 - **Spacebar Recording**: Now works even when focused on elements
 - **Text Selection**: Can select/copy text from memos (adds `select-text` class)
 - **User-Select None**: Applied globally for sleeker feel, but overridden for text content
@@ -52,6 +58,7 @@ supabase db push --file supabase/add_starred.sql
 ```
 
 Or manually:
+
 ```sql
 ALTER TABLE memos ADD COLUMN IF NOT EXISTS starred BOOLEAN DEFAULT FALSE;
 CREATE INDEX IF NOT EXISTS idx_memos_starred ON memos(starred) WHERE starred = TRUE AND deleted_at IS NULL;
@@ -60,6 +67,7 @@ CREATE INDEX IF NOT EXISTS idx_memos_starred ON memos(starred) WHERE starred = T
 ## AI Categorization Updates
 
 The AI now detects:
+
 - **Urgency keywords**: important, urgent, priority, critical, star, top priority, asap, remember, don't forget
 - **Stress indicators**: Expressions of high urgency or time pressure
 - **Time-sensitive tasks**: Deadlines and urgent action items

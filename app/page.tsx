@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "./lib/supabase";
 import { Memo, Category } from "./types/memo";
 import {
@@ -10,335 +10,15 @@ import {
   formatConfidence,
 } from "./lib/ui-utils";
 import { useVoiceRecorder } from "./hooks/useVoiceRecorder";
-import { Star, Archive } from "lucide-react";
-
-// MemoItem component with swipe functionality
-function MemoItem({
-  memo,
-  isNew,
-  filter,
-  editingId,
-  editText,
-  setEditText,
-  startEdit,
-  cancelEdit,
-  saveEdit,
-  softDelete,
-  toggleStar,
-  restoreMemo,
-  hardDelete,
-}: {
-  memo: Memo;
-  isNew: boolean;
-  filter: "all" | "review" | "archive" | "starred";
-  editingId: string | null;
-  editText: string;
-  setEditText: (text: string) => void;
-  startEdit: (memo: Memo) => void;
-  cancelEdit: () => void;
-  saveEdit: (id: string) => void;
-  softDelete: (id: string) => void;
-  toggleStar: (id: string, current: boolean) => void;
-  restoreMemo: (id: string) => void;
-  hardDelete: (id: string) => void;
-}) {
-  const [swipeX, setSwipeX] = useState(0);
-  const [isSwiping, setIsSwiping] = useState(false);
-  const startX = useRef(0);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (filter === "archive") return; // No swipe in archive
-    startX.current = e.touches[0].clientX;
-    setIsSwiping(true);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isSwiping || filter === "archive") return;
-    const currentX = e.touches[0].clientX;
-    const diff = currentX - startX.current;
-    setSwipeX(diff);
-  };
-
-  const handleTouchEnd = () => {
-    if (filter === "archive") return;
-    if (Math.abs(swipeX) > 100) {
-      if (swipeX < 0) {
-        // Swipe left - toggle star
-        toggleStar(memo.id, memo.starred || false);
-      } else {
-        // Swipe right - archive
-        softDelete(memo.id);
-      }
-    }
-    setSwipeX(0);
-    setIsSwiping(false);
-  };
-
-  return (
-    <div
-      className="relative"
-      style={{
-        transform: `translateX(${swipeX}px)`,
-        transition: isSwiping ? "none" : "transform 0.3s ease",
-      }}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
-      {/* Swipe indicators with background highlights */}
-      {swipeX < -50 && (
-        <div className="absolute inset-0 bg-amber-500/20 rounded-2xl pointer-events-none transition-opacity">
-          <div className="absolute left-4 top-1/2 -translate-y-1/2">
-            <Star className="w-8 h-8 text-amber-400" />
-          </div>
-        </div>
-      )}
-      {swipeX > 50 && (
-        <div className="absolute inset-0 bg-slate-500/20 rounded-2xl pointer-events-none transition-opacity">
-          <div className="absolute right-4 top-1/2 -translate-y-1/2">
-            <Archive className="w-8 h-8 text-slate-400" />
-          </div>
-        </div>
-      )}
-
-      <div className="relative p-4 sm:p-6 bg-[#0d0e14]/40 backdrop-blur-xl rounded-2xl border border-slate-700/20 hover:border-slate-600/40 hover:bg-[#0d0e14]/60 transition-all duration-1000 animate-in fade-in slide-in-from-top-4">
-        {/* Starred indicator - subtle */}
-        {memo.starred && filter !== "archive" && (
-          <div className="absolute top-2 right-2">
-            <Star className="w-4 h-4 text-amber-400 fill-amber-400/50" />
-          </div>
-        )}
-
-        {/* New memo highlight overlay */}
-        <div
-          className={`absolute inset-0 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 pointer-events-none transition-opacity duration-1000 ${
-            isNew ? "opacity-100" : "opacity-0"
-          }`}
-        />
-        <div
-          className={`absolute inset-0 rounded-2xl border border-indigo-500/50 shadow-lg shadow-indigo-500/20 pointer-events-none transition-opacity duration-1000 ${
-            isNew ? "opacity-100" : "opacity-0"
-          }`}
-        />
-
-        {/* Content wrapper */}
-        <div className="relative">
-          {/* Header: Category, Confidence, Date */}
-          <div className="flex flex-wrap items-center gap-3 mb-3">
-            {/* Category Badge */}
-            <div className="relative">
-              <div
-                className={`absolute inset-0 rounded-full bg-gradient-to-r ${getCategoryGradient(memo.category)} opacity-50 blur-sm`}
-              />
-              <span
-                className={`relative px-3 py-1.5 rounded-full text-sm font-medium border backdrop-blur-xl ${getCategoryColor(
-                  memo.category
-                )}`}
-              >
-                {getCategoryIcon(memo.category)} {memo.category}
-              </span>
-            </div>
-            {/* Confidence */}
-            <div className="flex items-center gap-2">
-              <div className="w-16 h-2 bg-[#0a0a0f]/80 backdrop-blur-xl rounded-full overflow-hidden border border-slate-700/10">
-                <div
-                  className={`h-full ${
-                    memo.confidence >= 0.7
-                      ? "bg-gradient-to-r from-green-500 to-emerald-500"
-                      : memo.confidence >= 0.5
-                        ? "bg-gradient-to-r from-yellow-500 to-amber-500"
-                        : "bg-gradient-to-r from-orange-500 to-red-500"
-                  }`}
-                  style={{ width: `${memo.confidence * 100}%` }}
-                />
-              </div>
-              <span className="text-xs text-[#94a3b8] select-text">
-                {formatConfidence(memo.confidence)}
-              </span>
-            </div>
-            {/* Review Flag */}
-            {memo.needs_review && (
-              <span className="px-3 py-1 bg-yellow-500/10 text-yellow-400 border border-yellow-500/40 rounded-full text-xs font-medium backdrop-blur-xl">
-                ⚠️ Review
-              </span>
-            )}
-            {/* Date */}
-            <span className="ml-auto text-xs text-[#64748b] select-text">
-              {new Date(memo.timestamp).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-                hour: "numeric",
-                minute: "2-digit",
-              })}
-            </span>
-          </div>
-
-          {/* Transcript - Inline Editing */}
-          {editingId === memo.id ? (
-            <div className="mb-3">
-              <textarea
-                value={editText}
-                onChange={(e) => setEditText(e.target.value)}
-                className="w-full p-3 bg-[#0a0a0f]/60 backdrop-blur-xl border border-indigo-500/50 rounded-xl text-[#cbd5e1] text-sm sm:text-base font-light leading-relaxed focus:outline-none focus:border-indigo-500 resize-none select-text"
-                rows={3}
-                autoFocus
-              />
-              <div className="flex gap-2 mt-2">
-                <button
-                  onClick={() => saveEdit(memo.id)}
-                  className="px-3 py-1.5 bg-indigo-500/90 hover:bg-indigo-600 text-white rounded-full text-xs font-medium transition-all shadow-lg shadow-indigo-500/20"
-                >
-                  ✓ Save
-                </button>
-                <button
-                  onClick={cancelEdit}
-                  className="px-3 py-1.5 bg-[#14151f]/60 hover:bg-[#14151f]/80 text-[#94a3b8] border border-slate-700/30 rounded-full text-xs font-medium transition-all"
-                >
-                  ✕ Cancel
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="group relative mb-3">
-              <p className="text-[#cbd5e1] text-sm sm:text-base font-light leading-relaxed select-text">
-                {memo.transcript}
-              </p>
-              {/* Action Buttons - Show on hover for active memos */}
-              {filter !== "archive" && (
-                <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                  <button
-                    onClick={() => toggleStar(memo.id, memo.starred || false)}
-                    className={`w-8 h-8 bg-[#14151f]/90 backdrop-blur-xl border rounded-full flex items-center justify-center transition-all shadow-lg ${
-                      memo.starred
-                        ? "text-amber-400 border-amber-500/50 hover:border-amber-400"
-                        : "text-slate-400 border-slate-600/50 hover:text-amber-400 hover:border-amber-500/50"
-                    }`}
-                    aria-label="Toggle star"
-                  >
-                    <Star className={`w-4 h-4 ${memo.starred ? "fill-amber-400" : ""}`} />
-                  </button>
-                  <button
-                    onClick={() => startEdit(memo)}
-                    className="w-8 h-8 bg-[#14151f]/90 backdrop-blur-xl border border-slate-600/50 rounded-full flex items-center justify-center text-indigo-400 hover:text-indigo-300 hover:border-indigo-500/50 transition-all shadow-lg"
-                    aria-label="Edit memo"
-                  >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => softDelete(memo.id)}
-                    className="w-8 h-8 bg-[#14151f]/90 backdrop-blur-xl border border-slate-600/50 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-300 hover:border-slate-500/50 transition-all shadow-lg"
-                    aria-label="Archive memo"
-                  >
-                    <Archive className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-              {/* Archive Actions */}
-              {filter === "archive" && (
-                <div className="mt-3 flex gap-2">
-                  <button
-                    onClick={() => restoreMemo(memo.id)}
-                    className="px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30 rounded-full text-xs font-medium transition-all backdrop-blur-xl"
-                  >
-                    ↻ Restore
-                  </button>
-                  <button
-                    onClick={() => hardDelete(memo.id)}
-                    className="px-3 py-1.5 bg-slate-500/20 hover:bg-slate-500/30 text-slate-400 border border-slate-500/30 rounded-full text-xs font-medium transition-all backdrop-blur-xl"
-                  >
-                    ✕ Delete Forever
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Extracted Data */}
-          {memo.extracted &&
-            (memo.extracted.title ||
-              memo.extracted.who ||
-              memo.extracted.when ||
-              memo.extracted.where ||
-              memo.extracted.what) && (
-              <div className="p-3 bg-[#0a0a0f]/60 backdrop-blur-xl rounded-xl border border-slate-700/10 space-y-1.5 mb-3 text-sm select-text">
-                {memo.extracted.title && (
-                  <div>
-                    <span className="text-[#64748b] font-medium">Title: </span>
-                    <span className="text-[#e2e8f0]">{memo.extracted.title}</span>
-                  </div>
-                )}
-                {memo.extracted.who && memo.extracted.who.length > 0 && (
-                  <div>
-                    <span className="text-[#64748b] font-medium">People: </span>
-                    <span className="text-[#cbd5e1]">
-                      {memo.extracted.who.join(", ")}
-                    </span>
-                  </div>
-                )}
-                {memo.extracted.when && (
-                  <div>
-                    <span className="text-[#64748b] font-medium">When: </span>
-                    <span className="text-[#cbd5e1]">{memo.extracted.when}</span>
-                  </div>
-                )}
-                {memo.extracted.where && (
-                  <div>
-                    <span className="text-[#64748b] font-medium">Where: </span>
-                    <span className="text-[#cbd5e1]">{memo.extracted.where}</span>
-                  </div>
-                )}
-                {memo.extracted.what && (
-                  <div>
-                    <span className="text-[#64748b] font-medium">Summary: </span>
-                    <span className="text-[#cbd5e1]">{memo.extracted.what}</span>
-                  </div>
-                )}
-                {memo.extracted.actionable && (
-                  <div className="pt-1">
-                    <span className="text-xs px-2 py-0.5 bg-orange-500/10 text-orange-400 border border-orange-500/40 rounded-full backdrop-blur-xl">
-                      🎯 Actionable
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-
-          {/* Tags */}
-          {memo.tags && memo.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {memo.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="px-2 py-0.5 bg-[#0a0a0f]/60 text-[#94a3b8] border border-slate-700/20 rounded-full text-xs backdrop-blur-xl select-text"
-                >
-                  #{tag}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
+import { MemoItem } from "./components/MemoItem";
+import { Star } from "lucide-react";
 
 export default function Home() {
   const [memos, setMemos] = useState<Memo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"all" | "review" | "archive" | "starred">("all");
+  const [filter, setFilter] = useState<
+    "all" | "review" | "archive" | "starred"
+  >("all");
   const [categoryFilter, setCategoryFilter] = useState<Category | "all">("all");
   const [newMemoId, setNewMemoId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -467,7 +147,7 @@ export default function Home() {
       // Only trigger if not typing in an input field or textarea
       const target = e.target as HTMLElement;
       const isInputField =
-        target.tagName === "INPUT" || 
+        target.tagName === "INPUT" ||
         target.tagName === "TEXTAREA" ||
         target.isContentEditable;
 
@@ -812,13 +492,13 @@ export default function Home() {
               {/* Needs Review Button */}
               <div className="relative">
                 {filter === "review" && (
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-yellow-500/50 to-amber-500/50 opacity-50 blur-sm" />
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-fuchsia-500/50 to-pink-500/50 opacity-50 blur-sm" />
                 )}
                 <button
                   onClick={() => setFilter("review")}
                   className={`relative px-4 py-2 rounded-2xl text-sm font-medium transition-all backdrop-blur-xl ${
                     filter === "review"
-                      ? "bg-yellow-500/30 text-white shadow-lg shadow-yellow-500/30 border border-yellow-400/20"
+                      ? "bg-fuchsia-500/30 text-white shadow-lg shadow-fuchsia-500/30 border border-fuchsia-400/20"
                       : "bg-[#0d0e14]/20 border border-slate-700/10 text-[#64748b] hover:border-slate-600/30 hover:bg-[#0d0e14]/40"
                   }`}
                 >
@@ -993,7 +673,7 @@ export default function Home() {
                 {formatConfidence(randomMemo.confidence)} confidence
               </div>
               {randomMemo.needs_review && (
-                <span className="text-xs px-2 py-0.5 bg-yellow-500/10 text-yellow-400 border border-yellow-500/40 rounded-full backdrop-blur-xl">
+                <span className="text-xs px-2 py-0.5 bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/40 rounded-full backdrop-blur-xl">
                   Needs Review
                 </span>
               )}

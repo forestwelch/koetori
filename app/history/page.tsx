@@ -191,7 +191,7 @@ export default function HistoryPage() {
 
                   {/* Review Flag */}
                   {memo.needs_review && (
-                    <span className="px-2 py-1 bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 rounded text-xs font-medium">
+                    <span className="px-2 py-1 bg-fuchsia-500/20 text-fuchsia-500 border border-fuchsia-500/30 rounded text-xs font-medium">
                       ⚠️ Review
                     </span>
                   )}
