@@ -3,12 +3,14 @@
 ## Pre-Deployment
 
 ### Environment Variables
+
 - [ ] Set `GROQ_API_KEY` in production environment
 - [ ] Verify API key has appropriate rate limits
 - [ ] Set `NODE_ENV=production`
 - [ ] Configure any custom domain variables
 
 ### Security
+
 - [ ] Review and adjust rate limiting thresholds
 - [ ] Enable HTTPS (automatic on Vercel)
 - [ ] Review CORS settings if needed
@@ -16,6 +18,7 @@
 - [ ] Consider adding API authentication for paid tiers
 
 ### Performance
+
 - [ ] Test with various audio file sizes
 - [ ] Verify transcription quality with different accents
 - [ ] Test on mobile devices
@@ -23,6 +26,7 @@
 - [ ] Optimize images and assets
 
 ### Monitoring
+
 - [ ] Set up error tracking (e.g., Sentry)
 - [ ] Configure logging aggregation
 - [ ] Set up uptime monitoring
@@ -30,6 +34,7 @@
 - [ ] Monitor API usage and costs
 
 ### Testing
+
 - [ ] Test all error scenarios
 - [ ] Verify keyboard shortcuts work
 - [ ] Test accessibility with screen readers
@@ -40,6 +45,7 @@
 ## Deployment
 
 ### Vercel (Recommended)
+
 1. Connect GitHub repository to Vercel
 2. Configure environment variables in Vercel dashboard
 3. Deploy to production
@@ -55,6 +61,7 @@ vercel --prod
 ```
 
 ### Alternative: Docker
+
 ```dockerfile
 # See deployment/docker/Dockerfile for reference
 docker build -t koetori .
@@ -64,6 +71,7 @@ docker run -p 3000:3000 -e GROQ_API_KEY=your_key koetori
 ## Post-Deployment
 
 ### Verification
+
 - [ ] Test recording functionality
 - [ ] Verify transcription accuracy
 - [ ] Test error handling
@@ -73,6 +81,7 @@ docker run -p 3000:3000 -e GROQ_API_KEY=your_key koetori
 - [ ] Verify accessibility features
 
 ### Monitoring Setup
+
 - [ ] Check logs for errors
 - [ ] Monitor API usage
 - [ ] Track response times
@@ -80,6 +89,7 @@ docker run -p 3000:3000 -e GROQ_API_KEY=your_key koetori
 - [ ] Set up cost alerts for Groq API
 
 ### Documentation
+
 - [ ] Update README with production URL
 - [ ] Document any environment-specific configuration
 - [ ] Create user guide if needed
@@ -88,6 +98,7 @@ docker run -p 3000:3000 -e GROQ_API_KEY=your_key koetori
 ## Scaling Considerations
 
 ### If Traffic Increases
+
 - [ ] Consider Redis for rate limiting (instead of in-memory)
 - [ ] Implement caching for repeated transcriptions
 - [ ] Add CDN for static assets
@@ -95,6 +106,7 @@ docker run -p 3000:3000 -e GROQ_API_KEY=your_key koetori
 - [ ] Monitor and optimize API costs
 
 ### If Features Expand
+
 - [ ] Add user authentication
 - [ ] Implement transcription history with database
 - [ ] Add language selection UI
@@ -105,6 +117,7 @@ docker run -p 3000:3000 -e GROQ_API_KEY=your_key koetori
 ## Maintenance
 
 ### Regular Tasks
+
 - [ ] Review logs weekly
 - [ ] Monitor API costs
 - [ ] Check for dependency updates
@@ -112,6 +125,7 @@ docker run -p 3000:3000 -e GROQ_API_KEY=your_key koetori
 - [ ] Analyze user feedback
 
 ### Updates
+
 - [ ] Test updates in staging environment first
 - [ ] Keep dependencies up to date
 - [ ] Monitor Groq API changes
@@ -120,6 +134,7 @@ docker run -p 3000:3000 -e GROQ_API_KEY=your_key koetori
 ## Rollback Plan
 
 If issues occur:
+
 1. Revert to previous Vercel deployment
 2. Check environment variables
 3. Review recent code changes
@@ -129,11 +144,13 @@ If issues occur:
 ## Cost Management
 
 ### Current Setup
+
 - **Groq API**: Free tier with rate limits
 - **Vercel**: Free tier for hobby projects
 - **Total**: $0/month for moderate usage
 
 ### If Scaling
+
 - Consider Groq paid tiers for higher limits
 - Vercel Pro: $20/month for production workloads
 - Consider implementing usage limits per user

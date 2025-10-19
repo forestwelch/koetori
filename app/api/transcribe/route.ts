@@ -36,7 +36,11 @@ const RATE_LIMIT_CONFIG = {
   windowMs: 60 * 1000,
 };
 
-function logRequest(level: "info" | "error" | "warn", message: string, data?: Record<string, unknown>) {
+function logRequest(
+  level: "info" | "error" | "warn",
+  message: string,
+  data?: Record<string, unknown>
+) {
   const timestamp = new Date().toISOString();
   const logEntry = {
     timestamp,
@@ -44,7 +48,7 @@ function logRequest(level: "info" | "error" | "warn", message: string, data?: Re
     message,
     ...data,
   };
-  
+
   if (level === "error") {
     console.error(JSON.stringify(logEntry));
   } else if (level === "warn") {
@@ -61,7 +65,7 @@ export async function POST(request: NextRequest) {
   try {
     // Rate limiting
     const rateLimitResult = rateLimit(clientId, RATE_LIMIT_CONFIG);
-    
+
     // Add rate limit headers
     const headers = {
       "X-RateLimit-Limit": rateLimitResult.limit.toString(),
@@ -74,7 +78,7 @@ export async function POST(request: NextRequest) {
         clientId,
         limit: rateLimitResult.limit,
       });
-      
+
       return NextResponse.json(
         {
           error: "Too many requests. Please try again later.",
@@ -90,7 +94,7 @@ export async function POST(request: NextRequest) {
     // Validate that audio file exists
     if (!audioFile || !(audioFile instanceof Blob)) {
       logRequest("warn", "No audio file provided", { clientId });
-      
+
       return NextResponse.json(
         { error: "No audio file provided" },
         { status: 400, headers }
@@ -104,13 +108,13 @@ export async function POST(request: NextRequest) {
         fileSize: audioFile.size,
         maxSize: MAX_FILE_SIZE,
       });
-      
+
       return NextResponse.json(
         { error: "File size exceeds 10MB limit" },
         { status: 400, headers }
       );
     }
-    
+
     // Warn if file might exceed duration limit (estimate only)
     if (audioFile.size > MAX_AUDIO_DURATION_ESTIMATE) {
       logRequest("warn", "File may exceed duration limit", {
@@ -126,7 +130,7 @@ export async function POST(request: NextRequest) {
         clientId,
         fileType: audioFile.type,
       });
-      
+
       return NextResponse.json(
         {
           error: `Invalid file type. Allowed types: ${ALLOWED_TYPES.join(", ")}`,
@@ -155,7 +159,7 @@ export async function POST(request: NextRequest) {
     });
 
     const processingTime = Date.now() - startTime;
-    
+
     logRequest("info", "Transcription successful", {
       clientId,
       processingTimeMs: processingTime,
@@ -173,14 +177,14 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     const processingTime = Date.now() - startTime;
-    
+
     logRequest("error", "Transcription failed", {
       clientId,
       processingTimeMs: processingTime,
       error: error instanceof Error ? error.message : "Unknown error",
       stack: error instanceof Error ? error.stack : undefined,
     });
-    
+
     return NextResponse.json(
       {
         error:

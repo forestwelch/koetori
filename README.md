@@ -79,29 +79,34 @@ A Next.js-based voice transcription application with a sleek dark theme design.
 ## Production Features
 
 ### Rate Limiting
+
 - **10 requests per minute** per IP address
 - Automatic rate limit headers in API responses
 - Client-friendly error messages with retry timing
 
 ### Error Handling
+
 - **Automatic retry** on server errors (up to 3 attempts)
 - Exponential backoff with 2-second delays
 - User-friendly error messages for all failure scenarios
 - Structured error logging with stack traces
 
 ### Recording Limits
+
 - **Maximum file size**: 10MB
 - **Maximum duration**: 5 minutes (auto-stop)
 - **Timer display**: Shows MM:SS format
 - Client-side validation before upload
 
 ### Security & Validation
+
 - File type validation (audio formats only)
 - Size validation before processing
 - Environment variable validation on startup
 - Input sanitization
 
 ### Logging & Monitoring
+
 - Structured JSON logging
 - Request/response timing
 - Client identification (IP-based)
