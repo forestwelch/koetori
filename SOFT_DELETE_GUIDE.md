@@ -8,6 +8,7 @@
 4. Click "Run" to execute the migration
 
 This will:
+
 - Add a `deleted_at` column to the `memos` table
 - Update policies to handle soft-deleted memos
 - Create a function to auto-delete old trashed items (30+ days)
@@ -25,23 +26,27 @@ This will:
 ## Features
 
 ### Inline Editing
+
 - Hover over any memo to see action buttons in the top-right
 - Click the edit icon (✏️)
 - Edit the transcript inline
 - Save or cancel
 
 ### Soft Delete (Move to Trash)
+
 - Hover over any memo and click the delete icon (🗑️)
 - Memo moves to "Trash" filter
 - Can be restored within 30 days
 - Auto-hard-deletes after 30 days (if you enable the cron job)
 
 ### Trash Management
+
 - Click "🗑️ Trash" filter to view deleted memos
 - **Restore**: Moves memo back to active
 - **Delete Forever**: Permanently deletes (asks for confirmation)
 
 ### Auto-Cleanup (Optional)
+
 To enable automatic deletion of memos older than 30 days in trash:
 
 1. Go to Supabase Dashboard → Database → Cron Jobs
@@ -51,6 +56,7 @@ To enable automatic deletion of memos older than 30 days in trash:
 5. This will automatically hard-delete memos that have been in trash for 30+ days
 
 ## Notes
+
 - Category filters only apply to active memos (not trash)
 - "Needs Review" filter only applies to active memos
 - Edit and delete buttons appear on hover for a clean UI

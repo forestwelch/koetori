@@ -21,6 +21,7 @@ supabase link --project-ref YOUR_PROJECT_REF
 ```
 
 To find your project ref:
+
 1. Go to your Supabase Dashboard
 2. Look at the URL: `https://supabase.com/dashboard/project/YOUR_PROJECT_REF`
 3. Or go to Settings → General → Reference ID
@@ -75,6 +76,7 @@ supabase db reset
 ## For This Project
 
 Just run:
+
 ```bash
 brew install supabase/tap/supabase
 supabase login
