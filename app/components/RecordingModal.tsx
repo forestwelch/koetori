@@ -113,24 +113,30 @@ export default function RecordingModal({
               </div>
 
               {/* Audio Visualizer */}
-              {isRecording && <AudioVisualizer isRecording={isRecording} stream={audioStream} />}
-
-              {/* Transcription Display */}
-              {transcription && (
-                <TranscriptionDisplay text={transcription} />
-              )}
-
-              {/* Memo Display */}
-              {transcription && category && confidence !== null && extracted && (
-                <MemoDisplay
-                  transcript={transcription}
-                  category={category}
-                  confidence={confidence}
-                  needsReview={needsReview}
-                  extracted={extracted}
-                  tags={tags}
+              {isRecording && (
+                <AudioVisualizer
+                  isRecording={isRecording}
+                  stream={audioStream}
                 />
               )}
+
+              {/* Transcription Display */}
+              {transcription && <TranscriptionDisplay text={transcription} />}
+
+              {/* Memo Display */}
+              {transcription &&
+                category &&
+                confidence !== null &&
+                extracted && (
+                  <MemoDisplay
+                    transcript={transcription}
+                    category={category}
+                    confidence={confidence}
+                    needsReview={needsReview}
+                    extracted={extracted}
+                    tags={tags}
+                  />
+                )}
 
               {/* Success Actions */}
               {transcription && !isProcessing && (
