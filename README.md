@@ -74,6 +74,47 @@ A Next.js-based voice transcription application with a sleek dark theme design.
 - [x] Environment variable validation
 - [x] Client-side recording limits with auto-stop
 
+### 🚧 Phase 8: Smart Categorization (In Progress)
+
+**Goal:** Add AI-powered categorization to transcriptions. Auto-save high-confidence results, flag low-confidence ones for review.
+
+**Cost:** FREE (Groq for both transcription + categorization, Supabase free tier for storage)
+
+#### Category System
+- **media**: Movie/book/show/podcast recommendations
+- **event**: Calendar events, meetings, plans
+- **journal**: Personal thoughts/reflections
+- **therapy**: Therapy insights
+- **tarot**: Tarot readings
+- **todo**: Tasks/action items
+- **idea**: Ideas to explore
+- **other**: Catch-all
+
+#### Features
+- [ ] Set up Supabase database (free tier)
+- [ ] Create memos table schema
+- [ ] Add Groq-based AI categorization
+- [ ] Extract structured data (title, who, when, where, what)
+- [ ] Confidence scoring (0.0-1.0)
+- [ ] Auto-flag low-confidence items for review
+- [ ] Generate relevant tags
+- [ ] Save memos to database
+- [ ] Display category badges with color coding
+- [ ] Show confidence indicator
+- [ ] Display extracted structured data
+- [ ] Create history/review page
+- [ ] Filter by category and review status
+- [ ] Implement category-specific color themes
+
+#### Extracted Data Fields
+- `title`: Main subject or item name
+- `who`: People mentioned
+- `when`: Date/time information
+- `where`: Location mentioned
+- `what`: Brief summary
+- `actionable`: Requires follow-up action
+- `tags`: Generated keywords
+
 ---
 
 ## Production Features
