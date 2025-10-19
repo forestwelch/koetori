@@ -1,39 +1,87 @@
 "use client";
 
+import { useEffect, useState, useCallback } from "react";
+import { supabase } from "./lib/supabase";
+import { Memo, Category } from "./types/memo";
+import {
+  getCategoryColor,
+  getCategoryIcon,
+  formatConfidence,
+} from "./lib/ui-utils";
 import { useVoiceRecorder } from "./hooks/useVoiceRecorder";
-import { RecordButton } from "./components/RecordButton";
-import { StatusMessage } from "./components/StatusMessage";
-import { ErrorAlert } from "./components/ErrorAlert";
-import { TranscriptionDisplay } from "./components/TranscriptionDisplay";
-import { AudioVisualizer } from "./components/AudioVisualizer";
-import { MemoDisplay } from "./components/MemoDisplay";
-import { useEffect } from "react";
 
 export default function Home() {
+  const [memos, setMemos] = useState<Memo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<"all" | "review">("all");
+  const [categoryFilter, setCategoryFilter] = useState<Category | "all">("all");
+  const [newMemoId, setNewMemoId] = useState<string | null>(null);
+  
   const {
     isRecording,
     isProcessing,
-    error,
-    transcription,
-    category,
-    confidence,
-    needsReview,
-    extracted,
-    tags,
+    error: recordingError,
     memoId,
     recordingTime,
-    maxRecordingTime,
-    audioStream,
     startRecording,
     stopRecording,
     clearTranscription,
   } = useVoiceRecorder();
 
-  // Keyboard shortcut: Space bar to toggle recording
+  const loadMemos = useCallback(async () => {
+    setLoading(true);
+    try {
+      let query = supabase
+        .from("memos")
+        .select("*")
+        .order("timestamp", { ascending: false });
+
+      if (filter === "review") {
+        query = query.eq("needs_review", true);
+      }
+
+      if (categoryFilter !== "all") {
+        query = query.eq("category", categoryFilter);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("Error loading memos:", error);
+      } else {
+        setMemos(data || []);
+      }
+    } catch (err) {
+      console.error("Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [filter, categoryFilter]);
+
+  useEffect(() => {
+    loadMemos();
+  }, [loadMemos]);
+
+  // Reload memos when processing completes (new memo saved)
+  useEffect(() => {
+    if (!isProcessing && !isRecording && !recordingError && memoId) {
+      // Small delay to ensure Supabase has the new record
+      const timer = setTimeout(() => {
+        setNewMemoId(memoId);
+        loadMemos();
+        clearTranscription();
+        // Clear highlight after animation (longer to allow smooth fade)
+        setTimeout(() => setNewMemoId(null), 2000);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isProcessing, isRecording, recordingError, memoId, loadMemos, clearTranscription]);
+
+  // Space bar to toggle recording
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      // Only trigger if not typing in an input/textarea and transcription isn't showing
-      if (e.code === "Space" && !transcription && e.target === document.body) {
+      // Only trigger if not typing in an input field
+      if (e.code === "Space" && e.target === document.body) {
         e.preventDefault();
         if (isRecording) {
           stopRecording();
@@ -45,101 +93,400 @@ export default function Home() {
 
     document.addEventListener("keydown", handleKeyPress);
     return () => document.removeEventListener("keydown", handleKeyPress);
-  }, [isRecording, isProcessing, transcription, startRecording, stopRecording]);
+  }, [isRecording, isProcessing, startRecording, stopRecording]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const categories: (Category | "all")[] = [
+    "all",
+    "media",
+    "event",
+    "journal",
+    "therapy",
+    "tarot",
+    "todo",
+    "idea",
+    "other",
+  ];
+
+  const handleRecordClick = () => {
+    if (isRecording) {
+      stopRecording();
+    } else if (!isProcessing) {
+      startRecording();
+    }
+  };
 
   return (
-    <div
-      className="min-h-screen p-4 sm:p-8 relative overflow-hidden"
-      role="main"
-      aria-label="Voice recording and transcription application"
-    >
+    <div className="min-h-screen p-4 sm:p-8 relative overflow-hidden bg-[#0a0a0f]">
       {/* Background gradient glow */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1]/10 via-transparent to-[#f43f5e]/10 pointer-events-none" />
-
-      <div className="max-w-3xl mx-auto relative">
-        {/* Header */}
-        <div className="text-center mb-8 sm:mb-12">
-          <h1 className="text-4xl sm:text-5xl font-light mb-2 sm:mb-3 bg-gradient-to-r from-[#818cf8] via-[#c084fc] to-[#fb7185] bg-clip-text text-transparent">
-            Koetori
-          </h1>
-          <p className="text-[#94a3b8] text-xs sm:text-sm font-light">
-            Voice Capture & Transcription
-          </p>
-        </div>
-
-        {/* Main card with glass morphism */}
-        <div className="relative group">
-          {/* Glow effect behind card */}
-          <div
-            className={`absolute -inset-0.5 bg-gradient-to-r rounded-2xl blur transition duration-500 ${
-              isRecording
-                ? "from-[#f43f5e] to-[#fb7185] opacity-40 animate-pulse"
-                : "from-[#6366f1] to-[#f43f5e] opacity-20 group-hover:opacity-30"
-            }`}
-          />
-
-          {/* Glass card */}
-          <div className="relative bg-[#14151f]/80 backdrop-blur-xl rounded-2xl border border-slate-700/30 shadow-2xl p-8 sm:p-12">
-            <div className="flex flex-col items-center text-center gap-4 sm:gap-6">
-              <RecordButton
-                isRecording={isRecording}
-                isProcessing={isProcessing}
-                onStart={startRecording}
-                onStop={stopRecording}
-              />
-
-              {/* Audio Visualizer */}
-              <AudioVisualizer isRecording={isRecording} stream={audioStream} />
-
-              <StatusMessage
-                isRecording={isRecording}
-                isProcessing={isProcessing}
-                recordingTime={recordingTime}
-              />
-
-              {error && <ErrorAlert message={error} />}
-
-              {/* Keyboard shortcut hint and max duration info */}
-              {!transcription && !isRecording && !isProcessing && (
-                <div className="flex flex-col items-center gap-2">
-                  <p className="text-[#64748b] text-xs font-light">
-                    Press{" "}
-                    <kbd className="px-2 py-0.5 bg-[#1e1f2a] border border-slate-700/50 rounded text-[#94a3b8]">
-                      Space
-                    </kbd>{" "}
-                    to start
-                  </p>
-                  <p className="text-[#4b5563] text-[10px] sm:text-xs font-light">
-                    Maximum recording time: {maxRecordingTime / 60} minutes
+      
+      {/* Recording/Processing Overlay */}
+      {(isRecording || isProcessing) && (
+        <div className="fixed inset-0 bg-[#0a0a0f]/80 backdrop-blur-md z-50 flex items-center justify-center animate-in fade-in duration-300">
+          <div className="text-center flex flex-col items-center">
+            {isRecording ? (
+              <>
+                {/* Recording Animation */}
+                <div className="relative mb-8 flex items-center justify-center">
+                  <div className="w-32 h-32 bg-red-500/20 rounded-full absolute animate-ping" />
+                  <button
+                    onClick={handleRecordClick}
+                    className="relative w-32 h-32 bg-red-500 rounded-full shadow-2xl shadow-red-500/50 hover:bg-red-600 transition-all flex items-center justify-center"
+                    aria-label="Stop recording"
+                  >
+                    <div className="w-12 h-12 bg-white rounded-sm" />
+                  </button>
+                </div>
+                <div className="flex flex-col items-center gap-3">
+                  <div className="flex items-center gap-3 text-red-400 text-2xl font-medium">
+                    <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+                    Recording...
+                  </div>
+                  <div className="text-4xl font-light text-white tabular-nums">
+                    {formatTime(recordingTime)}
+                  </div>
+                  <p className="text-[#94a3b8] text-sm mt-2">
+                    Click the button or press <kbd className="px-2 py-1 bg-[#1e1f2a] rounded text-xs font-mono">Space</kbd> to stop
                   </p>
                 </div>
+              </>
+            ) : (
+              <>
+                {/* Processing Animation */}
+                <div className="w-32 h-32 border-8 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mb-6" />
+                <div className="flex flex-col items-center gap-3">
+                  <div className="text-indigo-400 text-2xl font-medium">
+                    Processing...
+                  </div>
+                  <p className="text-[#94a3b8] text-sm">
+                    Transcribing and categorizing your memo
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-5xl mx-auto relative z-10">
+        {/* Header with Floating Record Button */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-3xl sm:text-4xl font-light bg-gradient-to-r from-[#818cf8] via-[#c084fc] to-[#fb7185] bg-clip-text text-transparent">
+              koetori
+            </h1>
+            
+            {/* Floating Record Button */}
+            <div className="flex items-center gap-3">
+              {/* Recording/Processing Status */}
+              {isRecording && (
+                <div className="flex items-center gap-2 text-red-400 text-sm font-medium animate-pulse">
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-ping" />
+                  Recording...
+                </div>
               )}
+              {isProcessing && (
+                <div className="flex items-center gap-2 text-indigo-400 text-sm font-medium">
+                  <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                  Processing...
+                </div>
+              )}
+              
+              <button
+                onClick={handleRecordClick}
+                disabled={isProcessing}
+                className={`group relative w-14 h-14 rounded-full shadow-lg transition-all duration-300 ${
+                  isRecording
+                    ? "bg-red-500 shadow-red-500/50 hover:shadow-red-500/70 animate-pulse"
+                    : isProcessing
+                    ? "bg-gray-500 shadow-gray-500/50 cursor-not-allowed"
+                    : "bg-gradient-to-br from-indigo-500 to-purple-500 shadow-indigo-500/50 hover:shadow-indigo-500/70 hover:scale-105"
+                }`}
+                aria-label={isRecording ? "Stop recording (Space)" : "Start recording (Space)"}
+                title={isRecording ? "Stop recording (Space)" : "Start recording (Space)"}
+              >
+                <div className={`absolute inset-0 rounded-full blur-xl transition-opacity duration-300 ${
+                  isRecording
+                    ? "bg-red-400 opacity-100"
+                    : "bg-gradient-to-br from-indigo-400 to-purple-400 opacity-0 group-hover:opacity-100"
+                }`} />
+                <div className="relative flex items-center justify-center">
+                  {isRecording ? (
+                    <div className="w-4 h-4 bg-white rounded-sm" />
+                  ) : (
+                    <svg
+                      className="w-6 h-6 text-white"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  )}
+                </div>
+              </button>
+            </div>
+          </div>
+          
+          {/* Recording Error */}
+          {recordingError && (
+            <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+              <p className="text-red-400 text-sm">{recordingError}</p>
+            </div>
+          )}
+
+          {/* Filter Controls */}
+          <div className="space-y-4">
+            {/* Review Filter */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setFilter("all")}
+                className={`px-4 py-2 rounded-2xl text-sm font-medium transition-all backdrop-blur-xl ${
+                  filter === "all"
+                    ? "bg-indigo-500/90 text-white shadow-lg shadow-indigo-500/30"
+                    : "bg-[#14151f]/60 border border-slate-700/30 text-[#94a3b8] hover:border-slate-600/50 hover:bg-[#14151f]/80"
+                }`}
+              >
+                All Memos
+              </button>
+              <button
+                onClick={() => setFilter("review")}
+                className={`px-4 py-2 rounded-2xl text-sm font-medium transition-all backdrop-blur-xl ${
+                  filter === "review"
+                    ? "bg-yellow-500/90 text-white shadow-lg shadow-yellow-500/30"
+                    : "bg-[#14151f]/60 border border-slate-700/30 text-[#94a3b8] hover:border-slate-600/50 hover:bg-[#14151f]/80"
+                }`}
+              >
+                ⚠️ Needs Review
+              </button>
+            </div>
+
+            {/* Category Filter */}
+            <div className="flex flex-wrap gap-2">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setCategoryFilter(cat)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all backdrop-blur-xl border ${
+                    categoryFilter === cat
+                      ? cat === "all"
+                        ? "bg-slate-500/90 text-white border-slate-500/50 shadow-lg shadow-slate-500/20"
+                        : getCategoryColor(cat as Category).replace('border-', 'shadow-lg shadow-') + ' ' + getCategoryColor(cat as Category)
+                      : "bg-[#14151f]/40 border-slate-700/20 text-[#64748b] hover:border-slate-600/50 hover:bg-[#14151f]/60"
+                  }`}
+                >
+                  {cat === "all" ? "All Categories" : `${getCategoryIcon(cat as Category)} ${cat}`}
+                </button>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Memo display below the card - Phase 8 */}
-        {transcription && category && confidence !== null && extracted && (
-          <div className="mt-6 sm:mt-8 space-y-3 sm:space-y-4">
-            <MemoDisplay
-              transcript={transcription}
-              category={category}
-              confidence={confidence}
-              needsReview={needsReview}
-              extracted={extracted}
-              tags={tags}
-            />
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-12">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-indigo-500 border-r-transparent"></div>
+            <p className="mt-4 text-[#94a3b8] text-sm">Loading memos...</p>
+          </div>
+        )}
 
-            {/* Copy to clipboard button */}
-            <TranscriptionDisplay text={transcription} />
-
+        {/* Empty State */}
+        {!loading && memos.length === 0 && (
+          <div className="text-center py-12">
+            <div className="mb-6">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 mb-4">
+                <svg
+                  className="w-10 h-10 text-indigo-400"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+            </div>
+            <h3 className="text-xl text-[#cbd5e1] mb-2">No memos yet</h3>
+            <p className="text-[#64748b] mb-6">
+              {filter === "review"
+                ? "No memos need review! 🎉"
+                : categoryFilter !== "all"
+                  ? `No ${categoryFilter} memos yet`
+                  : "Click the record button or press Space to create your first memo"}
+            </p>
             <button
-              onClick={clearTranscription}
-              aria-label="Clear transcription and record again"
-              className="w-full py-2.5 sm:py-3 px-4 bg-[#14151f]/60 backdrop-blur-xl rounded-xl border border-slate-700/30 text-[#94a3b8] text-xs sm:text-sm font-light hover:border-slate-600/50 hover:text-[#cbd5e1] transition-all active:scale-98"
+              onClick={handleRecordClick}
+              disabled={isProcessing}
+              className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl text-white font-medium hover:from-indigo-600 hover:to-purple-600 transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Clear & Record Again
+              Record Your First Memo
             </button>
+          </div>
+        )}
+
+        {/* Memos List */}
+        {!loading && memos.length > 0 && (
+          <div className="space-y-4">
+            {memos.map((memo) => {
+              const isNew = memo.id === newMemoId;
+              return (
+                <div
+                  key={memo.id}
+                  className="relative p-4 sm:p-6 bg-[#14151f]/60 backdrop-blur-xl rounded-2xl border border-slate-700/30 hover:border-slate-600/50 hover:bg-[#14151f]/70 transition-all duration-300 animate-in fade-in slide-in-from-top-4 duration-500"
+                >
+                  {/* New memo highlight overlay */}
+                  {isNew && (
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/50 shadow-lg shadow-indigo-500/20 transition-opacity duration-1000 pointer-events-none" />
+                  )}
+                  
+                  {/* Content wrapper */}
+                  <div className="relative">
+                  {/* Header: Category, Confidence, Date */}
+                  <div className="flex flex-wrap items-center gap-3 mb-3">
+                    <span
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium border backdrop-blur-xl ${getCategoryColor(
+                        memo.category
+                      )}`}
+                    >
+                      {getCategoryIcon(memo.category)} {memo.category}
+                    </span>
+
+                    {/* Confidence */}
+                    <div className="flex items-center gap-2">
+                      <div className="w-16 h-2 bg-[#1e1f2a]/60 backdrop-blur-xl rounded-full overflow-hidden border border-slate-700/20">
+                        <div
+                          className={`h-full ${
+                            memo.confidence >= 0.7
+                              ? "bg-green-500"
+                              : memo.confidence >= 0.5
+                              ? "bg-yellow-500"
+                              : "bg-orange-500"
+                          }`}
+                          style={{ width: `${memo.confidence * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-[#94a3b8]">
+                        {formatConfidence(memo.confidence)}
+                      </span>
+                    </div>
+
+                    {/* Review Flag */}
+                    {memo.needs_review && (
+                      <span className="px-3 py-1 bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 rounded-full text-xs font-medium backdrop-blur-xl">
+                        ⚠️ Review
+                      </span>
+                    )}                  {/* Date */}
+                  <span className="ml-auto text-xs text-[#64748b]">
+                    {new Date(memo.timestamp).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+
+                {/* Transcript */}
+                <p className="text-[#cbd5e1] text-sm sm:text-base font-light leading-relaxed mb-3">
+                  {memo.transcript}
+                </p>
+
+                {/* Extracted Data */}
+                {memo.extracted &&
+                  (memo.extracted.title ||
+                    memo.extracted.who ||
+                    memo.extracted.when ||
+                    memo.extracted.where ||
+                    memo.extracted.what) && (
+                    <div className="p-3 bg-[#0a0a0f]/40 backdrop-blur-xl rounded-xl border border-slate-700/20 space-y-1.5 mb-3 text-sm">
+                      {memo.extracted.title && (
+                        <div>
+                          <span className="text-[#64748b] font-medium">
+                            Title:{" "}
+                          </span>
+                          <span className="text-[#e2e8f0]">
+                            {memo.extracted.title}
+                          </span>
+                        </div>
+                      )}
+                      {memo.extracted.who && memo.extracted.who.length > 0 && (
+                        <div>
+                          <span className="text-[#64748b] font-medium">
+                            People:{" "}
+                          </span>
+                          <span className="text-[#cbd5e1]">
+                            {memo.extracted.who.join(", ")}
+                          </span>
+                        </div>
+                      )}
+                      {memo.extracted.when && (
+                        <div>
+                          <span className="text-[#64748b] font-medium">
+                            When:{" "}
+                          </span>
+                          <span className="text-[#cbd5e1]">
+                            {memo.extracted.when}
+                          </span>
+                        </div>
+                      )}
+                      {memo.extracted.where && (
+                        <div>
+                          <span className="text-[#64748b] font-medium">
+                            Where:{" "}
+                          </span>
+                          <span className="text-[#cbd5e1]">
+                            {memo.extracted.where}
+                          </span>
+                        </div>
+                      )}
+                      {memo.extracted.what && (
+                        <div>
+                          <span className="text-[#64748b] font-medium">
+                            Summary:{" "}
+                          </span>
+                          <span className="text-[#cbd5e1]">
+                            {memo.extracted.what}
+                          </span>
+                        </div>
+                      )}
+                      {memo.extracted.actionable && (
+                        <div className="pt-1">
+                          <span className="text-xs px-2 py-0.5 bg-orange-500/20 text-orange-400 border border-orange-500/30 rounded-full backdrop-blur-xl">
+                            🎯 Actionable
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                {/* Tags */}
+                {memo.tags && memo.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {memo.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-2 py-0.5 bg-[#1e1f2a]/60 text-[#94a3b8] border border-slate-700/30 rounded-full text-xs backdrop-blur-xl"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+            })}
           </div>
         )}
       </div>
