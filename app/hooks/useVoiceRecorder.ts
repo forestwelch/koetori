@@ -65,7 +65,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
       shouldProcessRef.current = false; // Don't process this recording
       mediaRecorderRef.current.stop();
       setIsRecording(false);
-      
+
       // Clean up immediately
       if (audioStream) {
         audioStream.getTracks().forEach((track) => track.stop());

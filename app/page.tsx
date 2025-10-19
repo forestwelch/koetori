@@ -5,6 +5,7 @@ import { supabase } from "./lib/supabase";
 import { Memo, Category } from "./types/memo";
 import {
   getCategoryColor,
+  getCategoryGradient,
   getCategoryIcon,
   formatConfidence,
 } from "./lib/ui-utils";
@@ -18,6 +19,8 @@ export default function Home() {
   const [newMemoId, setNewMemoId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
+  const [showRandomMemo, setShowRandomMemo] = useState(false);
+  const [randomMemo, setRandomMemo] = useState<Memo | null>(null);
 
   const {
     isRecording,
@@ -110,30 +113,34 @@ export default function Home() {
     setEditText("");
   }, []);
 
-  const saveEdit = useCallback(async (memoId: string) => {
-    try {
-      const { error } = await supabase
-        .from("memos")
-        .update({ transcript: editText })
-        .eq("id", memoId);
+  const saveEdit = useCallback(
+    async (memoId: string) => {
+      try {
+        const { error } = await supabase
+          .from("memos")
+          .update({ transcript: editText })
+          .eq("id", memoId);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      setEditingId(null);
-      setEditText("");
-      loadMemos();
-    } catch (err) {
-      console.error("Error updating memo:", err);
-    }
-  }, [editText, loadMemos]);
+        setEditingId(null);
+        setEditText("");
+        loadMemos();
+      } catch (err) {
+        console.error("Error updating memo:", err);
+      }
+    },
+    [editText, loadMemos]
+  );
 
   // Space bar to toggle recording, Escape to cancel
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       // Only trigger if not typing in an input field or textarea
       const target = e.target as HTMLElement;
-      const isInputField = target.tagName === "INPUT" || target.tagName === "TEXTAREA";
-      
+      const isInputField =
+        target.tagName === "INPUT" || target.tagName === "TEXTAREA";
+
       if (e.code === "Space" && e.target === document.body && !isInputField) {
         e.preventDefault();
         if (isRecording) {
@@ -142,23 +149,38 @@ export default function Home() {
           startRecording();
         }
       }
-      
+
       // Escape to cancel recording (stops without saving)
       if (e.code === "Escape" && isRecording) {
         e.preventDefault();
         cancelRecording();
       }
-      
+
       // Escape to cancel editing
       if (e.code === "Escape" && editingId) {
         e.preventDefault();
         cancelEdit();
       }
+
+      // Escape to close random memo modal
+      if (e.code === "Escape" && showRandomMemo) {
+        e.preventDefault();
+        setShowRandomMemo(false);
+      }
     };
 
     document.addEventListener("keydown", handleKeyPress);
     return () => document.removeEventListener("keydown", handleKeyPress);
-  }, [isRecording, isProcessing, editingId, startRecording, stopRecording, cancelRecording, cancelEdit]);
+  }, [
+    isRecording,
+    isProcessing,
+    editingId,
+    showRandomMemo,
+    startRecording,
+    stopRecording,
+    cancelRecording,
+    cancelEdit,
+  ]);
 
   // Soft delete (move to trash)
   const softDelete = async (memoId: string) => {
@@ -223,6 +245,41 @@ export default function Home() {
       stopRecording();
     } else if (!isProcessing) {
       startRecording();
+    }
+  };
+
+  // Pick a random memo (prioritize actionable, todos, needs review)
+  const pickRandomMemo = async () => {
+    try {
+      // Fetch active memos with priority
+      const { data: priorityMemos } = await supabase
+        .from("memos")
+        .select("*")
+        .is("deleted_at", null)
+        .or(
+          "needs_review.eq.true,category.eq.todo,extracted->>actionable.eq.true"
+        )
+        .order("timestamp", { ascending: false });
+
+      // If no priority memos, get all active memos
+      let memosToChooseFrom = priorityMemos || [];
+      if (memosToChooseFrom.length === 0) {
+        const { data: allMemos } = await supabase
+          .from("memos")
+          .select("*")
+          .is("deleted_at", null);
+        memosToChooseFrom = allMemos || [];
+      }
+
+      if (memosToChooseFrom.length > 0) {
+        const randomIndex = Math.floor(
+          Math.random() * memosToChooseFrom.length
+        );
+        setRandomMemo(memosToChooseFrom[randomIndex]);
+        setShowRandomMemo(true);
+      }
+    } catch (err) {
+      console.error("Error fetching random memo:", err);
     }
   };
 
@@ -291,7 +348,10 @@ export default function Home() {
         {/* Header with Floating Record Button */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl sm:text-4xl font-light bg-gradient-to-r from-[#818cf8] via-[#c084fc] to-[#fb7185] bg-clip-text text-transparent">
+            <h1
+              onClick={pickRandomMemo}
+              className="text-3xl sm:text-4xl font-light bg-gradient-to-r from-[#818cf8] via-[#c084fc] to-[#fb7185] bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
+            >
               koetori
             </h1>
 
@@ -371,62 +431,96 @@ export default function Home() {
           <div className="space-y-4">
             {/* Review Filter */}
             <div className="flex gap-3">
-              <button
-                onClick={() => setFilter("all")}
-                className={`px-4 py-2 rounded-2xl text-sm font-medium transition-all backdrop-blur-xl ${
-                  filter === "all"
-                    ? "bg-indigo-500/90 text-white shadow-lg shadow-indigo-500/30"
-                    : "bg-[#14151f]/60 border border-slate-700/30 text-[#94a3b8] hover:border-slate-600/50 hover:bg-[#14151f]/80"
-                }`}
-              >
-                All Memos
-              </button>
-              <button
-                onClick={() => setFilter("review")}
-                className={`px-4 py-2 rounded-2xl text-sm font-medium transition-all backdrop-blur-xl ${
-                  filter === "review"
-                    ? "bg-yellow-500/90 text-white shadow-lg shadow-yellow-500/30"
-                    : "bg-[#14151f]/60 border border-slate-700/30 text-[#94a3b8] hover:border-slate-600/50 hover:bg-[#14151f]/80"
-                }`}
-              >
-                ⚠️ Needs Review
-              </button>
-              <button
-                onClick={() => setFilter("trash")}
-                className={`px-4 py-2 rounded-2xl text-sm font-medium transition-all backdrop-blur-xl ${
-                  filter === "trash"
-                    ? "bg-red-500/90 text-white shadow-lg shadow-red-500/30"
-                    : "bg-[#14151f]/60 border border-slate-700/30 text-[#94a3b8] hover:border-slate-600/50 hover:bg-[#14151f]/80"
-                }`}
-              >
-                🗑️ Trash
-              </button>
+              {/* All Memos Button */}
+              <div className="relative">
+                {filter === "all" && (
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-indigo-500/50 to-purple-500/50 opacity-50 blur-sm" />
+                )}
+                <button
+                  onClick={() => setFilter("all")}
+                  className={`relative px-4 py-2 rounded-2xl text-sm font-medium transition-all backdrop-blur-xl ${
+                    filter === "all"
+                      ? "bg-indigo-500/30 text-white shadow-lg shadow-indigo-500/30 border border-indigo-400/20"
+                      : "bg-[#0d0e14]/20 border border-slate-700/10 text-[#64748b] hover:border-slate-600/30 hover:bg-[#0d0e14]/40"
+                  }`}
+                >
+                  All Memos
+                </button>
+              </div>
+              {/* Needs Review Button */}
+              <div className="relative">
+                {filter === "review" && (
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-yellow-500/50 to-amber-500/50 opacity-50 blur-sm" />
+                )}
+                <button
+                  onClick={() => setFilter("review")}
+                  className={`relative px-4 py-2 rounded-2xl text-sm font-medium transition-all backdrop-blur-xl ${
+                    filter === "review"
+                      ? "bg-yellow-500/30 text-white shadow-lg shadow-yellow-500/30 border border-yellow-400/20"
+                      : "bg-[#0d0e14]/20 border border-slate-700/10 text-[#64748b] hover:border-slate-600/30 hover:bg-[#0d0e14]/40"
+                  }`}
+                >
+                  Needs Review
+                </button>
+              </div>
+              {/* Trash Button */}
+              <div className="relative">
+                {filter === "trash" && (
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-red-500/50 to-rose-500/50 opacity-50 blur-sm" />
+                )}
+                <button
+                  onClick={() => setFilter("trash")}
+                  className={`relative px-4 py-2 rounded-2xl text-sm font-medium transition-all backdrop-blur-xl ${
+                    filter === "trash"
+                      ? "bg-red-500/30 text-white shadow-lg shadow-red-500/30 border border-red-400/20"
+                      : "bg-[#0d0e14]/20 border border-slate-700/10 text-[#64748b] hover:border-slate-600/30 hover:bg-[#0d0e14]/40"
+                  }`}
+                >
+                  Trash
+                </button>
+              </div>
             </div>
 
             {/* Category Filter */}
             <div className="flex flex-wrap gap-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setCategoryFilter(cat)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all backdrop-blur-xl border ${
-                    categoryFilter === cat
-                      ? cat === "all"
-                        ? "bg-slate-500/90 text-white border-slate-500/50 shadow-lg shadow-slate-500/20"
-                        : getCategoryColor(cat as Category).replace(
-                            "border-",
-                            "shadow-lg shadow-"
-                          ) +
-                          " " +
-                          getCategoryColor(cat as Category)
-                      : "bg-[#14151f]/40 border-slate-700/20 text-[#64748b] hover:border-slate-600/50 hover:bg-[#14151f]/60"
-                  }`}
-                >
-                  {cat === "all"
-                    ? "All Categories"
-                    : `${getCategoryIcon(cat as Category)} ${cat}`}
-                </button>
-              ))}
+              {categories.map((cat) => {
+                const isActive = categoryFilter === cat;
+                const isAllCategory = cat === "all";
+
+                return (
+                  <div key={cat} className="relative">
+                    {/* Gradient glow for active state */}
+                    {isActive && (
+                      <div
+                        className={`absolute inset-0 rounded-full opacity-50 blur-sm ${
+                          isAllCategory
+                            ? "bg-gradient-to-r from-slate-500/50 to-gray-500/50"
+                            : `bg-gradient-to-r ${getCategoryGradient(cat as Category)}`
+                        }`}
+                      />
+                    )}
+                    <button
+                      onClick={() => setCategoryFilter(cat)}
+                      className={`relative px-3 py-1.5 rounded-full text-xs font-medium transition-all backdrop-blur-xl border ${
+                        isActive
+                          ? isAllCategory
+                            ? "bg-slate-500/30 text-white border-slate-500/20 shadow-lg shadow-slate-500/20"
+                            : getCategoryColor(cat as Category).replace(
+                                "border-",
+                                "shadow-lg shadow-"
+                              ) +
+                              " " +
+                              getCategoryColor(cat as Category)
+                          : "bg-[#0d0e14]/20 border-slate-700/10 text-[#64748b] hover:border-slate-600/30 hover:bg-[#0d0e14]/40"
+                      }`}
+                    >
+                      {isAllCategory
+                        ? "All Categories"
+                        : `${getCategoryIcon(cat as Category)} ${cat}`}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -483,7 +577,7 @@ export default function Home() {
               return (
                 <div
                   key={memo.id}
-                  className="relative p-4 sm:p-6 bg-[#14151f]/60 backdrop-blur-xl rounded-2xl border border-slate-700/30 hover:border-slate-600/50 hover:bg-[#14151f]/70 transition-all duration-1000 animate-in fade-in slide-in-from-top-4"
+                  className="relative p-4 sm:p-6 bg-[#0d0e14]/40 backdrop-blur-xl rounded-2xl border border-slate-700/20 hover:border-slate-600/40 hover:bg-[#0d0e14]/60 transition-all duration-1000 animate-in fade-in slide-in-from-top-4"
                 >
                   {/* New memo highlight overlay - fades out smoothly */}
                   <div
@@ -501,23 +595,29 @@ export default function Home() {
                   <div className="relative">
                     {/* Header: Category, Confidence, Date */}
                     <div className="flex flex-wrap items-center gap-3 mb-3">
-                      <span
-                        className={`px-3 py-1.5 rounded-full text-sm font-medium border backdrop-blur-xl ${getCategoryColor(
-                          memo.category
-                        )}`}
-                      >
-                        {getCategoryIcon(memo.category)} {memo.category}
-                      </span>
+                      {/* Category Badge with Gradient Border */}
+                      <div className="relative">
+                        <div
+                          className={`absolute inset-0 rounded-full bg-gradient-to-r ${getCategoryGradient(memo.category)} opacity-50 blur-sm`}
+                        />
+                        <span
+                          className={`relative px-3 py-1.5 rounded-full text-sm font-medium border backdrop-blur-xl ${getCategoryColor(
+                            memo.category
+                          )}`}
+                        >
+                          {getCategoryIcon(memo.category)} {memo.category}
+                        </span>
+                      </div>
                       {/* Confidence */}
                       <div className="flex items-center gap-2">
-                        <div className="w-16 h-2 bg-[#1e1f2a]/60 backdrop-blur-xl rounded-full overflow-hidden border border-slate-700/20">
+                        <div className="w-16 h-2 bg-[#0a0a0f]/80 backdrop-blur-xl rounded-full overflow-hidden border border-slate-700/10">
                           <div
                             className={`h-full ${
                               memo.confidence >= 0.7
-                                ? "bg-green-500"
+                                ? "bg-gradient-to-r from-green-500 to-emerald-500"
                                 : memo.confidence >= 0.5
-                                  ? "bg-yellow-500"
-                                  : "bg-orange-500"
+                                  ? "bg-gradient-to-r from-yellow-500 to-amber-500"
+                                  : "bg-gradient-to-r from-orange-500 to-red-500"
                             }`}
                             style={{ width: `${memo.confidence * 100}%` }}
                           />
@@ -528,7 +628,7 @@ export default function Home() {
                       </div>
                       {/* Review Flag */}
                       {memo.needs_review && (
-                        <span className="px-3 py-1 bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 rounded-full text-xs font-medium backdrop-blur-xl">
+                        <span className="px-3 py-1 bg-yellow-500/10 text-yellow-400 border border-yellow-500/40 rounded-full text-xs font-medium backdrop-blur-xl">
                           ⚠️ Review
                         </span>
                       )}
@@ -644,7 +744,7 @@ export default function Home() {
                         memo.extracted.when ||
                         memo.extracted.where ||
                         memo.extracted.what) && (
-                        <div className="p-3 bg-[#0a0a0f]/40 backdrop-blur-xl rounded-xl border border-slate-700/20 space-y-1.5 mb-3 text-sm">
+                        <div className="p-3 bg-[#0a0a0f]/60 backdrop-blur-xl rounded-xl border border-slate-700/10 space-y-1.5 mb-3 text-sm">
                           {memo.extracted.title && (
                             <div>
                               <span className="text-[#64748b] font-medium">
@@ -698,7 +798,7 @@ export default function Home() {
                           )}
                           {memo.extracted.actionable && (
                             <div className="pt-1">
-                              <span className="text-xs px-2 py-0.5 bg-orange-500/20 text-orange-400 border border-orange-500/30 rounded-full backdrop-blur-xl">
+                              <span className="text-xs px-2 py-0.5 bg-orange-500/10 text-orange-400 border border-orange-500/40 rounded-full backdrop-blur-xl">
                                 🎯 Actionable
                               </span>
                             </div>
@@ -712,7 +812,7 @@ export default function Home() {
                         {memo.tags.map((tag) => (
                           <span
                             key={tag}
-                            className="px-2 py-0.5 bg-[#1e1f2a]/60 text-[#94a3b8] border border-slate-700/30 rounded-full text-xs backdrop-blur-xl"
+                            className="px-2 py-0.5 bg-[#0a0a0f]/60 text-[#94a3b8] border border-slate-700/20 rounded-full text-xs backdrop-blur-xl"
                           >
                             #{tag}
                           </span>
@@ -726,6 +826,153 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      {/* Random Memo Modal */}
+      {showRandomMemo && randomMemo && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8"
+          onClick={() => setShowRandomMemo(false)}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-[#0a0a0f]/95 backdrop-blur-xl" />
+
+          {/* Modal Content */}
+          <div
+            className="relative max-w-3xl w-full max-h-[90vh] overflow-y-auto bg-[#0d0e14]/80 border border-slate-700/30 rounded-2xl p-8 backdrop-blur-xl shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setShowRandomMemo(false)}
+              className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-[#1e1f2a]/60 hover:bg-[#1e1f2a] border border-slate-700/30 text-[#94a3b8] hover:text-white transition-all"
+            >
+              ✕
+            </button>
+
+            {/* Category & Confidence */}
+            <div className="flex items-center gap-3 mb-6">
+              <div
+                className={`px-3 py-1 rounded-full text-sm font-medium backdrop-blur-xl border ${getCategoryColor(randomMemo.category)}`}
+              >
+                {getCategoryIcon(randomMemo.category)} {randomMemo.category}
+              </div>
+              <div className="text-[#64748b] text-sm">
+                {formatConfidence(randomMemo.confidence)} confidence
+              </div>
+              {randomMemo.needs_review && (
+                <span className="text-xs px-2 py-0.5 bg-yellow-500/10 text-yellow-400 border border-yellow-500/40 rounded-full backdrop-blur-xl">
+                  Needs Review
+                </span>
+              )}
+            </div>
+
+            {/* Transcript */}
+            <div className="text-[#e2e8f0] text-lg leading-relaxed mb-6">
+              {randomMemo.transcript}
+            </div>
+
+            {/* Timestamp */}
+            <div className="text-[#64748b] text-sm mb-6">
+              {new Date(randomMemo.timestamp).toLocaleString("en-US", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+              })}
+            </div>
+
+            {/* Extracted Data */}
+            {randomMemo.extracted && (
+              <div className="space-y-3 p-4 bg-[#0a0a0f]/40 rounded-lg border border-slate-700/20 mb-6">
+                <div className="text-[#64748b] text-xs font-semibold uppercase tracking-wider mb-2">
+                  Extracted Information
+                </div>
+                {randomMemo.extracted.title && (
+                  <div>
+                    <span className="text-[#64748b] font-medium">Title: </span>
+                    <span className="text-[#cbd5e1]">
+                      {randomMemo.extracted.title}
+                    </span>
+                  </div>
+                )}
+                {randomMemo.extracted.who && (
+                  <div>
+                    <span className="text-[#64748b] font-medium">Who: </span>
+                    <span className="text-[#cbd5e1]">
+                      {randomMemo.extracted.who}
+                    </span>
+                  </div>
+                )}
+                {randomMemo.extracted.when && (
+                  <div>
+                    <span className="text-[#64748b] font-medium">When: </span>
+                    <span className="text-[#cbd5e1]">
+                      {randomMemo.extracted.when}
+                    </span>
+                  </div>
+                )}
+                {randomMemo.extracted.where && (
+                  <div>
+                    <span className="text-[#64748b] font-medium">Where: </span>
+                    <span className="text-[#cbd5e1]">
+                      {randomMemo.extracted.where}
+                    </span>
+                  </div>
+                )}
+                {randomMemo.extracted.what && (
+                  <div>
+                    <span className="text-[#64748b] font-medium">
+                      Summary:{" "}
+                    </span>
+                    <span className="text-[#cbd5e1]">
+                      {randomMemo.extracted.what}
+                    </span>
+                  </div>
+                )}
+                {randomMemo.extracted.actionable && (
+                  <div className="pt-1">
+                    <span className="text-xs px-2 py-0.5 bg-orange-500/10 text-orange-400 border border-orange-500/40 rounded-full backdrop-blur-xl">
+                      🎯 Actionable
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Tags */}
+            {randomMemo.tags && randomMemo.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-6">
+                {randomMemo.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-2 py-0.5 bg-[#0a0a0f]/60 text-[#94a3b8] border border-slate-700/20 rounded-full text-xs backdrop-blur-xl"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={pickRandomMemo}
+                className="px-4 py-2 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 border border-indigo-500/40 rounded-lg transition-all backdrop-blur-xl"
+              >
+                Show Another
+              </button>
+              <button
+                onClick={() => setShowRandomMemo(false)}
+                className="px-4 py-2 bg-[#1e1f2a]/60 hover:bg-[#1e1f2a] text-[#94a3b8] hover:text-white border border-slate-700/30 rounded-lg transition-all backdrop-blur-xl"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
