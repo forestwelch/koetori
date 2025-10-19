@@ -9,10 +9,16 @@ interface UseVoiceRecorderReturn {
   transcription: string | null;
   recordingTime: number;
   audioStream: MediaStream | null;
+  maxRecordingTime: number;
   startRecording: () => Promise<void>;
   stopRecording: () => void;
   clearTranscription: () => void;
 }
+
+// Configuration
+const MAX_RECORDING_TIME = 300; // 5 minutes in seconds
+const MAX_RETRY_ATTEMPTS = 3;
+const RETRY_DELAY = 2000; // 2 seconds
 
 export function useVoiceRecorder(): UseVoiceRecorderReturn {
   const [isRecording, setIsRecording] = useState(false);
@@ -25,12 +31,76 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const retryCountRef = useRef(0);
 
-  // Timer effect
+  // Define stopRecording early so it can be used in useEffect
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  }, [isRecording]);
+
+  // Helper function to upload with retry logic
+  const uploadWithRetry = useCallback(
+    async (audioBlob: Blob, attempt = 1): Promise<{ text: string }> => {
+      try {
+        const formData = new FormData();
+        formData.append("audio", audioBlob, "recording.webm");
+
+        const response = await fetch("/api/transcribe", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+
+          // Don't retry on client errors (4xx)
+          if (response.status >= 400 && response.status < 500) {
+            throw new Error(errorData.error || "Failed to transcribe audio");
+          }
+
+          // Retry on server errors (5xx)
+          if (attempt < MAX_RETRY_ATTEMPTS) {
+            console.log(
+              `Retry attempt ${attempt} of ${MAX_RETRY_ATTEMPTS - 1}`
+            );
+            await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
+            return uploadWithRetry(audioBlob, attempt + 1);
+          }
+
+          throw new Error(errorData.error || "Failed to transcribe audio");
+        }
+
+        return await response.json();
+      } catch (err) {
+        if (attempt < MAX_RETRY_ATTEMPTS && !(err instanceof TypeError)) {
+          console.log(`Retry attempt ${attempt} of ${MAX_RETRY_ATTEMPTS - 1}`);
+          await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
+          return uploadWithRetry(audioBlob, attempt + 1);
+        }
+        throw err;
+      }
+    },
+    []
+  );
+
+  // Timer effect with auto-stop at max duration
   useEffect(() => {
     if (isRecording) {
       timerRef.current = setInterval(() => {
-        setRecordingTime((prev) => prev + 1);
+        setRecordingTime((prev) => {
+          const newTime = prev + 1;
+          // Auto-stop at max duration
+          if (newTime >= MAX_RECORDING_TIME) {
+            stopRecording();
+            setError(
+              `Maximum recording time of ${MAX_RECORDING_TIME / 60} minutes reached. Recording stopped automatically.`
+            );
+          }
+          return newTime;
+        });
       }, 1000);
     } else {
       if (timerRef.current) {
@@ -44,7 +114,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
         clearInterval(timerRef.current);
       }
     };
-  }, [isRecording]);
+  }, [isRecording, stopRecording]);
 
   const startRecording = useCallback(async () => {
     try {
@@ -80,21 +150,9 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
         setIsProcessing(true);
 
         try {
-          const formData = new FormData();
-          formData.append("audio", audioBlob, "recording.webm");
-
-          const response = await fetch("/api/transcribe", {
-            method: "POST",
-            body: formData,
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || "Failed to transcribe audio");
-          }
-
-          const data = await response.json();
+          const data = await uploadWithRetry(audioBlob);
           setTranscription(data.text);
+          retryCountRef.current = 0; // Reset retry count on success
         } catch (err) {
           console.error("Error uploading audio:", err);
           setError(
@@ -130,14 +188,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
         setError("An unexpected error occurred. Please try again.");
       }
     }
-  }, []);
-
-  const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
-  }, [isRecording]);
+  }, [uploadWithRetry]);
 
   const clearTranscription = useCallback(() => {
     setTranscription(null);
@@ -150,6 +201,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
     error,
     transcription,
     recordingTime,
+    maxRecordingTime: MAX_RECORDING_TIME,
     audioStream,
     startRecording,
     stopRecording,

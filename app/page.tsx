@@ -15,6 +15,7 @@ export default function Home() {
     error,
     transcription,
     recordingTime,
+    maxRecordingTime,
     audioStream,
     startRecording,
     stopRecording,
@@ -91,15 +92,20 @@ export default function Home() {
 
               {error && <ErrorAlert message={error} />}
 
-              {/* Keyboard shortcut hint */}
+              {/* Keyboard shortcut hint and max duration info */}
               {!transcription && !isRecording && !isProcessing && (
-                <p className="text-[#64748b] text-xs font-light mt-2">
-                  Press{" "}
-                  <kbd className="px-2 py-0.5 bg-[#1e1f2a] border border-slate-700/50 rounded text-[#94a3b8]">
-                    Space
-                  </kbd>{" "}
-                  to start
-                </p>
+                <div className="flex flex-col items-center gap-2">
+                  <p className="text-[#64748b] text-xs font-light">
+                    Press{" "}
+                    <kbd className="px-2 py-0.5 bg-[#1e1f2a] border border-slate-700/50 rounded text-[#94a3b8]">
+                      Space
+                    </kbd>{" "}
+                    to start
+                  </p>
+                  <p className="text-[#4b5563] text-[10px] sm:text-xs font-light">
+                    Maximum recording time: {maxRecordingTime / 60} minutes
+                  </p>
+                </div>
               )}
             </div>
           </div>
