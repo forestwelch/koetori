@@ -343,12 +343,19 @@ export default function Home() {
               return (
                 <div
                   key={memo.id}
-                  className="relative p-4 sm:p-6 bg-[#14151f]/60 backdrop-blur-xl rounded-2xl border border-slate-700/30 hover:border-slate-600/50 hover:bg-[#14151f]/70 transition-all duration-300 animate-in fade-in slide-in-from-top-4 duration-500"
+                  className="relative p-4 sm:p-6 bg-[#14151f]/60 backdrop-blur-xl rounded-2xl border border-slate-700/30 hover:border-slate-600/50 hover:bg-[#14151f]/70 transition-all duration-1000 animate-in fade-in slide-in-from-top-4"
                 >
-                  {/* New memo highlight overlay */}
-                  {isNew && (
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/50 shadow-lg shadow-indigo-500/20 transition-opacity duration-1000 pointer-events-none" />
-                  )}
+                  {/* New memo highlight overlay - fades out smoothly */}
+                  <div 
+                    className={`absolute inset-0 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 pointer-events-none transition-opacity duration-1000 ${
+                      isNew ? 'opacity-100' : 'opacity-0'
+                    }`}
+                  />
+                  <div 
+                    className={`absolute inset-0 rounded-2xl border border-indigo-500/50 shadow-lg shadow-indigo-500/20 pointer-events-none transition-opacity duration-1000 ${
+                      isNew ? 'opacity-100' : 'opacity-0'
+                    }`}
+                  />
                   
                   {/* Content wrapper */}
                   <div className="relative">
@@ -484,6 +491,7 @@ export default function Home() {
                     ))}
                   </div>
                 )}
+                </div>
               </div>
             );
             })}
