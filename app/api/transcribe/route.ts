@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import Groq from "groq-sdk";
 import { rateLimit, getClientIdentifier } from "@/app/lib/rateLimit";
+import {
+  buildCategorizationPrompt,
+  validateCategorizationResult,
+} from "@/app/lib/categorization";
+import { supabase } from "@/app/lib/supabase";
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
@@ -158,17 +163,79 @@ export async function POST(request: NextRequest) {
       response_format: "json",
     });
 
+    const transcript = transcription.text;
+
+    // Phase 8: AI Categorization
+    logRequest("info", "Starting categorization", {
+      clientId,
+      transcriptLength: transcript.length,
+    });
+
+    const categorizationPrompt = buildCategorizationPrompt(transcript);
+
+    const categorizationResponse = await groq.chat.completions.create({
+      messages: [
+        {
+          role: "user",
+          content: categorizationPrompt,
+        },
+      ],
+      model: "llama-3.1-70b-versatile",
+      temperature: 0.3,
+      response_format: { type: "json_object" },
+    });
+
+    const rawCategorization = JSON.parse(
+      categorizationResponse.choices[0].message.content || "{}"
+    );
+
+    const categorization = validateCategorizationResult(rawCategorization);
+
+    // Determine if needs review (confidence < 0.7)
+    const needsReview = categorization.confidence < 0.7;
+
+    // Save to Supabase
+    const { data: memoData, error: supabaseError } = await supabase
+      .from("memos")
+      .insert({
+        transcript,
+        category: categorization.category,
+        confidence: categorization.confidence,
+        needs_review: needsReview,
+        extracted: categorization.extracted,
+        tags: categorization.tags,
+      })
+      .select()
+      .single();
+
+    if (supabaseError) {
+      logRequest("error", "Failed to save memo to Supabase", {
+        clientId,
+        error: supabaseError.message,
+      });
+      // Don't fail the request, just log the error
+    }
+
     const processingTime = Date.now() - startTime;
 
-    logRequest("info", "Transcription successful", {
+    logRequest("info", "Transcription and categorization successful", {
       clientId,
       processingTimeMs: processingTime,
-      transcriptionLength: transcription.text.length,
+      transcriptionLength: transcript.length,
+      category: categorization.category,
+      confidence: categorization.confidence,
+      needsReview,
     });
 
     return NextResponse.json(
       {
-        text: transcription.text,
+        transcript,
+        category: categorization.category,
+        confidence: categorization.confidence,
+        needs_review: needsReview,
+        extracted: categorization.extracted,
+        tags: categorization.tags,
+        memo_id: memoData?.id || null,
         language: "en",
         duration: audioFile.size / 16000,
         processingTime: processingTime,

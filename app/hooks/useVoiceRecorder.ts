@@ -1,12 +1,19 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { Category, ExtractedData, TranscriptionResponse } from "../types/memo";
 
 interface UseVoiceRecorderReturn {
   isRecording: boolean;
   isProcessing: boolean;
   error: string | null;
   transcription: string | null;
+  category: Category | null;
+  confidence: number | null;
+  needsReview: boolean;
+  extracted: ExtractedData | null;
+  tags: string[];
+  memoId: string | null;
   recordingTime: number;
   audioStream: MediaStream | null;
   maxRecordingTime: number;
@@ -28,6 +35,14 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
   const [recordingTime, setRecordingTime] = useState(0);
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
 
+  // Phase 8: Categorization state
+  const [category, setCategory] = useState<Category | null>(null);
+  const [confidence, setConfidence] = useState<number | null>(null);
+  const [needsReview, setNeedsReview] = useState(false);
+  const [extracted, setExtracted] = useState<ExtractedData | null>(null);
+  const [tags, setTags] = useState<string[]>([]);
+  const [memoId, setMemoId] = useState<string | null>(null);
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -43,7 +58,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
 
   // Helper function to upload with retry logic
   const uploadWithRetry = useCallback(
-    async (audioBlob: Blob, attempt = 1): Promise<{ text: string }> => {
+    async (audioBlob: Blob, attempt = 1): Promise<TranscriptionResponse> => {
       try {
         const formData = new FormData();
         formData.append("audio", audioBlob, "recording.webm");
@@ -146,12 +161,19 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
         stream.getTracks().forEach((track) => track.stop());
         setAudioStream(null);
 
-        // Upload audio and get transcription
+        // Upload audio and get transcription + categorization
         setIsProcessing(true);
 
         try {
           const data = await uploadWithRetry(audioBlob);
-          setTranscription(data.text);
+          // Phase 8: Handle categorization response
+          setTranscription(data.transcript);
+          setCategory(data.category);
+          setConfidence(data.confidence);
+          setNeedsReview(data.needs_review);
+          setExtracted(data.extracted);
+          setTags(data.tags);
+          setMemoId(data.memo_id);
           retryCountRef.current = 0; // Reset retry count on success
         } catch (err) {
           console.error("Error uploading audio:", err);
@@ -193,6 +215,13 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
   const clearTranscription = useCallback(() => {
     setTranscription(null);
     setError(null);
+    // Phase 8: Clear categorization data
+    setCategory(null);
+    setConfidence(null);
+    setNeedsReview(false);
+    setExtracted(null);
+    setTags([]);
+    setMemoId(null);
   }, []);
 
   return {
@@ -200,6 +229,12 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
     isProcessing,
     error,
     transcription,
+    category,
+    confidence,
+    needsReview,
+    extracted,
+    tags,
+    memoId,
     recordingTime,
     maxRecordingTime: MAX_RECORDING_TIME,
     audioStream,

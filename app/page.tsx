@@ -6,6 +6,7 @@ import { StatusMessage } from "./components/StatusMessage";
 import { ErrorAlert } from "./components/ErrorAlert";
 import { TranscriptionDisplay } from "./components/TranscriptionDisplay";
 import { AudioVisualizer } from "./components/AudioVisualizer";
+import { MemoDisplay } from "./components/MemoDisplay";
 import { useEffect } from "react";
 
 export default function Home() {
@@ -14,6 +15,12 @@ export default function Home() {
     isProcessing,
     error,
     transcription,
+    category,
+    confidence,
+    needsReview,
+    extracted,
+    tags,
+    memoId,
     recordingTime,
     maxRecordingTime,
     audioStream,
@@ -111,10 +118,21 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Transcription display below the card */}
-        {transcription && (
+        {/* Memo display below the card - Phase 8 */}
+        {transcription && category && confidence !== null && extracted && (
           <div className="mt-6 sm:mt-8 space-y-3 sm:space-y-4">
+            <MemoDisplay
+              transcript={transcription}
+              category={category}
+              confidence={confidence}
+              needsReview={needsReview}
+              extracted={extracted}
+              tags={tags}
+            />
+
+            {/* Copy to clipboard button */}
             <TranscriptionDisplay text={transcription} />
+
             <button
               onClick={clearTranscription}
               aria-label="Clear transcription and record again"
