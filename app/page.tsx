@@ -5,7 +5,6 @@ import { supabase } from "./lib/supabase";
 import { Memo, Category } from "./types/memo";
 import {
   getCategoryColor,
-  getCategoryGradient,
   getCategoryIcon,
   getCategoryLabel,
   formatConfidence,
@@ -514,70 +513,44 @@ export default function Home() {
             </div>
           )}
 
-          {/* Filter Controls */}
-          <div className="space-y-4">
-            {/* Review Filter */}
-            <div className="flex gap-3 flex-wrap">
-              {/* All Memos Button */}
-              <div className="relative">
-                {filter === "all" && (
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-indigo-500/50 to-purple-500/50 opacity-50 blur-sm" />
-                )}
+          {/* Compact Filter Controls with Hover Menus */}
+          <div className="flex gap-3 flex-wrap items-center">
+            {/* Main View Filter */}
+            <div className="relative group">
+              <button className="px-3 py-2 rounded-lg text-sm font-medium bg-[#0d0e14]/40 border border-slate-700/20 text-[#cbd5e1] hover:bg-[#0d0e14]/60 transition-all backdrop-blur-xl">
+                View: {filter === "all" ? "All" : filter === "starred" ? "Starred" : filter === "review" ? "Review" : "Archive"} ▾
+              </button>
+              
+              {/* Hover dropdown */}
+              <div className="absolute top-full left-0 mt-1 w-40 bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-lg shadow-2xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                 <button
                   onClick={() => setFilter("all")}
-                  className={`relative px-4 py-2 rounded-2xl text-sm font-medium transition-all backdrop-blur-xl ${
-                    filter === "all"
-                      ? "bg-indigo-500/30 text-white shadow-lg shadow-indigo-500/30 border border-indigo-400/20"
-                      : "bg-[#0d0e14]/20 border border-slate-700/10 text-[#64748b] hover:border-slate-600/30 hover:bg-[#0d0e14]/40"
+                  className={`w-full px-3 py-2 text-sm text-left transition-colors ${
+                    filter === "all" ? "bg-indigo-500/30 text-white" : "text-slate-300 hover:bg-slate-700/30"
                   }`}
                 >
                   All Memos
                 </button>
-              </div>
-              {/* Starred Button */}
-              <div className="relative">
-                {filter === "starred" && (
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-amber-500/50 to-yellow-500/50 opacity-50 blur-sm" />
-                )}
                 <button
                   onClick={() => setFilter("starred")}
-                  className={`relative px-4 py-2 rounded-2xl text-sm font-medium transition-all backdrop-blur-xl flex items-center gap-2 ${
-                    filter === "starred"
-                      ? "bg-amber-500/30 text-white shadow-lg shadow-amber-500/30 border border-amber-400/20"
-                      : "bg-[#0d0e14]/20 border border-slate-700/10 text-[#64748b] hover:border-slate-600/30 hover:bg-[#0d0e14]/40"
+                  className={`w-full px-3 py-2 text-sm text-left transition-colors flex items-center gap-2 ${
+                    filter === "starred" ? "bg-amber-500/30 text-white" : "text-slate-300 hover:bg-slate-700/30"
                   }`}
                 >
-                  <Star className="w-4 h-4" />
-                  Starred
+                  <Star className="w-3.5 h-3.5" /> Starred
                 </button>
-              </div>
-              {/* Needs Review Button */}
-              <div className="relative">
-                {filter === "review" && (
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-fuchsia-500/50 to-pink-500/50 opacity-50 blur-sm" />
-                )}
                 <button
                   onClick={() => setFilter("review")}
-                  className={`relative px-4 py-2 rounded-2xl text-sm font-medium transition-all backdrop-blur-xl ${
-                    filter === "review"
-                      ? "bg-fuchsia-500/30 text-white shadow-lg shadow-fuchsia-500/30 border border-fuchsia-400/20"
-                      : "bg-[#0d0e14]/20 border border-slate-700/10 text-[#64748b] hover:border-slate-600/30 hover:bg-[#0d0e14]/40"
+                  className={`w-full px-3 py-2 text-sm text-left transition-colors ${
+                    filter === "review" ? "bg-fuchsia-500/30 text-white" : "text-slate-300 hover:bg-slate-700/30"
                   }`}
                 >
                   Needs Review
                 </button>
-              </div>
-              {/* Archive Button */}
-              <div className="relative">
-                {filter === "archive" && (
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-slate-500/50 to-gray-500/50 opacity-50 blur-sm" />
-                )}
                 <button
                   onClick={() => setFilter("archive")}
-                  className={`relative px-4 py-2 rounded-2xl text-sm font-medium transition-all backdrop-blur-xl ${
-                    filter === "archive"
-                      ? "bg-slate-500/30 text-white shadow-lg shadow-slate-500/30 border border-slate-400/20"
-                      : "bg-[#0d0e14]/20 border border-slate-700/10 text-[#64748b] hover:border-slate-600/30 hover:bg-[#0d0e14]/40"
+                  className={`w-full px-3 py-2 text-sm text-left transition-colors ${
+                    filter === "archive" ? "bg-slate-500/30 text-white" : "text-slate-300 hover:bg-slate-700/30"
                   }`}
                 >
                   Archive
@@ -586,65 +559,72 @@ export default function Home() {
             </div>
 
             {/* Category Filter */}
-            <div className="flex flex-wrap gap-2">
-              {categories.map((cat) => {
-                const isActive = categoryFilter === cat;
-                const isAllCategory = cat === "all";
-
-                return (
-                  <div key={cat} className="relative">
-                    {/* Gradient glow for active state */}
-                    {isActive && (
-                      <div
-                        className={`absolute inset-0 rounded-full opacity-50 blur-sm ${
-                          isAllCategory
-                            ? "bg-gradient-to-r from-slate-500/50 to-gray-500/50"
-                            : `bg-gradient-to-r ${getCategoryGradient(cat as Category)}`
-                        }`}
-                      />
-                    )}
-                    <button
-                      onClick={() => setCategoryFilter(cat)}
-                      className={`relative px-3 py-1.5 rounded-full text-xs font-medium transition-all backdrop-blur-xl border ${
-                        isActive
-                          ? isAllCategory
-                            ? "bg-slate-500/30 text-white border-slate-500/20 shadow-lg shadow-slate-500/20"
-                            : getCategoryColor(cat as Category).replace(
-                                "border-",
-                                "shadow-lg shadow-"
-                              ) +
-                              " " +
-                              getCategoryColor(cat as Category)
-                          : "bg-[#0d0e14]/20 border-slate-700/10 text-[#64748b] hover:border-slate-600/30 hover:bg-[#0d0e14]/40"
-                      }`}
-                    >
-                      {isAllCategory
-                        ? "All Categories"
-                        : `${getCategoryIcon(cat as Category)} ${getCategoryLabel(cat as Category)}`}
-                    </button>
-                  </div>
-                );
-              })}
+            <div className="relative group">
+              <button className="px-3 py-2 rounded-lg text-sm font-medium bg-[#0d0e14]/40 border border-slate-700/20 text-[#cbd5e1] hover:bg-[#0d0e14]/60 transition-all backdrop-blur-xl">
+                {categoryFilter === "all" ? "Category: All" : `${getCategoryIcon(categoryFilter as Category)} ${getCategoryLabel(categoryFilter as Category)}`} ▾
+              </button>
+              
+              {/* Hover dropdown */}
+              <div className="absolute top-full left-0 mt-1 w-48 bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-lg shadow-2xl overflow-hidden max-h-80 overflow-y-auto opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setCategoryFilter(cat)}
+                    className={`w-full px-3 py-2 text-sm text-left transition-colors ${
+                      categoryFilter === cat
+                        ? cat === "all"
+                          ? "bg-slate-500/30 text-white"
+                          : `${getCategoryColor(cat as Category).split(" ")[0]} text-white`
+                        : "text-slate-300 hover:bg-slate-700/30"
+                    }`}
+                  >
+                    {cat === "all" ? "All Categories" : `${getCategoryIcon(cat as Category)} ${getCategoryLabel(cat as Category)}`}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Size Filter */}
-            <div className="flex flex-wrap gap-2 items-center">
-              <span className="text-xs text-[#64748b] font-medium">Size:</span>
-              {(["all", "S", "M", "L"] as const).map((size) => (
+            <div className="relative group">
+              <button className="px-3 py-2 rounded-lg text-sm font-medium bg-[#0d0e14]/40 border border-slate-700/20 text-[#cbd5e1] hover:bg-[#0d0e14]/60 transition-all backdrop-blur-xl">
+                Size: {sizeFilter === "all" ? "All" : sizeFilter} ▾
+              </button>
+              
+              {/* Hover dropdown */}
+              <div className="absolute top-full left-0 mt-1 w-40 bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-lg shadow-2xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                 <button
-                  key={size}
-                  onClick={() => setSizeFilter(size)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all backdrop-blur-xl border ${
-                    sizeFilter === size
-                      ? "bg-slate-500/30 text-white border-slate-500/40 shadow-lg shadow-slate-500/20"
-                      : "bg-[#0d0e14]/20 border-slate-700/10 text-[#64748b] hover:border-slate-600/30 hover:bg-[#0d0e14]/40"
+                  onClick={() => setSizeFilter("all")}
+                  className={`w-full px-3 py-2 text-sm text-left transition-colors ${
+                    sizeFilter === "all" ? "bg-slate-500/30 text-white" : "text-slate-300 hover:bg-slate-700/30"
                   }`}
                 >
-                  {size === "all"
-                    ? "All"
-                    : `${size} ${size === "S" ? "(<5min)" : size === "M" ? "(<30min)" : "(>30min)"}`}
+                  All Sizes
                 </button>
-              ))}
+                <button
+                  onClick={() => setSizeFilter("S")}
+                  className={`w-full px-3 py-2 text-sm text-left transition-colors ${
+                    sizeFilter === "S" ? "bg-slate-500/30 text-white" : "text-slate-300 hover:bg-slate-700/30"
+                  }`}
+                >
+                  S - Small (&lt;5min)
+                </button>
+                <button
+                  onClick={() => setSizeFilter("M")}
+                  className={`w-full px-3 py-2 text-sm text-left transition-colors ${
+                    sizeFilter === "M" ? "bg-slate-500/30 text-white" : "text-slate-300 hover:bg-slate-700/30"
+                  }`}
+                >
+                  M - Medium (&lt;30min)
+                </button>
+                <button
+                  onClick={() => setSizeFilter("L")}
+                  className={`w-full px-3 py-2 text-sm text-left transition-colors ${
+                    sizeFilter === "L" ? "bg-slate-500/30 text-white" : "text-slate-300 hover:bg-slate-700/30"
+                  }`}
+                >
+                  L - Large (&gt;30min)
+                </button>
+              </div>
             </div>
           </div>
         </div>
