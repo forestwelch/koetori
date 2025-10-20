@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "./lib/supabase";
 import { Memo, Category } from "./types/memo";
 import {
@@ -89,6 +89,25 @@ export default function Home() {
   useEffect(() => {
     loadMemos();
   }, [loadMemos]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: Event) => {
+      if (openDropdown && !(event.target as Element).closest('.dropdown-container')) {
+        setOpenDropdown(null);
+      }
+    };
+
+    if (openDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [openDropdown]);
 
   // Reload memos when processing completes (new memo saved)
   useEffect(() => {
@@ -519,7 +538,7 @@ export default function Home() {
           {/* Compact Filter Controls with Hover Menus */}
           <div className="flex gap-3 flex-wrap items-center">
             {/* Main View Filter */}
-            <div className="relative">
+            <div className="relative dropdown-container">
               <button
                 onClick={() =>
                   setOpenDropdown(openDropdown === "view" ? null : "view")
