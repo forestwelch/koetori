@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { useUser } from "../contexts/UserContext";
+import { KoetoríExplanation } from "./KoetoríExplanation";
 
 export function UsernameInput() {
   const [input, setInput] = useState("");
@@ -11,6 +12,14 @@ export function UsernameInput() {
   const [mode, setMode] = useState<"username" | "signup" | "login">("username");
   const [existingUsername, setExistingUsername] = useState("");
   const { setUsername } = useUser();
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Focus input when mode changes
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [mode]);
 
   const checkUserExists = async (username: string): Promise<boolean> => {
     const { data, error } = await supabase
@@ -150,11 +159,21 @@ export function UsernameInput() {
             {mode === "login" ? "🍗" : mode === "signup" ? "✨" : "🐓"}
           </div>
           <h1 className="text-3xl font-light text-white mb-2">
-            {mode === "login"
-              ? `Welcome back, ${existingUsername}!`
-              : mode === "signup"
-                ? "Almost there!"
-                : "Welcome to Koetori."}
+            {mode === "login" ? (
+              `Welcome back, ${existingUsername}!`
+            ) : mode === "signup" ? (
+              "Almost there!"
+            ) : (
+              <span className="text-white">
+                Welcome to{" "}
+                <KoetoríExplanation>
+                  <span className="bg-gradient-to-r from-[#818cf8] via-[#c084fc] to-[#fb7185] bg-clip-text text-transparent">
+                    Koetori
+                  </span>
+                </KoetoríExplanation>
+                .
+              </span>
+            )}
           </h1>
           <p className="text-[#94a3b8] text-lg">
             {mode === "login"
@@ -183,6 +202,7 @@ export function UsernameInput() {
 
           <div>
             <input
+              ref={inputRef}
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}

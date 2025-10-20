@@ -13,7 +13,7 @@ import { useVoiceRecorder } from "./hooks/useVoiceRecorder";
 import { MemoItem } from "./components/MemoItem";
 import { UsernameInput } from "./components/UsernameInput";
 import { useUser } from "./contexts/UserContext";
-import { Star, Type, Search } from "lucide-react";
+import { Star, Type, Search, LogOut } from "lucide-react";
 
 // Helper component for search result items
 export default function Home() {
@@ -655,15 +655,28 @@ export default function Home() {
             {/* Header with Floating Record Button */}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-6">
-                <h1
-                  onClick={pickRandomMemo}
-                  className="text-3xl sm:text-4xl font-light bg-gradient-to-r from-[#818cf8] via-[#c084fc] to-[#fb7185] bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
-                >
-                  koetori
-                </h1>
-
-                {/* Text Input and Record Buttons */}
                 <div className="flex items-center gap-3">
+                  <h1
+                    onClick={pickRandomMemo}
+                    className="text-3xl sm:text-4xl font-light bg-gradient-to-r from-[#818cf8] via-[#c084fc] to-[#fb7185] bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
+                  >
+                    koetori
+                  </h1>
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem("koetori_username");
+                      window.location.reload();
+                    }}
+                    className="text-slate-500 hover:text-slate-300 transition-colors p-2 rounded-lg bg-slate-800/20 hover:bg-slate-700/30 backdrop-blur-sm"
+                    title="Sign out"
+                  >
+                    <LogOut className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  {/* Text Input and Record Buttons */}
+                  <div className="flex items-center gap-3"></div>
                   {/* Text Input Status */}
                   {isProcessingText && (
                     <div className="flex items-center gap-2 text-emerald-400 text-sm font-medium">
