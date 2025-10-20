@@ -194,32 +194,36 @@ export default function Home() {
 
   // Soft delete (move to archive)
   const softDelete = async (memoId: string) => {
-    try {
-      const { error } = await supabase
-        .from("memos")
-        .update({ deleted_at: new Date().toISOString() })
-        .eq("id", memoId);
-
-      if (error) throw error;
-      loadMemos();
-    } catch (err) {
-      console.error("Error archiving memo:", err);
+    // Optimistic update: remove from list if not in archive view
+    if (filter !== "archive") {
+      setMemos((prev) => prev.filter((m) => m.id !== memoId));
     }
+
+    // Fire and forget - just update in background
+    supabase
+      .from("memos")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", memoId)
+      .then(({ error }) => {
+        if (error) console.error("Error archiving memo:", error);
+      });
   };
 
   // Toggle starred status
   const toggleStar = async (memoId: string, currentStarred: boolean) => {
-    try {
-      const { error } = await supabase
-        .from("memos")
-        .update({ starred: !currentStarred })
-        .eq("id", memoId);
+    // Optimistic update: toggle immediately
+    setMemos((prev) =>
+      prev.map((m) => (m.id === memoId ? { ...m, starred: !currentStarred } : m))
+    );
 
-      if (error) throw error;
-      loadMemos();
-    } catch (err) {
-      console.error("Error toggling star:", err);
-    }
+    // Fire and forget - just update in background
+    supabase
+      .from("memos")
+      .update({ starred: !currentStarred })
+      .eq("id", memoId)
+      .then(({ error }) => {
+        if (error) console.error("Error toggling star:", error);
+      });
   };
 
   // Change category with feedback tracking
@@ -228,62 +232,62 @@ export default function Home() {
     newCategory: Category,
     oldCategory: Category
   ) => {
-    try {
-      // Get the memo for its transcript
-      const memo = memos.find((m) => m.id === memoId);
+    // Optimistic update: change category immediately
+    setMemos((prev) =>
+      prev.map((m) => (m.id === memoId ? { ...m, category: newCategory } : m))
+    );
 
-      // Update the memo's category
-      const { error: updateError } = await supabase
-        .from("memos")
-        .update({ category: newCategory })
-        .eq("id", memoId);
+    // Get the memo for its transcript
+    const memo = memos.find((m) => m.id === memoId);
 
-      if (updateError) throw updateError;
-
-      // Store feedback for AI improvement
-      const { error: feedbackError } = await supabase
-        .from("category_feedback")
-        .insert({
-          memo_id: memoId,
-          transcript: memo?.transcript || "",
-          original_category: oldCategory,
-          corrected_category: newCategory,
-          confidence: memo?.confidence || 0,
-        });
-
-      if (feedbackError) {
-        console.warn(
-          "Failed to log feedback (table may not exist yet):",
-          feedbackError
-        );
-      }
-
-      console.log("✅ Category changed:", {
-        memoId,
-        from: oldCategory,
-        to: newCategory,
-        timestamp: new Date().toISOString(),
+    // Fire and forget - update in background
+    supabase
+      .from("memos")
+      .update({ category: newCategory })
+      .eq("id", memoId)
+      .then(({ error }) => {
+        if (error) console.error("Error updating category:", error);
       });
 
-      loadMemos();
-    } catch (err) {
-      console.error("Error changing category:", err);
-    }
+    // Log feedback for AI improvement
+    supabase
+      .from("category_feedback")
+      .insert({
+        memo_id: memoId,
+        transcript: memo?.transcript || "",
+        original_category: oldCategory,
+        corrected_category: newCategory,
+        confidence: memo?.confidence || 0,
+      })
+      .then(({ error }) => {
+        if (error) {
+          console.warn("Failed to log feedback:", error);
+        } else {
+          console.log("✅ Category changed:", {
+            memoId,
+            from: oldCategory,
+            to: newCategory,
+            timestamp: new Date().toISOString(),
+          });
+        }
+      });
   };
 
   // Restore from archive
   const restoreMemo = async (memoId: string) => {
-    try {
-      const { error } = await supabase
-        .from("memos")
-        .update({ deleted_at: null })
-        .eq("id", memoId);
-
-      if (error) throw error;
-      loadMemos();
-    } catch (err) {
-      console.error("Error restoring memo:", err);
+    // Optimistic update: remove from archive view
+    if (filter === "archive") {
+      setMemos((prev) => prev.filter((m) => m.id !== memoId));
     }
+
+    // Fire and forget - just update in background
+    supabase
+      .from("memos")
+      .update({ deleted_at: null })
+      .eq("id", memoId)
+      .then(({ error }) => {
+        if (error) console.error("Error restoring memo:", error);
+      });
   };
 
   // Hard delete (permanent)
