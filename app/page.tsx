@@ -213,7 +213,9 @@ export default function Home() {
   const toggleStar = async (memoId: string, currentStarred: boolean) => {
     // Optimistic update: toggle immediately
     setMemos((prev) =>
-      prev.map((m) => (m.id === memoId ? { ...m, starred: !currentStarred } : m))
+      prev.map((m) =>
+        m.id === memoId ? { ...m, starred: !currentStarred } : m
+      )
     );
 
     // Fire and forget - just update in background
