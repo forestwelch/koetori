@@ -90,11 +90,13 @@ export function MemoItem({
     >
       <SwipeIndicator swipeX={swipeX} />
 
-      <div className={`group relative p-4 sm:p-6 bg-[#0d0e14]/40 backdrop-blur-xl rounded-2xl border hover:bg-[#0d0e14]/60 transition-all duration-1000 animate-in fade-in slide-in-from-top-4 ${
-        memo.starred && filter !== "archive"
-          ? "border-amber-500/40 shadow-lg shadow-amber-500/10"
-          : "border-slate-700/20 hover:border-slate-600/40"
-      }`}>
+      <div
+        className={`group relative p-4 sm:p-6 bg-[#0d0e14]/40 backdrop-blur-xl rounded-2xl border hover:bg-[#0d0e14]/60 transition-all duration-1000 animate-in fade-in slide-in-from-top-4 ${
+          memo.starred && filter !== "archive"
+            ? "border-amber-500/40 shadow-lg shadow-amber-500/10"
+            : "border-slate-700/20 hover:border-slate-600/40"
+        }`}
+      >
         {/* New memo highlight */}
         <div
           className={`absolute inset-0 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 pointer-events-none transition-opacity duration-1000 ${
