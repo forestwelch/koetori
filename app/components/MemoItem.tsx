@@ -22,7 +22,11 @@ interface MemoItemProps {
   toggleStar: (id: string, current: boolean) => void;
   restoreMemo: (id: string) => void;
   hardDelete: (id: string) => void;
-  onCategoryChange: (memoId: string, newCategory: Category, oldCategory: Category) => void;
+  onCategoryChange: (
+    memoId: string,
+    newCategory: Category,
+    oldCategory: Category
+  ) => void;
 }
 
 export function MemoItem({
@@ -107,7 +111,11 @@ export function MemoItem({
         />
 
         <div className="relative">
-          <MemoHeader memo={memo} filter={filter} onCategoryChange={onCategoryChange} />
+          <MemoHeader
+            memo={memo}
+            filter={filter}
+            onCategoryChange={onCategoryChange}
+          />
 
           <MemoContent
             memo={memo}

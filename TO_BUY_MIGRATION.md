@@ -1,7 +1,9 @@
 # 🛒 Adding "To Buy" Category - Database Migration
 
 ## Problem
+
 You're seeing this error when trying to use "to buy" category:
+
 ```
 "new row for relation \"memos\" violates check constraint \"memos_category_check\""
 ```
@@ -24,7 +26,7 @@ This is because the database has a CHECK constraint that only allows the old 8 c
 ALTER TABLE memos DROP CONSTRAINT IF EXISTS memos_category_check;
 
 -- Add new constraint with "to buy" included
-ALTER TABLE memos ADD CONSTRAINT memos_category_check 
+ALTER TABLE memos ADD CONSTRAINT memos_category_check
   CHECK (category IN ('media', 'event', 'journal', 'therapy', 'tarot', 'todo', 'idea', 'to buy', 'other'));
 ```
 
@@ -44,6 +46,7 @@ supabase migration up
 ### Option 3: Manual SQL File
 
 The migration is saved here:
+
 ```
 supabase/migrations/20241019000002_add_to_buy_category.sql
 ```
@@ -61,12 +64,14 @@ After running the migration:
 ## What This Does
 
 **Before:**
+
 ```sql
 CHECK (category IN ('media', 'event', 'journal', 'therapy', 'tarot', 'todo', 'idea', 'other'))
 -- Only 8 categories allowed ❌
 ```
 
 **After:**
+
 ```sql
 CHECK (category IN ('media', 'event', 'journal', 'therapy', 'tarot', 'todo', 'idea', 'to buy', 'other'))
 -- Now 9 categories allowed ✅
@@ -75,15 +80,18 @@ CHECK (category IN ('media', 'event', 'journal', 'therapy', 'tarot', 'todo', 'id
 ## Troubleshooting
 
 **"constraint does not exist" error:**
+
 - That's OK! It means the constraint name might be different
 - The `IF EXISTS` prevents errors
 
 **Still getting check constraint error:**
+
 - Make sure you ran the SQL in the correct database
 - Check your Supabase project is the one your app connects to
 - Verify the table is called `memos`
 
 **Migration file not found:**
+
 - The file is in: `supabase/migrations/20241019000002_add_to_buy_category.sql`
 - You can copy the SQL directly from there
 

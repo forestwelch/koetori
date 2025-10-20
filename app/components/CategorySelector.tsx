@@ -2,12 +2,23 @@
 
 import { Category } from "../types/memo";
 import { getCategoryColor, getCategoryIcon } from "../lib/ui-utils";
-import { Button, ListBox, ListBoxItem, Popover, Select, SelectValue } from "react-aria-components";
+import {
+  Button,
+  ListBox,
+  ListBoxItem,
+  Popover,
+  Select,
+  SelectValue,
+} from "react-aria-components";
 
 interface CategorySelectorProps {
   currentCategory: Category;
   memoId: string;
-  onCategoryChange: (memoId: string, newCategory: Category, oldCategory: Category) => void;
+  onCategoryChange: (
+    memoId: string,
+    newCategory: Category,
+    oldCategory: Category
+  ) => void;
 }
 
 const CATEGORIES: { value: Category; label: string }[] = [
@@ -54,7 +65,7 @@ export function CategorySelector({
           )}
         </SelectValue>
       </Button>
-      
+
       <Popover
         className="bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-xl shadow-2xl overflow-hidden entering:animate-in entering:fade-in entering:zoom-in-95 exiting:animate-out exiting:fade-out exiting:zoom-out-95"
         offset={8}

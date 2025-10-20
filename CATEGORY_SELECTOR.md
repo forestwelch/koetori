@@ -48,20 +48,24 @@ The category selector allows users to correct AI categorization mistakes, which 
 ### Components
 
 **`CategorySelector.tsx`**
+
 - Dropdown menu component
 - Handles click-outside-to-close
 - Animates chevron icon
 - Shows descriptions for each category
 
 **`MemoHeader.tsx`**
+
 - Conditionally renders CategorySelector vs static badge
 - Passes onCategoryChange callback
 
 **`MemoItem.tsx`**
+
 - Receives onCategoryChange prop
 - Forwards to MemoHeader
 
 **`page.tsx`**
+
 - Implements handleCategoryChange handler
 - Updates database
 - Logs feedback data
@@ -69,11 +73,13 @@ The category selector allows users to correct AI categorization mistakes, which 
 ### Database
 
 **Memos Table**
+
 ```sql
 category TEXT -- updated when user changes
 ```
 
 **Category Feedback Table** (optional)
+
 ```sql
 CREATE TABLE category_feedback (
   id UUID PRIMARY KEY,
@@ -87,6 +93,7 @@ CREATE TABLE category_feedback (
 ```
 
 Run migration:
+
 ```bash
 supabase db push
 # or manually run:
@@ -128,8 +135,9 @@ await supabase.from("category_feedback").insert({
    - Identify patterns (e.g., "buy X" often mis-categorized)
 
 2. **Analyze Patterns**
+
    ```sql
-   SELECT 
+   SELECT
      original_category,
      corrected_category,
      COUNT(*) as correction_count
@@ -153,14 +161,16 @@ await supabase.from("category_feedback").insert({
 ### Add New Category
 
 1. **Update Type**
+
    ```typescript
    // app/types/memo.ts
-   export type Category = 
-     | "media" | "event" | ... 
+   export type Category =
+     | "media" | "event" | ...
      | "your-new-category";
    ```
 
 2. **Add Colors/Icons**
+
    ```typescript
    // app/lib/ui-utils.ts
    const colors = {
@@ -172,6 +182,7 @@ await supabase.from("category_feedback").insert({
    ```
 
 3. **Update Prompt**
+
    ```typescript
    // app/lib/categorization.ts
    CATEGORIES:
@@ -182,18 +193,20 @@ await supabase.from("category_feedback").insert({
    ```typescript
    // app/components/CategorySelector.tsx
    const CATEGORIES = [
-     { value: "your-new-category", label: "Your Category", description: "..." }
+     { value: "your-new-category", label: "Your Category", description: "..." },
    ];
    ```
 
 ### Change Colors
 
 Each category has 3 color definitions in `ui-utils.ts`:
+
 - `getCategoryColor`: badge background/text/border
 - `getCategoryGradient`: glow effect
 - `getCategoryIcon`: emoji icon
 
 Example:
+
 ```typescript
 "to buy": "bg-emerald-500/10 text-emerald-300 border-emerald-500/40"
 "to buy": "from-emerald-500/50 to-teal-500/50"
@@ -265,16 +278,19 @@ npm run build
 ## Troubleshooting
 
 **Dropdown doesn't open**
+
 - Check z-index (should be z-50)
 - Verify click handler attached
 - Check console for errors
 
 **Category doesn't update**
+
 - Check database connection
 - Verify Supabase permissions
 - Check network tab for failed requests
 
 **Feedback not logging**
+
 - Check browser console
 - Verify handleCategoryChange is called
 - Check console.log output
@@ -284,19 +300,21 @@ npm run build
 ### Props
 
 **CategorySelector**
+
 ```typescript
 interface CategorySelectorProps {
   currentCategory: Category;
   memoId: string;
   onCategoryChange: (
-    memoId: string, 
-    newCategory: Category, 
+    memoId: string,
+    newCategory: Category,
     oldCategory: Category
   ) => void;
 }
 ```
 
 **MemoHeader**
+
 ```typescript
 interface MemoHeaderProps {
   memo: Memo;
@@ -311,6 +329,7 @@ interface MemoHeaderProps {
 ### Functions
 
 **handleCategoryChange**
+
 ```typescript
 const handleCategoryChange = async (
   memoId: string,

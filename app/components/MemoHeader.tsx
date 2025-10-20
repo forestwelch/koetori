@@ -10,10 +10,18 @@ import { CategorySelector } from "./CategorySelector";
 interface MemoHeaderProps {
   memo: Memo;
   filter?: "all" | "review" | "archive" | "starred";
-  onCategoryChange?: (memoId: string, newCategory: Category, oldCategory: Category) => void;
+  onCategoryChange?: (
+    memoId: string,
+    newCategory: Category,
+    oldCategory: Category
+  ) => void;
 }
 
-export function MemoHeader({ memo, filter, onCategoryChange }: MemoHeaderProps) {
+export function MemoHeader({
+  memo,
+  filter,
+  onCategoryChange,
+}: MemoHeaderProps) {
   return (
     <div className="flex flex-wrap items-center gap-3 mb-3">
       {/* Category Badge - Interactive Selector (not in archive) */}

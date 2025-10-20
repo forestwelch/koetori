@@ -231,7 +231,7 @@ export default function Home() {
     try {
       // Get the memo for its transcript
       const memo = memos.find((m) => m.id === memoId);
-      
+
       // Update the memo's category
       const { error: updateError } = await supabase
         .from("memos")
@@ -252,7 +252,10 @@ export default function Home() {
         });
 
       if (feedbackError) {
-        console.warn("Failed to log feedback (table may not exist yet):", feedbackError);
+        console.warn(
+          "Failed to log feedback (table may not exist yet):",
+          feedbackError
+        );
       }
 
       console.log("✅ Category changed:", {
