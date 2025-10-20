@@ -518,15 +518,25 @@ export default function Home() {
             {/* Main View Filter */}
             <div className="relative group">
               <button className="px-3 py-2 rounded-lg text-sm font-medium bg-[#0d0e14]/40 border border-slate-700/20 text-[#cbd5e1] hover:bg-[#0d0e14]/60 transition-all backdrop-blur-xl">
-                View: {filter === "all" ? "All" : filter === "starred" ? "Starred" : filter === "review" ? "Review" : "Archive"} ▾
+                View:{" "}
+                {filter === "all"
+                  ? "All"
+                  : filter === "starred"
+                    ? "Starred"
+                    : filter === "review"
+                      ? "Review"
+                      : "Archive"}{" "}
+                ▾
               </button>
-              
+
               {/* Hover dropdown */}
               <div className="absolute top-full left-0 mt-1 w-40 bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-lg shadow-2xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                 <button
                   onClick={() => setFilter("all")}
                   className={`w-full px-3 py-2 text-sm text-left transition-colors ${
-                    filter === "all" ? "bg-indigo-500/30 text-white" : "text-slate-300 hover:bg-slate-700/30"
+                    filter === "all"
+                      ? "bg-indigo-500/30 text-white"
+                      : "text-slate-300 hover:bg-slate-700/30"
                   }`}
                 >
                   All Memos
@@ -534,7 +544,9 @@ export default function Home() {
                 <button
                   onClick={() => setFilter("starred")}
                   className={`w-full px-3 py-2 text-sm text-left transition-colors flex items-center gap-2 ${
-                    filter === "starred" ? "bg-amber-500/30 text-white" : "text-slate-300 hover:bg-slate-700/30"
+                    filter === "starred"
+                      ? "bg-amber-500/30 text-white"
+                      : "text-slate-300 hover:bg-slate-700/30"
                   }`}
                 >
                   <Star className="w-3.5 h-3.5" /> Starred
@@ -542,7 +554,9 @@ export default function Home() {
                 <button
                   onClick={() => setFilter("review")}
                   className={`w-full px-3 py-2 text-sm text-left transition-colors ${
-                    filter === "review" ? "bg-fuchsia-500/30 text-white" : "text-slate-300 hover:bg-slate-700/30"
+                    filter === "review"
+                      ? "bg-fuchsia-500/30 text-white"
+                      : "text-slate-300 hover:bg-slate-700/30"
                   }`}
                 >
                   Needs Review
@@ -550,7 +564,9 @@ export default function Home() {
                 <button
                   onClick={() => setFilter("archive")}
                   className={`w-full px-3 py-2 text-sm text-left transition-colors ${
-                    filter === "archive" ? "bg-slate-500/30 text-white" : "text-slate-300 hover:bg-slate-700/30"
+                    filter === "archive"
+                      ? "bg-slate-500/30 text-white"
+                      : "text-slate-300 hover:bg-slate-700/30"
                   }`}
                 >
                   Archive
@@ -561,9 +577,12 @@ export default function Home() {
             {/* Category Filter */}
             <div className="relative group">
               <button className="px-3 py-2 rounded-lg text-sm font-medium bg-[#0d0e14]/40 border border-slate-700/20 text-[#cbd5e1] hover:bg-[#0d0e14]/60 transition-all backdrop-blur-xl">
-                {categoryFilter === "all" ? "Category: All" : `${getCategoryIcon(categoryFilter as Category)} ${getCategoryLabel(categoryFilter as Category)}`} ▾
+                {categoryFilter === "all"
+                  ? "Category: All"
+                  : `${getCategoryIcon(categoryFilter as Category)} ${getCategoryLabel(categoryFilter as Category)}`}{" "}
+                ▾
               </button>
-              
+
               {/* Hover dropdown */}
               <div className="absolute top-full left-0 mt-1 w-48 bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-lg shadow-2xl overflow-hidden max-h-80 overflow-y-auto opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                 {categories.map((cat) => (
@@ -578,7 +597,9 @@ export default function Home() {
                         : "text-slate-300 hover:bg-slate-700/30"
                     }`}
                   >
-                    {cat === "all" ? "All Categories" : `${getCategoryIcon(cat as Category)} ${getCategoryLabel(cat as Category)}`}
+                    {cat === "all"
+                      ? "All Categories"
+                      : `${getCategoryIcon(cat as Category)} ${getCategoryLabel(cat as Category)}`}
                   </button>
                 ))}
               </div>
@@ -589,13 +610,15 @@ export default function Home() {
               <button className="px-3 py-2 rounded-lg text-sm font-medium bg-[#0d0e14]/40 border border-slate-700/20 text-[#cbd5e1] hover:bg-[#0d0e14]/60 transition-all backdrop-blur-xl">
                 Size: {sizeFilter === "all" ? "All" : sizeFilter} ▾
               </button>
-              
+
               {/* Hover dropdown */}
               <div className="absolute top-full left-0 mt-1 w-40 bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-lg shadow-2xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                 <button
                   onClick={() => setSizeFilter("all")}
                   className={`w-full px-3 py-2 text-sm text-left transition-colors ${
-                    sizeFilter === "all" ? "bg-slate-500/30 text-white" : "text-slate-300 hover:bg-slate-700/30"
+                    sizeFilter === "all"
+                      ? "bg-slate-500/30 text-white"
+                      : "text-slate-300 hover:bg-slate-700/30"
                   }`}
                 >
                   All Sizes
@@ -603,7 +626,9 @@ export default function Home() {
                 <button
                   onClick={() => setSizeFilter("S")}
                   className={`w-full px-3 py-2 text-sm text-left transition-colors ${
-                    sizeFilter === "S" ? "bg-slate-500/30 text-white" : "text-slate-300 hover:bg-slate-700/30"
+                    sizeFilter === "S"
+                      ? "bg-slate-500/30 text-white"
+                      : "text-slate-300 hover:bg-slate-700/30"
                   }`}
                 >
                   S - Small (&lt;5min)
@@ -611,7 +636,9 @@ export default function Home() {
                 <button
                   onClick={() => setSizeFilter("M")}
                   className={`w-full px-3 py-2 text-sm text-left transition-colors ${
-                    sizeFilter === "M" ? "bg-slate-500/30 text-white" : "text-slate-300 hover:bg-slate-700/30"
+                    sizeFilter === "M"
+                      ? "bg-slate-500/30 text-white"
+                      : "text-slate-300 hover:bg-slate-700/30"
                   }`}
                 >
                   M - Medium (&lt;30min)
@@ -619,7 +646,9 @@ export default function Home() {
                 <button
                   onClick={() => setSizeFilter("L")}
                   className={`w-full px-3 py-2 text-sm text-left transition-colors ${
-                    sizeFilter === "L" ? "bg-slate-500/30 text-white" : "text-slate-300 hover:bg-slate-700/30"
+                    sizeFilter === "L"
+                      ? "bg-slate-500/30 text-white"
+                      : "text-slate-300 hover:bg-slate-700/30"
                   }`}
                 >
                   L - Large (&gt;30min)
