@@ -202,6 +202,7 @@ export async function POST(request: NextRequest) {
         extracted: categorization.extracted,
         tags: categorization.tags,
         starred: categorization.starred || false,
+        size: categorization.size || null,
       })
       .select()
       .single();
@@ -234,6 +235,7 @@ export async function POST(request: NextRequest) {
         extracted: categorization.extracted,
         tags: categorization.tags,
         starred: categorization.starred || false,
+        size: categorization.size || null,
         memo_id: memoData?.id || null,
         language: "en",
         duration: audioFile.size / 16000,

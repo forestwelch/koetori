@@ -27,6 +27,11 @@ INSTRUCTIONS:
    - Star if expressing high urgency or stress about something
    - Star if it's a time-sensitive task or deadline
    - Star if user explicitly requests emphasis
+7. Estimate task SIZE (for actionable items only):
+   - "S" (Small): Quick task, <5 minutes (e.g., send text, make call, buy one item)
+   - "M" (Medium): Moderate task, 5-30 minutes (e.g., write email, short meeting, small errand)
+   - "L" (Large): Substantial task, >30 minutes (e.g., project work, major planning, big shopping trip)
+   - null: Not an actionable task (journals, media recommendations, reflections)
 
 RESPONSE FORMAT (valid JSON only):
 {
@@ -41,7 +46,8 @@ RESPONSE FORMAT (valid JSON only):
     "actionable": true
   },
   "tags": ["tag1", "tag2", "tag3"],
-  "starred": false
+  "starred": false,
+  "size": "M"
 }
 
 EXAMPLES:
@@ -99,7 +105,8 @@ Output:
     "actionable": true
   },
   "tags": ["shopping", "groceries", "dentist", "errands"],
-  "starred": false
+  "starred": false,
+  "size": "M"
 }
 
 Input: "Need to pick up milk, eggs, bread, and some coffee beans from the store"
@@ -112,7 +119,8 @@ Output:
     "actionable": true
   },
   "tags": ["shopping", "groceries", "food"],
-  "starred": false
+  "starred": false,
+  "size": "M"
 }
 
 Input: "This is really important - I need to submit that grant application by Friday or we lose the funding. Top priority!"
@@ -126,7 +134,8 @@ Output:
     "actionable": true
   },
   "tags": ["urgent", "grant", "deadline", "funding"],
-  "starred": true
+  "starred": true,
+  "size": "L"
 }
 
 Input: "Today was tough, feeling overwhelmed with work deadlines but grateful for my supportive partner"
@@ -182,6 +191,13 @@ export function validateCategorizationResult(
   // Check if starred
   const starred = typeof result.starred === "boolean" ? result.starred : false;
 
+  // Validate size
+  const validSizes = ["S", "M", "L"];
+  const size =
+    result.size && validSizes.includes(result.size as string)
+      ? (result.size as "S" | "M" | "L")
+      : null;
+
   // Ensure who is an array if present
   if (extracted.who && !Array.isArray(extracted.who)) {
     extracted.who = [extracted.who as unknown as string];
@@ -193,5 +209,6 @@ export function validateCategorizationResult(
     extracted,
     tags,
     starred,
+    size,
   };
 }

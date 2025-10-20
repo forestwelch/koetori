@@ -11,6 +11,8 @@ export type Category =
   | "to buy" // Shopping list, things to purchase
   | "other"; // Catch-all
 
+export type TaskSize = "S" | "M" | "L" | null; // S: <5min, M: <30min, L: >30min
+
 export interface ExtractedData {
   title?: string; // Main subject or item name
   who?: string[]; // People mentioned
@@ -31,6 +33,7 @@ export interface Memo {
   timestamp: Date;
   deleted_at?: Date | null; // For soft delete
   starred?: boolean; // Starred/priority items
+  size?: TaskSize; // T-shirt size for tasks (S: <5min, M: <30min, L: >30min)
 }
 
 export interface CategorizationResult {
@@ -39,6 +42,7 @@ export interface CategorizationResult {
   extracted: ExtractedData;
   tags: string[];
   starred?: boolean; // Auto-star if urgent/important
+  size?: TaskSize; // T-shirt size for tasks
 }
 
 export interface TranscriptionResponse {
@@ -50,4 +54,5 @@ export interface TranscriptionResponse {
   tags: string[];
   memo_id: string;
   starred?: boolean; // Auto-star if urgent/important
+  size?: TaskSize; // T-shirt size for tasks
 }

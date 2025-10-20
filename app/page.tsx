@@ -21,6 +21,7 @@ export default function Home() {
     "all" | "review" | "archive" | "starred"
   >("all");
   const [categoryFilter, setCategoryFilter] = useState<Category | "all">("all");
+  const [sizeFilter, setSizeFilter] = useState<"S" | "M" | "L" | "all">("all");
   const [newMemoId, setNewMemoId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
@@ -63,6 +64,10 @@ export default function Home() {
         if (categoryFilter !== "all") {
           query = query.eq("category", categoryFilter);
         }
+
+        if (sizeFilter !== "all") {
+          query = query.eq("size", sizeFilter);
+        }
       }
 
       const { data, error } = await query;
@@ -77,7 +82,7 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }, [filter, categoryFilter]);
+  }, [filter, categoryFilter, sizeFilter]);
 
   useEffect(() => {
     loadMemos();
@@ -620,6 +625,26 @@ export default function Home() {
                   </div>
                 );
               })}
+            </div>
+
+            {/* Size Filter */}
+            <div className="flex flex-wrap gap-2 items-center">
+              <span className="text-xs text-[#64748b] font-medium">Size:</span>
+              {(["all", "S", "M", "L"] as const).map((size) => (
+                <button
+                  key={size}
+                  onClick={() => setSizeFilter(size)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all backdrop-blur-xl border ${
+                    sizeFilter === size
+                      ? "bg-slate-500/30 text-white border-slate-500/40 shadow-lg shadow-slate-500/20"
+                      : "bg-[#0d0e14]/20 border-slate-700/10 text-[#64748b] hover:border-slate-600/30 hover:bg-[#0d0e14]/40"
+                  }`}
+                >
+                  {size === "all"
+                    ? "All"
+                    : `${size} ${size === "S" ? "(<5min)" : size === "M" ? "(<30min)" : "(>30min)"}`}
+                </button>
+              ))}
             </div>
           </div>
         </div>

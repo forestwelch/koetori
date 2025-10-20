@@ -138,6 +138,13 @@ export function MemoItem({
               {summary}
             </p>
 
+            {/* Task Size */}
+            {memo.size && (
+              <span className="px-1.5 py-0.5 bg-slate-700/30 text-slate-300 border border-slate-600/30 rounded text-xs font-medium flex-shrink-0">
+                {memo.size}
+              </span>
+            )}
+
             {/* Actions - Star always visible, Edit and Archive on hover */}
             <div className="flex items-center gap-1 flex-shrink-0">
               {filter !== "archive" ? (
