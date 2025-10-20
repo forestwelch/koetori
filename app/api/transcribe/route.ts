@@ -89,80 +89,105 @@ export async function POST(request: NextRequest) {
         { status: 429, headers }
       );
     }
-    // Get the form data
-    const formData = await request.formData();
-    const audioFile = formData.get("audio");
 
-    // Validate that audio file exists
-    if (!audioFile || !(audioFile instanceof Blob)) {
-      logRequest("warn", "No audio file provided", { clientId });
+    // Check if this is a text-only request
+    const contentType = request.headers.get("content-type");
+    let transcript: string;
 
-      return NextResponse.json(
-        { error: "No audio file provided" },
-        { status: 400, headers }
-      );
-    }
+    if (contentType?.includes("application/json")) {
+      // Handle text input
+      const body = await request.json();
 
-    // Validate file size
-    if (audioFile.size > MAX_FILE_SIZE) {
-      logRequest("warn", "File size exceeds limit", {
+      if (!body.text || typeof body.text !== "string" || !body.text.trim()) {
+        logRequest("warn", "No text provided", { clientId });
+        return NextResponse.json(
+          { error: "No text provided" },
+          { status: 400, headers }
+        );
+      }
+
+      transcript = body.text.trim();
+
+      logRequest("info", "Processing text input", {
         clientId,
-        fileSize: audioFile.size,
-        maxSize: MAX_FILE_SIZE,
+        textLength: transcript.length,
       });
+    } else {
+      // Handle audio file (existing logic)
+      const formData = await request.formData();
+      const audioFile = formData.get("audio");
 
-      return NextResponse.json(
-        { error: "File size exceeds 10MB limit" },
-        { status: 400, headers }
-      );
-    }
+      // Validate that audio file exists
+      if (!audioFile || !(audioFile instanceof Blob)) {
+        logRequest("warn", "No audio file provided", { clientId });
 
-    // Warn if file might exceed duration limit (estimate only)
-    if (audioFile.size > MAX_AUDIO_DURATION_ESTIMATE) {
-      logRequest("warn", "File may exceed duration limit", {
-        clientId,
-        fileSize: audioFile.size,
-        estimatedDuration: audioFile.size / (16 * 1024),
-      });
-    }
+        return NextResponse.json(
+          { error: "No audio file provided" },
+          { status: 400, headers }
+        );
+      }
 
-    // Validate file type
-    if (!ALLOWED_TYPES.includes(audioFile.type)) {
-      logRequest("warn", "Invalid file type", {
+      // Validate file size
+      if (audioFile.size > MAX_FILE_SIZE) {
+        logRequest("warn", "File size exceeds limit", {
+          clientId,
+          fileSize: audioFile.size,
+          maxSize: MAX_FILE_SIZE,
+        });
+
+        return NextResponse.json(
+          { error: "File size exceeds 10MB limit" },
+          { status: 400, headers }
+        );
+      }
+
+      // Warn if file might exceed duration limit (estimate only)
+      if (audioFile.size > MAX_AUDIO_DURATION_ESTIMATE) {
+        logRequest("warn", "File may exceed duration limit", {
+          clientId,
+          fileSize: audioFile.size,
+          estimatedDuration: audioFile.size / (16 * 1024),
+        });
+      }
+
+      // Validate file type
+      if (!ALLOWED_TYPES.includes(audioFile.type)) {
+        logRequest("warn", "Invalid file type", {
+          clientId,
+          fileType: audioFile.type,
+        });
+
+        return NextResponse.json(
+          {
+            error: `Invalid file type. Allowed types: ${ALLOWED_TYPES.join(", ")}`,
+          },
+          { status: 400, headers }
+        );
+      }
+
+      logRequest("info", "Processing transcription request", {
         clientId,
         fileType: audioFile.type,
+        fileSize: audioFile.size,
       });
 
-      return NextResponse.json(
-        {
-          error: `Invalid file type. Allowed types: ${ALLOWED_TYPES.join(", ")}`,
-        },
-        { status: 400, headers }
-      );
+      // Convert Blob to File for Groq API
+      const file = new File([audioFile], "recording.webm", {
+        type: audioFile.type,
+      });
+
+      // Call Groq Whisper API for transcription
+      const transcription = await groq.audio.transcriptions.create({
+        file: file,
+        model: "whisper-large-v3-turbo",
+        language: "en", // Optional: specify language or let it auto-detect
+        response_format: "json",
+      });
+
+      transcript = transcription.text;
     }
 
-    logRequest("info", "Processing transcription request", {
-      clientId,
-      fileType: audioFile.type,
-      fileSize: audioFile.size,
-    });
-
-    // Convert Blob to File for Groq API
-    const file = new File([audioFile], "recording.webm", {
-      type: audioFile.type,
-    });
-
-    // Call Groq Whisper API for transcription
-    const transcription = await groq.audio.transcriptions.create({
-      file: file,
-      model: "whisper-large-v3-turbo",
-      language: "en", // Optional: specify language or let it auto-detect
-      response_format: "json",
-    });
-
-    const transcript = transcription.text;
-
-    // Phase 8: AI Categorization
+    // Phase 8: AI Categorization (same for both audio and text)
     logRequest("info", "Starting categorization", {
       clientId,
       transcriptLength: transcript.length,
@@ -238,7 +263,9 @@ export async function POST(request: NextRequest) {
         size: categorization.size || null,
         memo_id: memoData?.id || null,
         language: "en",
-        duration: audioFile.size / 16000,
+        duration: contentType?.includes("application/json")
+          ? 0
+          : transcript.length / 150, // Estimate 150 words per minute for text
         processingTime: processingTime,
       },
       { headers }

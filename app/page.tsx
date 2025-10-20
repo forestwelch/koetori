@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "./lib/supabase";
 import { Memo, Category } from "./types/memo";
 import {
@@ -11,7 +11,7 @@ import {
 } from "./lib/ui-utils";
 import { useVoiceRecorder } from "./hooks/useVoiceRecorder";
 import { MemoItem } from "./components/MemoItem";
-import { Star } from "lucide-react";
+import { Star, Type } from "lucide-react";
 
 export default function Home() {
   const [memos, setMemos] = useState<Memo[]>([]);
@@ -29,6 +29,9 @@ export default function Home() {
   const [openDropdown, setOpenDropdown] = useState<
     "view" | "category" | "size" | null
   >(null);
+  const [showTextInput, setShowTextInput] = useState(false);
+  const [textInput, setTextInput] = useState("");
+  const [isProcessingText, setIsProcessingText] = useState(false);
 
   const {
     isRecording,
@@ -207,6 +210,13 @@ export default function Home() {
         e.preventDefault();
         setShowRandomMemo(false);
       }
+
+      // Escape to close text input modal
+      if (e.code === "Escape" && showTextInput) {
+        e.preventDefault();
+        setShowTextInput(false);
+        setTextInput("");
+      }
     };
 
     document.addEventListener("keydown", handleKeyPress);
@@ -216,6 +226,7 @@ export default function Home() {
     isProcessing,
     editingId,
     showRandomMemo,
+    showTextInput,
     startRecording,
     stopRecording,
     cancelRecording,
@@ -377,6 +388,62 @@ export default function Home() {
     }
   };
 
+  // Handle text input submission (similar to voice recording but skips audio step)
+  const handleTextSubmit = async () => {
+    if (!textInput.trim() || isProcessingText) return;
+
+    setIsProcessingText(true);
+    try {
+      // Call the transcription API but pass text directly instead of audio
+      const response = await fetch("/api/transcribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: textInput.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to process text");
+      }
+
+      const result = await response.json();
+
+      // Add to memos with optimistic update
+      const newMemo: Memo = {
+        id: result.memo_id || crypto.randomUUID(),
+        transcript: textInput.trim(),
+        category: result.category,
+        confidence: result.confidence,
+        needs_review: result.needs_review,
+        extracted: result.extracted,
+        tags: result.tags || [],
+        starred: result.starred || false,
+        size: result.size || null,
+        timestamp: new Date(),
+        deleted_at: null,
+      };
+
+      // Optimistic update
+      setMemos((prev) => [newMemo, ...prev]);
+      setNewMemoId(newMemo.id);
+
+      // Clear and close
+      setTextInput("");
+      setShowTextInput(false);
+
+      // Clear the highlight after a delay
+      setTimeout(() => setNewMemoId(null), 3000);
+    } catch (error) {
+      console.error("Error processing text:", error);
+      // You might want to show an error message to the user here
+    } finally {
+      setIsProcessingText(false);
+    }
+  };
+
   // Pick a random memo (prioritize actionable, todos, needs review)
   const pickRandomMemo = async () => {
     try {
@@ -443,15 +510,18 @@ export default function Home() {
                     {formatTime(recordingTime)}
                   </div>
                   <p className="text-[#94a3b8] text-sm mt-2">
-                    Press{" "}
-                    <kbd className="px-2 py-1 bg-[#1e1f2a] rounded text-xs font-mono">
-                      Space
-                    </kbd>{" "}
-                    to stop or{" "}
-                    <kbd className="px-2 py-1 bg-[#1e1f2a] rounded text-xs font-mono">
-                      Esc
-                    </kbd>{" "}
-                    to cancel
+                    <span className="hidden sm:inline">
+                      Press{" "}
+                      <kbd className="px-2 py-1 bg-[#1e1f2a] rounded text-xs font-mono">
+                        Space
+                      </kbd>{" "}
+                      to stop or{" "}
+                      <kbd className="px-2 py-1 bg-[#1e1f2a] rounded text-xs font-mono">
+                        Esc
+                      </kbd>{" "}
+                      to cancel
+                    </span>
+                    <span className="sm:hidden">Tap to stop recording</span>
                   </p>
                 </div>
               </>
@@ -484,42 +554,63 @@ export default function Home() {
               koetori
             </h1>
 
-            {/* Floating Record Button */}
+            {/* Text Input and Record Buttons */}
             <div className="flex items-center gap-3">
+              {/* Text Input Status */}
+              {isProcessingText && (
+                <div className="flex items-center gap-2 text-emerald-400 text-sm font-medium">
+                  <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                  <span className="hidden sm:inline">Processing...</span>
+                </div>
+              )}
+
               {/* Recording/Processing Status */}
               {isRecording && (
                 <div className="flex items-center gap-2 text-red-400 text-sm font-medium animate-pulse">
                   <div className="w-2 h-2 bg-red-500 rounded-full animate-ping" />
-                  Recording...
+                  <span className="hidden sm:inline">Recording...</span>
                 </div>
               )}
               {isProcessing && (
                 <div className="flex items-center gap-2 text-indigo-400 text-sm font-medium">
                   <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                  Processing...
+                  <span className="hidden sm:inline">Processing...</span>
                 </div>
               )}
 
+              {/* Text Input Button */}
+              <button
+                onClick={() => setShowTextInput(true)}
+                disabled={isProcessing || isProcessingText}
+                className={`group relative w-14 h-14 rounded-full shadow-lg transition-all duration-300 ${
+                  isProcessing || isProcessingText
+                    ? "bg-gray-500 shadow-gray-500/50 cursor-not-allowed"
+                    : "bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-emerald-500/50 hover:shadow-emerald-500/70 hover:scale-105"
+                }`}
+                aria-label="Add text memo"
+                title="Add text memo"
+              >
+                <div
+                  className={`absolute inset-0 rounded-full blur-xl transition-opacity duration-300 ${"bg-gradient-to-br from-emerald-400 to-cyan-400 opacity-0 group-hover:opacity-100"}`}
+                />
+                <div className="relative flex items-center justify-center w-full h-full">
+                  <Type className="w-6 h-6 text-white" />
+                </div>
+              </button>
+
+              {/* Voice Record Button */}
               <button
                 onClick={handleRecordClick}
-                disabled={isProcessing}
+                disabled={isProcessing || isProcessingText}
                 className={`group relative w-14 h-14 rounded-full shadow-lg transition-all duration-300 ${
                   isRecording
                     ? "bg-red-500 shadow-red-500/50 hover:shadow-red-500/70 animate-pulse"
-                    : isProcessing
+                    : isProcessing || isProcessingText
                       ? "bg-gray-500 shadow-gray-500/50 cursor-not-allowed"
                       : "bg-gradient-to-br from-indigo-500 to-purple-500 shadow-indigo-500/50 hover:shadow-indigo-500/70 hover:scale-105"
                 }`}
-                aria-label={
-                  isRecording
-                    ? "Stop recording (Space)"
-                    : "Start recording (Space)"
-                }
-                title={
-                  isRecording
-                    ? "Stop recording (Space)"
-                    : "Start recording (Space)"
-                }
+                aria-label={isRecording ? "Stop recording" : "Start recording"}
+                title={isRecording ? "Stop recording" : "Start recording"}
               >
                 <div
                   className={`absolute inset-0 rounded-full blur-xl transition-opacity duration-300 ${
@@ -780,11 +871,21 @@ export default function Home() {
             </div>
             <h3 className="text-xl text-[#cbd5e1] mb-2">No memos yet</h3>
             <p className="text-[#64748b] mb-6">
-              {filter === "review"
-                ? "No memos need review! 🎉"
-                : categoryFilter !== "all"
-                  ? `No ${categoryFilter} memos yet`
-                  : "Click the record button or press Space to create your first memo"}
+              {filter === "review" ? (
+                "No memos need review! 🎉"
+              ) : categoryFilter !== "all" ? (
+                `No ${categoryFilter} memos yet`
+              ) : (
+                <>
+                  <span className="hidden sm:inline">
+                    Click the record button or press Space to create your first
+                    memo
+                  </span>
+                  <span className="sm:hidden">
+                    Click the record button to create your first memo
+                  </span>
+                </>
+              )}
             </p>
             <button
               onClick={handleRecordClick}
@@ -968,6 +1069,99 @@ export default function Home() {
               >
                 Close
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Text Input Modal */}
+      {showTextInput && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-2xl shadow-2xl w-full max-w-2xl">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-white">
+                  Add Text Memo
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowTextInput(false);
+                    setTextInput("");
+                  }}
+                  className="text-slate-400 hover:text-white transition-colors"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <textarea
+                value={textInput}
+                onChange={(e) => setTextInput(e.target.value)}
+                placeholder="Enter your memo text here..."
+                className="w-full h-40 bg-[#1e1f2a]/60 border border-slate-700/30 rounded-lg p-4 text-white placeholder-slate-400 resize-none focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-colors"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                    e.preventDefault();
+                    handleTextSubmit();
+                  }
+                  if (e.key === "Escape") {
+                    e.preventDefault();
+                    setShowTextInput(false);
+                    setTextInput("");
+                  }
+                }}
+              />
+
+              <div className="flex items-center justify-between mt-4">
+                <p className="text-slate-400 text-sm">
+                  <span className="hidden sm:inline">
+                    Press{" "}
+                    <kbd className="px-2 py-1 bg-slate-700/50 rounded text-xs">
+                      Cmd+Enter
+                    </kbd>{" "}
+                    to save
+                  </span>
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowTextInput(false);
+                      setTextInput("");
+                    }}
+                    className="px-4 py-2 bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleTextSubmit}
+                    disabled={!textInput.trim() || isProcessingText}
+                    className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                      !textInput.trim() || isProcessingText
+                        ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                        : "bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white shadow-lg"
+                    }`}
+                  >
+                    {isProcessingText ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      "Save"
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
