@@ -26,6 +26,9 @@ export default function Home() {
   const [editText, setEditText] = useState("");
   const [showRandomMemo, setShowRandomMemo] = useState(false);
   const [randomMemo, setRandomMemo] = useState<Memo | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<
+    "view" | "category" | "size" | null
+  >(null);
 
   const {
     isRecording,
@@ -516,8 +519,13 @@ export default function Home() {
           {/* Compact Filter Controls with Hover Menus */}
           <div className="flex gap-3 flex-wrap items-center">
             {/* Main View Filter */}
-            <div className="relative group">
-              <button className="px-3 py-2 rounded-lg text-sm font-medium bg-[#0d0e14]/40 border border-slate-700/20 text-[#cbd5e1] hover:bg-[#0d0e14]/60 transition-all backdrop-blur-xl">
+            <div className="relative">
+              <button
+                onClick={() =>
+                  setOpenDropdown(openDropdown === "view" ? null : "view")
+                }
+                className="px-3 py-2 rounded-lg text-sm font-medium bg-[#0d0e14]/40 border border-slate-700/20 text-[#cbd5e1] hover:bg-[#0d0e14]/60 transition-all backdrop-blur-xl"
+              >
                 View:{" "}
                 {filter === "all"
                   ? "All"
@@ -529,10 +537,19 @@ export default function Home() {
                 ▾
               </button>
 
-              {/* Hover dropdown */}
-              <div className="absolute top-full left-0 mt-1 w-40 bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-lg shadow-2xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+              {/* Dropdown - hover on desktop, click on mobile */}
+              <div
+                className={`absolute top-full left-0 mt-1 w-40 bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-lg shadow-2xl overflow-hidden transition-all z-50 sm:opacity-0 sm:invisible sm:group-hover:opacity-100 sm:group-hover:visible ${
+                  openDropdown === "view"
+                    ? "opacity-100 visible"
+                    : "opacity-0 invisible sm:group-hover:opacity-100 sm:group-hover:visible"
+                }`}
+              >
                 <button
-                  onClick={() => setFilter("all")}
+                  onClick={() => {
+                    setFilter("all");
+                    setOpenDropdown(null);
+                  }}
                   className={`w-full px-3 py-2 text-sm text-left transition-colors ${
                     filter === "all"
                       ? "bg-indigo-500/30 text-white"
@@ -542,7 +559,10 @@ export default function Home() {
                   All Memos
                 </button>
                 <button
-                  onClick={() => setFilter("starred")}
+                  onClick={() => {
+                    setFilter("starred");
+                    setOpenDropdown(null);
+                  }}
                   className={`w-full px-3 py-2 text-sm text-left transition-colors flex items-center gap-2 ${
                     filter === "starred"
                       ? "bg-amber-500/30 text-white"
@@ -552,7 +572,10 @@ export default function Home() {
                   <Star className="w-3.5 h-3.5" /> Starred
                 </button>
                 <button
-                  onClick={() => setFilter("review")}
+                  onClick={() => {
+                    setFilter("review");
+                    setOpenDropdown(null);
+                  }}
                   className={`w-full px-3 py-2 text-sm text-left transition-colors ${
                     filter === "review"
                       ? "bg-fuchsia-500/30 text-white"
@@ -562,7 +585,10 @@ export default function Home() {
                   Needs Review
                 </button>
                 <button
-                  onClick={() => setFilter("archive")}
+                  onClick={() => {
+                    setFilter("archive");
+                    setOpenDropdown(null);
+                  }}
                   className={`w-full px-3 py-2 text-sm text-left transition-colors ${
                     filter === "archive"
                       ? "bg-slate-500/30 text-white"
@@ -575,20 +601,36 @@ export default function Home() {
             </div>
 
             {/* Category Filter */}
-            <div className="relative group">
-              <button className="px-3 py-2 rounded-lg text-sm font-medium bg-[#0d0e14]/40 border border-slate-700/20 text-[#cbd5e1] hover:bg-[#0d0e14]/60 transition-all backdrop-blur-xl">
+            <div className="relative">
+              <button
+                onClick={() =>
+                  setOpenDropdown(
+                    openDropdown === "category" ? null : "category"
+                  )
+                }
+                className="px-3 py-2 rounded-lg text-sm font-medium bg-[#0d0e14]/40 border border-slate-700/20 text-[#cbd5e1] hover:bg-[#0d0e14]/60 transition-all backdrop-blur-xl"
+              >
                 {categoryFilter === "all"
                   ? "Category: All"
                   : `${getCategoryIcon(categoryFilter as Category)} ${getCategoryLabel(categoryFilter as Category)}`}{" "}
                 ▾
               </button>
 
-              {/* Hover dropdown */}
-              <div className="absolute top-full left-0 mt-1 w-48 bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-lg shadow-2xl overflow-hidden max-h-80 overflow-y-auto opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+              {/* Dropdown - hover on desktop, click on mobile */}
+              <div
+                className={`absolute top-full left-0 mt-1 w-48 bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-lg shadow-2xl overflow-hidden max-h-80 overflow-y-auto transition-all z-50 ${
+                  openDropdown === "category"
+                    ? "opacity-100 visible"
+                    : "opacity-0 invisible sm:group-hover:opacity-100 sm:group-hover:visible"
+                }`}
+              >
                 {categories.map((cat) => (
                   <button
                     key={cat}
-                    onClick={() => setCategoryFilter(cat)}
+                    onClick={() => {
+                      setCategoryFilter(cat);
+                      setOpenDropdown(null);
+                    }}
                     className={`w-full px-3 py-2 text-sm text-left transition-colors ${
                       categoryFilter === cat
                         ? cat === "all"
@@ -606,15 +648,29 @@ export default function Home() {
             </div>
 
             {/* Size Filter */}
-            <div className="relative group">
-              <button className="px-3 py-2 rounded-lg text-sm font-medium bg-[#0d0e14]/40 border border-slate-700/20 text-[#cbd5e1] hover:bg-[#0d0e14]/60 transition-all backdrop-blur-xl">
+            <div className="relative">
+              <button
+                onClick={() =>
+                  setOpenDropdown(openDropdown === "size" ? null : "size")
+                }
+                className="px-3 py-2 rounded-lg text-sm font-medium bg-[#0d0e14]/40 border border-slate-700/20 text-[#cbd5e1] hover:bg-[#0d0e14]/60 transition-all backdrop-blur-xl"
+              >
                 Size: {sizeFilter === "all" ? "All" : sizeFilter} ▾
               </button>
 
-              {/* Hover dropdown */}
-              <div className="absolute top-full left-0 mt-1 w-40 bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-lg shadow-2xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+              {/* Dropdown - hover on desktop, click on mobile */}
+              <div
+                className={`absolute top-full left-0 mt-1 w-40 bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-lg shadow-2xl overflow-hidden transition-all z-50 ${
+                  openDropdown === "size"
+                    ? "opacity-100 visible"
+                    : "opacity-0 invisible sm:group-hover:opacity-100 sm:group-hover:visible"
+                }`}
+              >
                 <button
-                  onClick={() => setSizeFilter("all")}
+                  onClick={() => {
+                    setSizeFilter("all");
+                    setOpenDropdown(null);
+                  }}
                   className={`w-full px-3 py-2 text-sm text-left transition-colors ${
                     sizeFilter === "all"
                       ? "bg-slate-500/30 text-white"
@@ -624,7 +680,10 @@ export default function Home() {
                   All Sizes
                 </button>
                 <button
-                  onClick={() => setSizeFilter("S")}
+                  onClick={() => {
+                    setSizeFilter("S");
+                    setOpenDropdown(null);
+                  }}
                   className={`w-full px-3 py-2 text-sm text-left transition-colors ${
                     sizeFilter === "S"
                       ? "bg-slate-500/30 text-white"
@@ -634,7 +693,10 @@ export default function Home() {
                   S - Small (&lt;5min)
                 </button>
                 <button
-                  onClick={() => setSizeFilter("M")}
+                  onClick={() => {
+                    setSizeFilter("M");
+                    setOpenDropdown(null);
+                  }}
                   className={`w-full px-3 py-2 text-sm text-left transition-colors ${
                     sizeFilter === "M"
                       ? "bg-slate-500/30 text-white"
@@ -644,7 +706,10 @@ export default function Home() {
                   M - Medium (&lt;30min)
                 </button>
                 <button
-                  onClick={() => setSizeFilter("L")}
+                  onClick={() => {
+                    setSizeFilter("L");
+                    setOpenDropdown(null);
+                  }}
                   className={`w-full px-3 py-2 text-sm text-left transition-colors ${
                     sizeFilter === "L"
                       ? "bg-slate-500/30 text-white"

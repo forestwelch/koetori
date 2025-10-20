@@ -65,6 +65,12 @@ export function MemoItem({
     if (!isSwiping || filter === "archive") return;
     const currentX = e.touches[0].clientX;
     const diff = currentX - startX.current;
+
+    // Prevent page scroll when swiping horizontally
+    if (Math.abs(diff) > 10) {
+      e.preventDefault();
+    }
+
     setSwipeX(diff);
   };
 
@@ -128,13 +134,18 @@ export function MemoItem({
                   memo.category
                 )}`}
               >
-                {getCategoryIcon(memo.category)}{" "}
-                {getCategoryLabel(memo.category)}
+                <span className="sm:hidden">
+                  {getCategoryIcon(memo.category)}
+                </span>
+                <span className="hidden sm:inline">
+                  {getCategoryIcon(memo.category)}{" "}
+                  {getCategoryLabel(memo.category)}
+                </span>
               </span>
             )}
 
             {/* Summary */}
-            <p className="text-[#cbd5e1] text-sm flex-1 line-clamp-1">
+            <p className="text-[#cbd5e1] text-xs sm:text-sm flex-1 line-clamp-1">
               {summary}
             </p>
 
@@ -155,7 +166,7 @@ export function MemoItem({
                         e.stopPropagation();
                         startEdit(memo);
                       }}
-                      className="p-1.5 hover:bg-slate-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                      className="p-1.5 hover:bg-slate-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100 pointer-events-none sm:pointer-events-auto"
                       title="Edit"
                     >
                       <Edit2 className="w-4 h-4 text-slate-400" />
@@ -166,7 +177,7 @@ export function MemoItem({
                       e.stopPropagation();
                       softDelete(memo.id);
                     }}
-                    className="p-1.5 hover:bg-slate-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                    className="p-1.5 hover:bg-slate-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100 pointer-events-none sm:pointer-events-auto"
                   >
                     <Archive className="w-4 h-4 text-slate-400" />
                   </button>

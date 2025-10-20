@@ -29,7 +29,7 @@ export function SwipeIndicator({ swipeX }: SwipeIndicatorProps) {
           style={{ opacity: leftSwipeProgress * 0.15 }}
         >
           <Star
-            className="w-36 h-36 text-amber-900 drop-shadow-2xl"
+            className="w-16 h-16 sm:w-36 sm:h-36 text-amber-900 drop-shadow-2xl"
             style={{ opacity: Math.max(leftSwipeProgress * 2, 0.9) }}
             strokeWidth={2.5}
           />
@@ -43,7 +43,7 @@ export function SwipeIndicator({ swipeX }: SwipeIndicatorProps) {
           style={{ opacity: rightSwipeProgress * 0.15 }}
         >
           <Archive
-            className="w-36 h-36 text-slate-50 drop-shadow-2xl"
+            className="w-16 h-16 sm:w-36 sm:h-36 text-slate-50 drop-shadow-2xl"
             style={{ opacity: Math.max(rightSwipeProgress * 2, 0.9) }}
             strokeWidth={2.5}
           />
