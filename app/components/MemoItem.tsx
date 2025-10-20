@@ -2,7 +2,11 @@
 
 import { useState, useRef } from "react";
 import { Memo, Category } from "../types/memo";
-import { getCategoryColor, getCategoryIcon, getCategoryLabel } from "../lib/ui-utils";
+import {
+  getCategoryColor,
+  getCategoryIcon,
+  getCategoryLabel,
+} from "../lib/ui-utils";
 import { Archive, Star, Edit2 } from "lucide-react";
 import { CategorySelector } from "./CategorySelector";
 
@@ -95,7 +99,9 @@ export function MemoItem({
 
       <div
         className={`group relative p-3 sm:p-4 bg-[#0d0e14]/40 backdrop-blur-xl rounded-xl border hover:bg-[#0d0e14]/60 transition-all duration-200 cursor-pointer ${
-          isNew ? "border-indigo-500/50 shadow-lg shadow-indigo-500/20" : "border-slate-700/20 hover:border-slate-600/40"
+          isNew
+            ? "border-indigo-500/50 shadow-lg shadow-indigo-500/20"
+            : "border-slate-700/20 hover:border-slate-600/40"
         } ${isNew ? "animate-in fade-in slide-in-from-top-4" : ""}`}
         onClick={() => setIsExpanded(!isExpanded)}
       >
@@ -122,7 +128,8 @@ export function MemoItem({
                   memo.category
                 )}`}
               >
-                {getCategoryIcon(memo.category)} {getCategoryLabel(memo.category)}
+                {getCategoryIcon(memo.category)}{" "}
+                {getCategoryLabel(memo.category)}
               </span>
             )}
 
@@ -174,7 +181,10 @@ export function MemoItem({
 
           {/* Expanded details */}
           {isExpanded && (
-            <div onClick={(e) => e.stopPropagation()} className="mt-2 pt-2 border-t border-slate-700/20">
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="mt-2 pt-2 border-t border-slate-700/20"
+            >
               {/* Full transcript or edit mode */}
               {isEditing ? (
                 <div className="mb-2">
@@ -201,9 +211,7 @@ export function MemoItem({
                   </div>
                 </div>
               ) : memo.transcript !== summary ? (
-                <p className="text-[#cbd5e1] text-sm mb-2">
-                  {memo.transcript}
-                </p>
+                <p className="text-[#cbd5e1] text-sm mb-2">{memo.transcript}</p>
               ) : null}
 
               {/* Metadata row */}
