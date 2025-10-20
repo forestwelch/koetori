@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { Memo, Category } from "../types/memo";
-import { Star } from "lucide-react";
+
 import { MemoHeader } from "./MemoHeader";
 import { MemoContent } from "./MemoContent";
 import { MemoActions } from "./MemoActions";
@@ -90,14 +90,11 @@ export function MemoItem({
     >
       <SwipeIndicator swipeX={swipeX} />
 
-      <div className="group relative p-4 sm:p-6 bg-[#0d0e14]/40 backdrop-blur-xl rounded-2xl border border-slate-700/20 hover:border-slate-600/40 hover:bg-[#0d0e14]/60 transition-all duration-1000 animate-in fade-in slide-in-from-top-4">
-        {/* Starred indicator */}
-        {memo.starred && filter !== "archive" && (
-          <div className="absolute top-2 right-2">
-            <Star className="w-4 h-4 text-amber-400 fill-amber-400/50" />
-          </div>
-        )}
-
+      <div className={`group relative p-4 sm:p-6 bg-[#0d0e14]/40 backdrop-blur-xl rounded-2xl border hover:bg-[#0d0e14]/60 transition-all duration-1000 animate-in fade-in slide-in-from-top-4 ${
+        memo.starred && filter !== "archive"
+          ? "border-amber-500/40 shadow-lg shadow-amber-500/10"
+          : "border-slate-700/20 hover:border-slate-600/40"
+      }`}>
         {/* New memo highlight */}
         <div
           className={`absolute inset-0 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 pointer-events-none transition-opacity duration-1000 ${
