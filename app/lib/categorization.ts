@@ -33,6 +33,14 @@ INSTRUCTIONS:
    - "L" (Large): Substantial task, >30 minutes (e.g., project work, major planning, big shopping trip)
    - null: Not an actionable task (journals, media recommendations, reflections)
 
+IMPORTANT: For the "what" field, create a SPECIFIC, ACTIONABLE summary that includes actual names/titles:
+- For media: "Watch [Title]", "Read [Book]", "Listen to [Podcast]", etc.
+- For events: "Meet [Person]", "[Event name] on [date]", etc. 
+- For todos: "Order [specific item]", "Call [person/place]", etc.
+- For shopping: Include specific item names, not just "groceries"
+- Avoid generic phrases like "movie recommendation" - use the actual title
+- Keep it concise but specific (under 50 characters when possible)
+
 RESPONSE FORMAT (valid JSON only):
 {
   "category": "category_name",
@@ -60,7 +68,7 @@ Output:
   "extracted": {
     "title": "Ghost in the Shell",
     "who": ["friend"],
-    "what": "Movie recommendation, sounds great",
+    "what": "Watch Ghost in the Shell",
     "actionable": true
   },
   "tags": ["movie", "recommendation", "anime"]
@@ -76,7 +84,7 @@ Output:
     "who": ["Max"],
     "when": "tomorrow at 6pm",
     "where": "Dandelion Chocolate",
-    "what": "Discuss Max's book",
+    "what": "Meet Max at Dandelion Chocolate",
     "actionable": true
   },
   "tags": ["meeting", "social", "book"]
@@ -89,7 +97,7 @@ Output:
   "confidence": 0.92,
   "extracted": {
     "title": "Three of Cups",
-    "what": "Career reading - collaboration, community, team dinner connection",
+    "what": "Three of Cups career reading",
     "actionable": false
   },
   "tags": ["tarot", "three-of-cups", "career", "collaboration"]
@@ -101,7 +109,7 @@ Output:
   "category": "todo",
   "confidence": 0.96,
   "extracted": {
-    "what": "Buy groceries and schedule dentist appointment",
+    "what": "Buy groceries and call dentist",
     "actionable": true
   },
   "tags": ["shopping", "groceries", "dentist", "errands"],
@@ -115,12 +123,82 @@ Output:
   "category": "to buy",
   "confidence": 0.98,
   "extracted": {
-    "what": "Groceries: milk, eggs, bread, coffee beans",
+    "what": "Milk, eggs, bread, coffee beans",
     "actionable": true
   },
   "tags": ["shopping", "groceries", "food"],
   "starred": false,
   "size": "M"
+}
+
+Input: "Reminder to watch Sleepy Hollow from 1999"
+Output:
+{
+  "category": "media",
+  "confidence": 0.95,
+  "extracted": {
+    "title": "Sleepy Hollow",
+    "when": "1999",
+    "what": "Watch Sleepy Hollow",
+    "actionable": true
+  },
+  "tags": ["movie", "1999", "reminder"]
+}
+
+Input: "Check out Amy Pollard's podcast"
+Output:
+{
+  "category": "media",
+  "confidence": 0.92,
+  "extracted": {
+    "title": "Amy Pollard's podcast",
+    "who": ["Amy Pollard"],
+    "what": "Amy Pollard's podcast",
+    "actionable": true
+  },
+  "tags": ["podcast", "recommendation"]
+}
+
+Input: "I gotta order the Murder on the Orient Express tickets, probably for this Friday"
+Output:
+{
+  "category": "todo",
+  "confidence": 0.94,
+  "extracted": {
+    "title": "Murder on the Orient Express tickets",
+    "when": "Friday",
+    "what": "Order Orient Express tickets",
+    "actionable": true
+  },
+  "tags": ["tickets", "theater", "friday"],
+  "starred": false,
+  "size": "S"
+}
+
+Input: "Cadet Kelly is honestly such an iconic movie and I would love to watch it again"
+Output:
+{
+  "category": "media",
+  "confidence": 0.93,
+  "extracted": {
+    "title": "Cadet Kelly",
+    "what": "Watch Cadet Kelly",
+    "actionable": true
+  },
+  "tags": ["movie", "rewatch", "iconic"]
+}
+
+Input: "I gotta read the book, The Eyes are the Best Part"
+Output:
+{
+  "category": "media",
+  "confidence": 0.96,
+  "extracted": {
+    "title": "The Eyes are the Best Part",
+    "what": "Read Eyes are the Best Part",
+    "actionable": true
+  },
+  "tags": ["book", "reading"]
 }
 
 Input: "This is really important - I need to submit that grant application by Friday or we lose the funding. Top priority!"
