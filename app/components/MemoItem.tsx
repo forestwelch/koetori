@@ -123,11 +123,11 @@ export function MemoItem({
   // Get transcript excerpt for search mode
   const getTranscriptExcerpt = () => {
     if (!searchQuery || !isSearchMode) return null;
-    
+
     const transcriptContainsQuery = memo.transcript
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
-    
+
     if (!transcriptContainsQuery) return null;
 
     const queryIndex = memo.transcript
@@ -206,21 +206,26 @@ export function MemoItem({
             {/* Summary */}
             <div className="flex-1 min-w-0">
               <p className="text-[#cbd5e1] text-xs sm:text-sm line-clamp-1 mb-1">
-                {isSearchMode && searchQuery ? highlightText(summary, searchQuery) : summary}
+                {isSearchMode && searchQuery
+                  ? highlightText(summary, searchQuery)
+                  : summary}
               </p>
 
               {/* Search mode: Show additional matches in contracted view */}
               {isSearchMode && searchQuery && (
                 <div className="space-y-1 text-xs">
                   {/* Transcript excerpt if it contains query and summary doesn't */}
-                  {transcriptExcerpt && !memo.extracted?.what?.toLowerCase().includes(searchQuery.toLowerCase()) && (
-                    <div className="text-slate-400">
-                      <span className="font-medium">From transcript: </span>
-                      <span className="text-slate-300">
-                        {highlightText(transcriptExcerpt, searchQuery)}
-                      </span>
-                    </div>
-                  )}
+                  {transcriptExcerpt &&
+                    !memo.extracted?.what
+                      ?.toLowerCase()
+                      .includes(searchQuery.toLowerCase()) && (
+                      <div className="text-slate-400">
+                        <span className="font-medium">From transcript: </span>
+                        <span className="text-slate-300">
+                          {highlightText(transcriptExcerpt, searchQuery)}
+                        </span>
+                      </div>
+                    )}
 
                   {/* Show people matches */}
                   {memo.extracted?.who?.some((person) =>
@@ -229,7 +234,10 @@ export function MemoItem({
                     <div className="text-slate-400">
                       <span className="font-medium">People: </span>
                       <span>
-                        {highlightText(memo.extracted.who.join(", "), searchQuery)}
+                        {highlightText(
+                          memo.extracted.who.join(", "),
+                          searchQuery
+                        )}
                       </span>
                     </div>
                   )}
@@ -247,7 +255,9 @@ export function MemoItem({
                   )}
 
                   {/* Show extracted field matches */}
-                  {memo.extracted?.title?.toLowerCase().includes(searchQuery.toLowerCase()) && (
+                  {memo.extracted?.title
+                    ?.toLowerCase()
+                    .includes(searchQuery.toLowerCase()) && (
                     <div className="text-slate-400">
                       <span className="font-medium">Title: </span>
                       <span>
@@ -256,7 +266,9 @@ export function MemoItem({
                     </div>
                   )}
 
-                  {memo.extracted?.when?.toLowerCase().includes(searchQuery.toLowerCase()) && (
+                  {memo.extracted?.when
+                    ?.toLowerCase()
+                    .includes(searchQuery.toLowerCase()) && (
                     <div className="text-slate-400">
                       <span className="font-medium">When: </span>
                       <span>
@@ -265,7 +277,9 @@ export function MemoItem({
                     </div>
                   )}
 
-                  {memo.extracted?.where?.toLowerCase().includes(searchQuery.toLowerCase()) && (
+                  {memo.extracted?.where
+                    ?.toLowerCase()
+                    .includes(searchQuery.toLowerCase()) && (
                     <div className="text-slate-400">
                       <span className="font-medium">Where: </span>
                       <span>
@@ -357,7 +371,9 @@ export function MemoItem({
                   {/* Full transcript (when expanded and different from summary) */}
                   {memo.transcript !== summary && (
                     <p className="text-[#cbd5e1] text-sm mb-2">
-                      {isSearchMode && searchQuery ? highlightText(memo.transcript, searchQuery) : memo.transcript}
+                      {isSearchMode && searchQuery
+                        ? highlightText(memo.transcript, searchQuery)
+                        : memo.transcript}
                     </p>
                   )}
                 </>
@@ -430,10 +446,9 @@ export function MemoItem({
                           Title:{" "}
                         </span>
                         <span className="text-[#e2e8f0]">
-                          {isSearchMode && searchQuery ? 
-                            highlightText(memo.extracted.title, searchQuery) : 
-                            memo.extracted.title
-                          }
+                          {isSearchMode && searchQuery
+                            ? highlightText(memo.extracted.title, searchQuery)
+                            : memo.extracted.title}
                         </span>
                       </div>
                     )}
@@ -443,10 +458,12 @@ export function MemoItem({
                           People:{" "}
                         </span>
                         <span className="text-[#cbd5e1]">
-                          {isSearchMode && searchQuery ? 
-                            highlightText(memo.extracted.who.join(", "), searchQuery) : 
-                            memo.extracted.who.join(", ")
-                          }
+                          {isSearchMode && searchQuery
+                            ? highlightText(
+                                memo.extracted.who.join(", "),
+                                searchQuery
+                              )
+                            : memo.extracted.who.join(", ")}
                         </span>
                       </div>
                     )}
@@ -456,10 +473,9 @@ export function MemoItem({
                           When:{" "}
                         </span>
                         <span className="text-[#cbd5e1]">
-                          {isSearchMode && searchQuery ? 
-                            highlightText(memo.extracted.when, searchQuery) : 
-                            memo.extracted.when
-                          }
+                          {isSearchMode && searchQuery
+                            ? highlightText(memo.extracted.when, searchQuery)
+                            : memo.extracted.when}
                         </span>
                       </div>
                     )}
@@ -469,10 +485,9 @@ export function MemoItem({
                           Where:{" "}
                         </span>
                         <span className="text-[#cbd5e1]">
-                          {isSearchMode && searchQuery ? 
-                            highlightText(memo.extracted.where, searchQuery) : 
-                            memo.extracted.where
-                          }
+                          {isSearchMode && searchQuery
+                            ? highlightText(memo.extracted.where, searchQuery)
+                            : memo.extracted.where}
                         </span>
                       </div>
                     )}
@@ -487,7 +502,10 @@ export function MemoItem({
                       key={tag}
                       className="px-1.5 py-0.5 bg-[#0a0a0f]/60 text-[#94a3b8] border border-slate-700/20 rounded text-xs backdrop-blur-xl"
                     >
-                      #{isSearchMode && searchQuery ? highlightText(tag, searchQuery) : tag}
+                      #
+                      {isSearchMode && searchQuery
+                        ? highlightText(tag, searchQuery)
+                        : tag}
                     </span>
                   ))}
                 </div>

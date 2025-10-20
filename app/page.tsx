@@ -163,11 +163,15 @@ export default function Home() {
       try {
         // Optimistic update: update transcript immediately in both memos and search results
         setMemos((prev) =>
-          prev.map((m) => (m.id === memoId ? { ...m, transcript: editText } : m))
+          prev.map((m) =>
+            m.id === memoId ? { ...m, transcript: editText } : m
+          )
         );
-        
+
         setSearchResults((prev) =>
-          prev.map((m) => (m.id === memoId ? { ...m, transcript: editText } : m))
+          prev.map((m) =>
+            m.id === memoId ? { ...m, transcript: editText } : m
+          )
         );
 
         const { error } = await supabase
@@ -302,7 +306,7 @@ export default function Home() {
         m.id === memoId ? { ...m, starred: !currentStarred } : m
       )
     );
-    
+
     // Also update search results if they exist
     setSearchResults((prev) =>
       prev.map((m) =>
@@ -330,7 +334,7 @@ export default function Home() {
     setMemos((prev) =>
       prev.map((m) => (m.id === memoId ? { ...m, category: newCategory } : m))
     );
-    
+
     setSearchResults((prev) =>
       prev.map((m) => (m.id === memoId ? { ...m, category: newCategory } : m))
     );
