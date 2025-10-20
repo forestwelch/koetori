@@ -11,7 +11,186 @@ import {
 } from "./lib/ui-utils";
 import { useVoiceRecorder } from "./hooks/useVoiceRecorder";
 import { MemoItem } from "./components/MemoItem";
-import { Star, Type } from "lucide-react";
+import { Star, Type, Search } from "lucide-react";
+
+// Helper component for search result items
+interface SearchResultItemProps {
+  memo: Memo;
+  searchQuery: string;
+  onClose: () => void;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
+}
+
+function SearchResultItem({ memo, searchQuery, onClose, isExpanded, onToggleExpand }: SearchResultItemProps) {
+  const highlightText = (text: string, query: string) => {
+    if (!query.trim()) return text;
+    
+    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    const parts = text.split(regex);
+    
+    return parts.map((part, index) => {
+      if (regex.test(part)) {
+        return (
+          <mark key={index} className="bg-violet-500/30 text-violet-200 rounded px-0.5">
+            {part}
+          </mark>
+        );
+      }
+      return part;
+    });
+  };
+
+  // Find if transcript contains the search query
+  const transcriptContainsQuery = memo.transcript.toLowerCase().includes(searchQuery.toLowerCase());
+  
+  // Create excerpt from transcript if it contains the query
+  const getTranscriptExcerpt = () => {
+    if (!transcriptContainsQuery) return null;
+    
+    const queryIndex = memo.transcript.toLowerCase().indexOf(searchQuery.toLowerCase());
+    const start = Math.max(0, queryIndex - 50);
+    const end = Math.min(memo.transcript.length, queryIndex + searchQuery.length + 50);
+    const excerpt = memo.transcript.slice(start, end);
+    
+    return (start > 0 ? "..." : "") + excerpt + (end < memo.transcript.length ? "..." : "");
+  };
+
+  const summary = memo.extracted?.what || memo.transcript.slice(0, 100);
+  const transcriptExcerpt = getTranscriptExcerpt();
+
+  return (
+    <div className="bg-[#1e1f2a]/40 hover:bg-[#1e1f2a]/60 border border-slate-700/20 rounded-lg transition-all">
+      {/* Clickable header */}
+      <div 
+        className="p-4 cursor-pointer"
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleExpand();
+        }}
+      >
+        <div className="flex items-start gap-3">
+          {/* Category Badge */}
+          <span className={`px-2 py-1 rounded-lg text-xs font-medium border backdrop-blur-xl flex-shrink-0 ${getCategoryColor(memo.category)}`}>
+            {getCategoryIcon(memo.category)} {getCategoryLabel(memo.category)}
+          </span>
+          
+          <div className="flex-1 min-w-0">
+            {/* Summary with highlighting */}
+            <p className="text-[#cbd5e1] text-sm mb-2 leading-relaxed">
+              {highlightText(summary, searchQuery)}
+            </p>
+            
+            {/* Transcript excerpt if it contains query and summary doesn't */}
+            {transcriptExcerpt && !memo.extracted?.what?.toLowerCase().includes(searchQuery.toLowerCase()) && (
+              <div className="bg-slate-800/30 rounded p-2 mb-2">
+                <span className="text-slate-400 text-xs font-medium block mb-1">From transcript:</span>
+                <p className="text-slate-300 text-xs leading-relaxed">
+                  {highlightText(transcriptExcerpt, searchQuery)}
+                </p>
+              </div>
+            )}
+            
+            {/* Additional matches */}
+            <div className="space-y-1 text-xs">
+              {memo.extracted?.who?.some(person => 
+                person.toLowerCase().includes(searchQuery.toLowerCase())
+              ) && (
+                <div className="text-slate-400">
+                  <span className="font-medium">People: </span>
+                  <span>{highlightText(memo.extracted.who.join(", "), searchQuery)}</span>
+                </div>
+              )}
+              
+              {memo.tags?.some(tag => 
+                tag.toLowerCase().includes(searchQuery.toLowerCase())
+              ) && (
+                <div className="text-slate-400">
+                  <span className="font-medium">Tags: </span>
+                  <span>{highlightText(memo.tags.join(", "), searchQuery)}</span>
+                </div>
+              )}
+            </div>
+            
+            {/* Date */}
+            <div className="text-slate-500 text-xs mt-2">
+              {new Date(memo.timestamp).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+              })}
+            </div>
+          </div>
+          
+          {/* Star indicator */}
+          {memo.starred && (
+            <Star className="w-4 h-4 text-amber-400 fill-amber-400 flex-shrink-0" />
+          )}
+          
+          {/* Expand indicator */}
+          <div className="text-slate-400 text-xs">
+            {isExpanded ? "▲" : "▼"}
+          </div>
+        </div>
+      </div>
+
+      {/* Expanded content */}
+      {isExpanded && (
+        <div className="px-4 pb-4 border-t border-slate-700/20">
+          <div className="pt-3">
+            <div className="text-slate-400 text-xs font-medium mb-2">Full Transcript:</div>
+            <p className="text-[#cbd5e1] text-sm leading-relaxed select-text">
+              {highlightText(memo.transcript, searchQuery)}
+            </p>
+
+            {/* Extracted Data */}
+            {memo.extracted && (
+              memo.extracted.title ||
+              memo.extracted.who ||
+              memo.extracted.when ||
+              memo.extracted.where ||
+              memo.extracted.what
+            ) && (
+              <div className="mt-3 p-3 bg-[#0a0a0f]/60 backdrop-blur-xl rounded-xl border border-slate-700/10 space-y-1.5 text-sm select-text">
+                <div className="text-[#64748b] text-xs font-semibold uppercase tracking-wider mb-2">
+                  Extracted Information
+                </div>
+                {memo.extracted.title && (
+                  <div>
+                    <span className="text-[#64748b] font-medium">Title: </span>
+                    <span className="text-[#e2e8f0]">{memo.extracted.title}</span>
+                  </div>
+                )}
+                {memo.extracted.who && memo.extracted.who.length > 0 && (
+                  <div>
+                    <span className="text-[#64748b] font-medium">People: </span>
+                    <span className="text-[#cbd5e1]">
+                      {memo.extracted.who.join(", ")}
+                    </span>
+                  </div>
+                )}
+                {memo.extracted.when && (
+                  <div>
+                    <span className="text-[#64748b] font-medium">When: </span>
+                    <span className="text-[#cbd5e1]">{memo.extracted.when}</span>
+                  </div>
+                )}
+                {memo.extracted.where && (
+                  <div>
+                    <span className="text-[#64748b] font-medium">Where: </span>
+                    <span className="text-[#cbd5e1]">{memo.extracted.where}</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Home() {
   const [memos, setMemos] = useState<Memo[]>([]);
@@ -32,6 +211,10 @@ export default function Home() {
   const [showTextInput, setShowTextInput] = useState(false);
   const [textInput, setTextInput] = useState("");
   const [isProcessingText, setIsProcessingText] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<Memo[]>([]);
+  const [expandedSearchResults, setExpandedSearchResults] = useState<Set<string>>(new Set());
 
   const {
     isRecording,
@@ -217,6 +400,15 @@ export default function Home() {
         setShowTextInput(false);
         setTextInput("");
       }
+
+      // Escape to close search modal
+      if (e.code === "Escape" && showSearch) {
+        e.preventDefault();
+        setShowSearch(false);
+        setSearchQuery("");
+        setSearchResults([]);
+        setExpandedSearchResults(new Set());
+      }
     };
 
     document.addEventListener("keydown", handleKeyPress);
@@ -227,6 +419,7 @@ export default function Home() {
     editingId,
     showRandomMemo,
     showTextInput,
+    showSearch,
     startRecording,
     stopRecording,
     cancelRecording,
@@ -444,6 +637,45 @@ export default function Home() {
     }
   };
 
+  // Handle search functionality
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+    
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    const lowercaseQuery = query.toLowerCase();
+    const filtered = memos.filter((memo) => {
+      // Search in transcript (full text)
+      if (memo.transcript.toLowerCase().includes(lowercaseQuery)) return true;
+      
+      // Search in extracted summary
+      if (memo.extracted?.what?.toLowerCase().includes(lowercaseQuery)) return true;
+      
+      // Search in extracted title
+      if (memo.extracted?.title?.toLowerCase().includes(lowercaseQuery)) return true;
+      
+      // Search in people mentioned
+      if (memo.extracted?.who?.some(person => 
+        person.toLowerCase().includes(lowercaseQuery)
+      )) return true;
+      
+      // Search in tags
+      if (memo.tags?.some(tag => 
+        tag.toLowerCase().includes(lowercaseQuery)
+      )) return true;
+      
+      // Search in category
+      if (memo.category.toLowerCase().includes(lowercaseQuery)) return true;
+      
+      return false;
+    });
+
+    setSearchResults(filtered);
+  }, [memos]);
+
   // Pick a random memo (prioritize actionable, todos, needs review)
   const pickRandomMemo = async () => {
     try {
@@ -577,6 +809,26 @@ export default function Home() {
                   <span className="hidden sm:inline">Processing...</span>
                 </div>
               )}
+
+              {/* Search Button */}
+              <button
+                onClick={() => setShowSearch(true)}
+                disabled={isProcessing || isProcessingText}
+                className={`group relative w-14 h-14 rounded-full shadow-lg transition-all duration-300 ${
+                  isProcessing || isProcessingText
+                    ? "bg-gray-500 shadow-gray-500/50 cursor-not-allowed"
+                    : "bg-gradient-to-br from-violet-500 to-purple-500 shadow-violet-500/50 hover:shadow-violet-500/70 hover:scale-105"
+                }`}
+                aria-label="Search memos"
+                title="Search memos"
+              >
+                <div
+                  className={`absolute inset-0 rounded-full blur-xl transition-opacity duration-300 ${"bg-gradient-to-br from-violet-400 to-purple-400 opacity-0 group-hover:opacity-100"}`}
+                />
+                <div className="relative flex items-center justify-center w-full h-full">
+                  <Search className="w-6 h-6 text-white" />
+                </div>
+              </button>
 
               {/* Text Input Button */}
               <button
@@ -1161,6 +1413,96 @@ export default function Home() {
                     )}
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Search Modal */}
+      {showSearch && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start justify-center pt-16 p-4">
+          <div className="bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-white">Search Memos</h2>
+                <button
+                  onClick={() => {
+                    setShowSearch(false);
+                    setSearchQuery("");
+                    setSearchResults([]);
+                    setExpandedSearchResults(new Set());
+                  }}
+                  className="text-slate-400 hover:text-white transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="relative mb-6">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  placeholder="Search memos, people, tags, categories..."
+                  className="w-full pl-12 pr-4 py-3 bg-[#1e1f2a]/60 border border-slate-700/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition-colors"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      e.preventDefault();
+                      setShowSearch(false);
+                      setSearchQuery("");
+                      setSearchResults([]);
+                      setExpandedSearchResults(new Set());
+                    }
+                  }}
+                />
+              </div>
+
+              {/* Search Results */}
+              <div className="max-h-96 overflow-y-auto">
+                {searchQuery.trim() === "" ? (
+                  <div className="text-center py-12 text-slate-400">
+                    <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>Start typing to search your memos</p>
+                  </div>
+                ) : searchResults.length === 0 ? (
+                  <div className="text-center py-12 text-slate-400">
+                    <p>No memos found for &ldquo;{searchQuery}&rdquo;</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-slate-400 text-sm mb-4">
+                      Found {searchResults.length} memo{searchResults.length !== 1 ? 's' : ''}
+                    </p>
+                    {searchResults.map((memo) => (
+                      <SearchResultItem
+                        key={memo.id}
+                        memo={memo}
+                        searchQuery={searchQuery}
+                        isExpanded={expandedSearchResults.has(memo.id)}
+                        onToggleExpand={() => {
+                          const newExpanded = new Set(expandedSearchResults);
+                          if (newExpanded.has(memo.id)) {
+                            newExpanded.delete(memo.id);
+                          } else {
+                            newExpanded.add(memo.id);
+                          }
+                          setExpandedSearchResults(newExpanded);
+                        }}
+                        onClose={() => {
+                          setShowSearch(false);
+                          setSearchQuery("");
+                          setSearchResults([]);
+                          setExpandedSearchResults(new Set());
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
