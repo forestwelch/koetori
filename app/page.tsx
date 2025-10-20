@@ -539,24 +539,16 @@ export default function Home() {
           )}
 
           {/* Compact Filter Controls with Hover Menus */}
-          <div className="flex gap-3 flex-wrap items-center">
+          <div className="flex gap-2 flex-wrap items-center">
             {/* Main View Filter */}
             <div className="relative dropdown-container">
               <button
                 onClick={() =>
                   setOpenDropdown(openDropdown === "view" ? null : "view")
                 }
-                className="px-3 py-2 rounded-lg text-sm font-medium bg-[#0d0e14]/40 border border-slate-700/20 text-[#cbd5e1] hover:bg-[#0d0e14]/60 transition-all backdrop-blur-xl"
+                className="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium bg-[#0d0e14]/40 border border-slate-700/20 text-[#cbd5e1] hover:bg-[#0d0e14]/60 transition-all backdrop-blur-xl whitespace-nowrap min-w-[4rem]"
               >
-                View:{" "}
-                {filter === "all"
-                  ? "All"
-                  : filter === "starred"
-                    ? "Starred"
-                    : filter === "review"
-                      ? "Review"
-                      : "Archive"}{" "}
-                ▾
+                All ▾
               </button>
 
               {/* Dropdown - hover on desktop, click on mobile */}
@@ -630,12 +622,9 @@ export default function Home() {
                     openDropdown === "category" ? null : "category"
                   )
                 }
-                className="px-3 py-2 rounded-lg text-sm font-medium bg-[#0d0e14]/40 border border-slate-700/20 text-[#cbd5e1] hover:bg-[#0d0e14]/60 transition-all backdrop-blur-xl"
+                className="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium bg-[#0d0e14]/40 border border-slate-700/20 text-[#cbd5e1] hover:bg-[#0d0e14]/60 transition-all backdrop-blur-xl whitespace-nowrap min-w-[4rem]"
               >
-                {categoryFilter === "all"
-                  ? "Category: All"
-                  : `${getCategoryIcon(categoryFilter as Category)} ${getCategoryLabel(categoryFilter as Category)}`}{" "}
-                ▾
+                Type ▾
               </button>
 
               {/* Dropdown - hover on desktop, click on mobile */}
@@ -675,9 +664,9 @@ export default function Home() {
                 onClick={() =>
                   setOpenDropdown(openDropdown === "size" ? null : "size")
                 }
-                className="px-3 py-2 rounded-lg text-sm font-medium bg-[#0d0e14]/40 border border-slate-700/20 text-[#cbd5e1] hover:bg-[#0d0e14]/60 transition-all backdrop-blur-xl"
+                className="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium bg-[#0d0e14]/40 border border-slate-700/20 text-[#cbd5e1] hover:bg-[#0d0e14]/60 transition-all backdrop-blur-xl whitespace-nowrap min-w-[4rem]"
               >
-                Size: {sizeFilter === "all" ? "All" : sizeFilter} ▾
+                Size ▾
               </button>
 
               {/* Dropdown - hover on desktop, click on mobile */}

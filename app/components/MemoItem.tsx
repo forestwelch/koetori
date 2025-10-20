@@ -149,14 +149,7 @@ export function MemoItem({
               {summary}
             </p>
 
-            {/* Task Size */}
-            {memo.size && (
-              <span className="px-1.5 py-0.5 bg-slate-700/30 text-slate-300 border border-slate-600/30 rounded text-xs font-medium flex-shrink-0">
-                {memo.size}
-              </span>
-            )}
-
-            {/* Actions - Star always visible, Edit and Archive on hover */}
+            {/* Actions - Star always visible, Edit and Archive on desktop hover only */}
             <div className="flex items-center gap-1 flex-shrink-0">
               {filter !== "archive" ? (
                 <>
@@ -166,7 +159,7 @@ export function MemoItem({
                         e.stopPropagation();
                         startEdit(memo);
                       }}
-                      className="p-1.5 hover:bg-slate-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100 pointer-events-none sm:pointer-events-auto"
+                      className="hidden sm:block p-1.5 hover:bg-slate-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                       title="Edit"
                     >
                       <Edit2 className="w-4 h-4 text-slate-400" />
@@ -177,7 +170,7 @@ export function MemoItem({
                       e.stopPropagation();
                       softDelete(memo.id);
                     }}
-                    className="p-1.5 hover:bg-slate-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100 pointer-events-none sm:pointer-events-auto"
+                    className="hidden sm:block p-1.5 hover:bg-slate-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                   >
                     <Archive className="w-4 h-4 text-slate-400" />
                   </button>
@@ -264,6 +257,13 @@ export function MemoItem({
                 {memo.extracted?.actionable && (
                   <span className="px-1.5 py-0.5 bg-orange-500/10 text-orange-400 border border-orange-500/40 rounded text-xs">
                     🎯 Actionable
+                  </span>
+                )}
+
+                {/* Task Size - visible on mobile in expanded view */}
+                {memo.size && (
+                  <span className="px-1.5 py-0.5 bg-slate-700/30 text-slate-300 border border-slate-600/30 rounded text-xs font-medium">
+                    {memo.size}
                   </span>
                 )}
 
