@@ -11,12 +11,9 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-// Configuration for the route
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// App Router configuration
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 // Maximum file size (10MB)
 const MAX_FILE_SIZE = 10 * 1024 * 1024;

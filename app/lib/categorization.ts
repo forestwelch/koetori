@@ -13,6 +13,7 @@ CATEGORIES:
 - tarot: Tarot card readings and interpretations
 - todo: Tasks, action items, things to do
 - idea: Creative ideas, project concepts
+- to buy: Shopping lists, items to purchase, things to buy
 - other: Anything that doesn't fit above categories
 
 INSTRUCTIONS:
@@ -101,6 +102,19 @@ Output:
   "starred": false
 }
 
+Input: "Need to pick up milk, eggs, bread, and some coffee beans from the store"
+Output:
+{
+  "category": "to buy",
+  "confidence": 0.98,
+  "extracted": {
+    "what": "Groceries: milk, eggs, bread, coffee beans",
+    "actionable": true
+  },
+  "tags": ["shopping", "groceries", "food"],
+  "starred": false
+}
+
 Input: "This is really important - I need to submit that grant application by Friday or we lose the funding. Top priority!"
 Output:
 {
@@ -145,6 +159,7 @@ export function validateCategorizationResult(
     "tarot",
     "todo",
     "idea",
+    "to buy",
     "other",
   ];
 

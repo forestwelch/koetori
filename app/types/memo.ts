@@ -8,6 +8,7 @@ export type Category =
   | "tarot" // Tarot readings
   | "todo" // Tasks/action items
   | "idea" // Ideas to explore
+  | "to buy" // Shopping list, things to purchase
   | "other"; // Catch-all
 
 export interface ExtractedData {

@@ -1,31 +1,42 @@
-import { Memo } from "../types/memo";
+import { Memo, Category } from "../types/memo";
 import {
   getCategoryColor,
   getCategoryGradient,
   getCategoryIcon,
   formatConfidence,
 } from "../lib/ui-utils";
+import { CategorySelector } from "./CategorySelector";
 
 interface MemoHeaderProps {
   memo: Memo;
+  filter?: "all" | "review" | "archive" | "starred";
+  onCategoryChange?: (memoId: string, newCategory: Category, oldCategory: Category) => void;
 }
 
-export function MemoHeader({ memo }: MemoHeaderProps) {
+export function MemoHeader({ memo, filter, onCategoryChange }: MemoHeaderProps) {
   return (
     <div className="flex flex-wrap items-center gap-3 mb-3">
-      {/* Category Badge */}
-      <div className="relative">
-        <div
-          className={`absolute inset-0 rounded-full bg-gradient-to-r ${getCategoryGradient(memo.category)} opacity-50 blur-sm`}
+      {/* Category Badge - Interactive Selector (not in archive) */}
+      {onCategoryChange && filter !== "archive" ? (
+        <CategorySelector
+          currentCategory={memo.category}
+          memoId={memo.id}
+          onCategoryChange={onCategoryChange}
         />
-        <span
-          className={`relative px-3 py-1.5 rounded-full text-sm font-medium border backdrop-blur-xl ${getCategoryColor(
-            memo.category
-          )}`}
-        >
-          {getCategoryIcon(memo.category)} {memo.category}
-        </span>
-      </div>
+      ) : (
+        <div className="relative">
+          <div
+            className={`absolute inset-0 rounded-full bg-gradient-to-r ${getCategoryGradient(memo.category)} opacity-50 blur-sm`}
+          />
+          <span
+            className={`relative px-3 py-1.5 rounded-full text-sm font-medium border backdrop-blur-xl ${getCategoryColor(
+              memo.category
+            )}`}
+          >
+            {getCategoryIcon(memo.category)} {memo.category}
+          </span>
+        </div>
+      )}
 
       {/* Confidence Bar */}
       <div className="flex items-center gap-2">

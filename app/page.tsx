@@ -222,6 +222,52 @@ export default function Home() {
     }
   };
 
+  // Change category with feedback tracking
+  const handleCategoryChange = async (
+    memoId: string,
+    newCategory: Category,
+    oldCategory: Category
+  ) => {
+    try {
+      // Get the memo for its transcript
+      const memo = memos.find((m) => m.id === memoId);
+      
+      // Update the memo's category
+      const { error: updateError } = await supabase
+        .from("memos")
+        .update({ category: newCategory })
+        .eq("id", memoId);
+
+      if (updateError) throw updateError;
+
+      // Store feedback for AI improvement
+      const { error: feedbackError } = await supabase
+        .from("category_feedback")
+        .insert({
+          memo_id: memoId,
+          transcript: memo?.transcript || "",
+          original_category: oldCategory,
+          corrected_category: newCategory,
+          confidence: memo?.confidence || 0,
+        });
+
+      if (feedbackError) {
+        console.warn("Failed to log feedback (table may not exist yet):", feedbackError);
+      }
+
+      console.log("✅ Category changed:", {
+        memoId,
+        from: oldCategory,
+        to: newCategory,
+        timestamp: new Date().toISOString(),
+      });
+
+      loadMemos();
+    } catch (err) {
+      console.error("Error changing category:", err);
+    }
+  };
+
   // Restore from archive
   const restoreMemo = async (memoId: string) => {
     try {
@@ -262,6 +308,7 @@ export default function Home() {
     "tarot",
     "todo",
     "idea",
+    "to buy",
     "other",
   ];
 
@@ -633,6 +680,7 @@ export default function Home() {
                   toggleStar={toggleStar}
                   restoreMemo={restoreMemo}
                   hardDelete={hardDelete}
+                  onCategoryChange={handleCategoryChange}
                 />
               );
             })}

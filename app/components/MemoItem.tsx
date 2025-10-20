@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Memo } from "../types/memo";
+import { Memo, Category } from "../types/memo";
 import { Star } from "lucide-react";
 import { MemoHeader } from "./MemoHeader";
 import { MemoContent } from "./MemoContent";
@@ -22,6 +22,7 @@ interface MemoItemProps {
   toggleStar: (id: string, current: boolean) => void;
   restoreMemo: (id: string) => void;
   hardDelete: (id: string) => void;
+  onCategoryChange: (memoId: string, newCategory: Category, oldCategory: Category) => void;
 }
 
 export function MemoItem({
@@ -38,6 +39,7 @@ export function MemoItem({
   toggleStar,
   restoreMemo,
   hardDelete,
+  onCategoryChange,
 }: MemoItemProps) {
   const [swipeX, setSwipeX] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
@@ -105,7 +107,7 @@ export function MemoItem({
         />
 
         <div className="relative">
-          <MemoHeader memo={memo} />
+          <MemoHeader memo={memo} filter={filter} onCategoryChange={onCategoryChange} />
 
           <MemoContent
             memo={memo}

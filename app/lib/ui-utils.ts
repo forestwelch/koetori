@@ -11,6 +11,7 @@ export function getCategoryColor(category: Category): string {
     tarot: "bg-indigo-500/10 text-indigo-300 border-indigo-500/40",
     todo: "bg-orange-500/10 text-orange-300 border-orange-500/40",
     idea: "bg-yellow-500/10 text-yellow-300 border-yellow-500/40",
+    "to buy": "bg-emerald-500/10 text-emerald-300 border-emerald-500/40",
     other: "bg-gray-500/10 text-gray-300 border-gray-500/40",
   };
   return colors[category] || colors.other;
@@ -25,6 +26,7 @@ export function getCategoryGradient(category: Category): string {
     tarot: "from-indigo-500/50 to-purple-500/50",
     todo: "from-orange-500/50 to-red-500/50",
     idea: "from-yellow-500/50 to-amber-500/50",
+    "to buy": "from-emerald-500/50 to-teal-500/50",
     other: "from-gray-500/50 to-slate-500/50",
   };
   return gradients[category] || gradients.other;
@@ -39,6 +41,7 @@ export function getCategoryIcon(category: Category): string {
     tarot: "🔮",
     todo: "✓",
     idea: "💡",
+    "to buy": "🛒",
     other: "📝",
   };
   return icons[category] || icons.other;
