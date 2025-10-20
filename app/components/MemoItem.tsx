@@ -32,6 +32,9 @@ interface MemoItemProps {
     newCategory: Category,
     oldCategory: Category
   ) => void;
+  // Search props
+  searchQuery?: string;
+  isSearchMode?: boolean;
 }
 
 export function MemoItem({
@@ -49,6 +52,8 @@ export function MemoItem({
   restoreMemo,
   hardDelete,
   onCategoryChange,
+  searchQuery,
+  isSearchMode = false,
 }: MemoItemProps) {
   const [swipeX, setSwipeX] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
@@ -89,6 +94,60 @@ export function MemoItem({
 
   const isEditing = editingId === memo.id;
   const summary = memo.extracted?.what || memo.transcript.slice(0, 100);
+
+  // Search highlighting function
+  const highlightText = (text: string, query?: string) => {
+    if (!query?.trim()) return text;
+
+    const regex = new RegExp(
+      `(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`,
+      "gi"
+    );
+    const parts = text.split(regex);
+
+    return parts.map((part, index) => {
+      if (regex.test(part)) {
+        return (
+          <mark
+            key={index}
+            className="bg-violet-500/30 text-violet-200 rounded px-0.5"
+          >
+            {part}
+          </mark>
+        );
+      }
+      return part;
+    });
+  };
+
+  // Get transcript excerpt for search mode
+  const getTranscriptExcerpt = () => {
+    if (!searchQuery || !isSearchMode) return null;
+    
+    const transcriptContainsQuery = memo.transcript
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    
+    if (!transcriptContainsQuery) return null;
+
+    const queryIndex = memo.transcript
+      .toLowerCase()
+      .indexOf(searchQuery.toLowerCase());
+    const start = Math.max(0, queryIndex - 50);
+    const end = Math.min(
+      memo.transcript.length,
+      queryIndex + searchQuery.length + 50
+    );
+    const excerpt = memo.transcript.slice(start, end);
+
+    return (
+      (start > 0 ? "..." : "") +
+      excerpt +
+      (end < memo.transcript.length ? "..." : "")
+    );
+  };
+
+  const transcriptExcerpt = getTranscriptExcerpt();
 
   return (
     <div
@@ -145,9 +204,78 @@ export function MemoItem({
             )}
 
             {/* Summary */}
-            <p className="text-[#cbd5e1] text-xs sm:text-sm flex-1 line-clamp-1">
-              {summary}
-            </p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[#cbd5e1] text-xs sm:text-sm line-clamp-1 mb-1">
+                {isSearchMode && searchQuery ? highlightText(summary, searchQuery) : summary}
+              </p>
+
+              {/* Search mode: Show additional matches in contracted view */}
+              {isSearchMode && searchQuery && (
+                <div className="space-y-1 text-xs">
+                  {/* Transcript excerpt if it contains query and summary doesn't */}
+                  {transcriptExcerpt && !memo.extracted?.what?.toLowerCase().includes(searchQuery.toLowerCase()) && (
+                    <div className="text-slate-400">
+                      <span className="font-medium">From transcript: </span>
+                      <span className="text-slate-300">
+                        {highlightText(transcriptExcerpt, searchQuery)}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Show people matches */}
+                  {memo.extracted?.who?.some((person) =>
+                    person.toLowerCase().includes(searchQuery.toLowerCase())
+                  ) && (
+                    <div className="text-slate-400">
+                      <span className="font-medium">People: </span>
+                      <span>
+                        {highlightText(memo.extracted.who.join(", "), searchQuery)}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Show tag matches */}
+                  {memo.tags?.some((tag) =>
+                    tag.toLowerCase().includes(searchQuery.toLowerCase())
+                  ) && (
+                    <div className="text-slate-400">
+                      <span className="font-medium">Tags: </span>
+                      <span>
+                        {highlightText(memo.tags.join(", "), searchQuery)}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Show extracted field matches */}
+                  {memo.extracted?.title?.toLowerCase().includes(searchQuery.toLowerCase()) && (
+                    <div className="text-slate-400">
+                      <span className="font-medium">Title: </span>
+                      <span>
+                        {highlightText(memo.extracted.title, searchQuery)}
+                      </span>
+                    </div>
+                  )}
+
+                  {memo.extracted?.when?.toLowerCase().includes(searchQuery.toLowerCase()) && (
+                    <div className="text-slate-400">
+                      <span className="font-medium">When: </span>
+                      <span>
+                        {highlightText(memo.extracted.when, searchQuery)}
+                      </span>
+                    </div>
+                  )}
+
+                  {memo.extracted?.where?.toLowerCase().includes(searchQuery.toLowerCase()) && (
+                    <div className="text-slate-400">
+                      <span className="font-medium">Where: </span>
+                      <span>
+                        {highlightText(memo.extracted.where, searchQuery)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Actions - Star always visible, Edit and Archive on desktop hover only */}
             <div className="flex items-center gap-1 flex-shrink-0">
@@ -157,6 +285,9 @@ export function MemoItem({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
+                        if (!isExpanded) {
+                          setIsExpanded(true);
+                        }
                         startEdit(memo);
                       }}
                       className="hidden sm:block p-1.5 hover:bg-slate-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
@@ -221,9 +352,16 @@ export function MemoItem({
                     </button>
                   </div>
                 </div>
-              ) : memo.transcript !== summary ? (
-                <p className="text-[#cbd5e1] text-sm mb-2">{memo.transcript}</p>
-              ) : null}
+              ) : (
+                <>
+                  {/* Full transcript (when expanded and different from summary) */}
+                  {memo.transcript !== summary && (
+                    <p className="text-[#cbd5e1] text-sm mb-2">
+                      {isSearchMode && searchQuery ? highlightText(memo.transcript, searchQuery) : memo.transcript}
+                    </p>
+                  )}
+                </>
+              )}
 
               {/* Metadata row */}
               <div className="flex flex-wrap items-center gap-2 mb-2 text-xs">
@@ -292,7 +430,10 @@ export function MemoItem({
                           Title:{" "}
                         </span>
                         <span className="text-[#e2e8f0]">
-                          {memo.extracted.title}
+                          {isSearchMode && searchQuery ? 
+                            highlightText(memo.extracted.title, searchQuery) : 
+                            memo.extracted.title
+                          }
                         </span>
                       </div>
                     )}
@@ -302,7 +443,10 @@ export function MemoItem({
                           People:{" "}
                         </span>
                         <span className="text-[#cbd5e1]">
-                          {memo.extracted.who.join(", ")}
+                          {isSearchMode && searchQuery ? 
+                            highlightText(memo.extracted.who.join(", "), searchQuery) : 
+                            memo.extracted.who.join(", ")
+                          }
                         </span>
                       </div>
                     )}
@@ -312,7 +456,10 @@ export function MemoItem({
                           When:{" "}
                         </span>
                         <span className="text-[#cbd5e1]">
-                          {memo.extracted.when}
+                          {isSearchMode && searchQuery ? 
+                            highlightText(memo.extracted.when, searchQuery) : 
+                            memo.extracted.when
+                          }
                         </span>
                       </div>
                     )}
@@ -322,7 +469,10 @@ export function MemoItem({
                           Where:{" "}
                         </span>
                         <span className="text-[#cbd5e1]">
-                          {memo.extracted.where}
+                          {isSearchMode && searchQuery ? 
+                            highlightText(memo.extracted.where, searchQuery) : 
+                            memo.extracted.where
+                          }
                         </span>
                       </div>
                     )}
@@ -337,7 +487,7 @@ export function MemoItem({
                       key={tag}
                       className="px-1.5 py-0.5 bg-[#0a0a0f]/60 text-[#94a3b8] border border-slate-700/20 rounded text-xs backdrop-blur-xl"
                     >
-                      #{tag}
+                      #{isSearchMode && searchQuery ? highlightText(tag, searchQuery) : tag}
                     </span>
                   ))}
                 </div>

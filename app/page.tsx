@@ -14,229 +14,6 @@ import { MemoItem } from "./components/MemoItem";
 import { Star, Type, Search } from "lucide-react";
 
 // Helper component for search result items
-interface SearchResultItemProps {
-  memo: Memo;
-  searchQuery: string;
-  onClose: () => void;
-  isExpanded: boolean;
-  onToggleExpand: () => void;
-}
-
-function SearchResultItem({
-  memo,
-  searchQuery,
-  onClose,
-  isExpanded,
-  onToggleExpand,
-}: SearchResultItemProps) {
-  const highlightText = (text: string, query: string) => {
-    if (!query.trim()) return text;
-
-    const regex = new RegExp(
-      `(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`,
-      "gi"
-    );
-    const parts = text.split(regex);
-
-    return parts.map((part, index) => {
-      if (regex.test(part)) {
-        return (
-          <mark
-            key={index}
-            className="bg-violet-500/30 text-violet-200 rounded px-0.5"
-          >
-            {part}
-          </mark>
-        );
-      }
-      return part;
-    });
-  };
-
-  // Find if transcript contains the search query
-  const transcriptContainsQuery = memo.transcript
-    .toLowerCase()
-    .includes(searchQuery.toLowerCase());
-
-  // Create excerpt from transcript if it contains the query
-  const getTranscriptExcerpt = () => {
-    if (!transcriptContainsQuery) return null;
-
-    const queryIndex = memo.transcript
-      .toLowerCase()
-      .indexOf(searchQuery.toLowerCase());
-    const start = Math.max(0, queryIndex - 50);
-    const end = Math.min(
-      memo.transcript.length,
-      queryIndex + searchQuery.length + 50
-    );
-    const excerpt = memo.transcript.slice(start, end);
-
-    return (
-      (start > 0 ? "..." : "") +
-      excerpt +
-      (end < memo.transcript.length ? "..." : "")
-    );
-  };
-
-  const summary = memo.extracted?.what || memo.transcript.slice(0, 100);
-  const transcriptExcerpt = getTranscriptExcerpt();
-
-  return (
-    <div className="bg-[#1e1f2a]/40 hover:bg-[#1e1f2a]/60 border border-slate-700/20 rounded-lg transition-all">
-      {/* Clickable header */}
-      <div
-        className="p-4 cursor-pointer"
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggleExpand();
-        }}
-      >
-        <div className="flex items-start gap-3">
-          {/* Category Badge */}
-          <span
-            className={`px-2 py-1 rounded-lg text-xs font-medium border backdrop-blur-xl flex-shrink-0 ${getCategoryColor(memo.category)}`}
-          >
-            {getCategoryIcon(memo.category)} {getCategoryLabel(memo.category)}
-          </span>
-
-          <div className="flex-1 min-w-0">
-            {/* Summary with highlighting */}
-            <p className="text-[#cbd5e1] text-sm mb-2 leading-relaxed">
-              {highlightText(summary, searchQuery)}
-            </p>
-
-            {/* Transcript excerpt if it contains query and summary doesn't */}
-            {transcriptExcerpt &&
-              !memo.extracted?.what
-                ?.toLowerCase()
-                .includes(searchQuery.toLowerCase()) && (
-                <div className="bg-slate-800/30 rounded p-2 mb-2">
-                  <span className="text-slate-400 text-xs font-medium block mb-1">
-                    From transcript:
-                  </span>
-                  <p className="text-slate-300 text-xs leading-relaxed">
-                    {highlightText(transcriptExcerpt, searchQuery)}
-                  </p>
-                </div>
-              )}
-
-            {/* Additional matches */}
-            <div className="space-y-1 text-xs">
-              {memo.extracted?.who?.some((person) =>
-                person.toLowerCase().includes(searchQuery.toLowerCase())
-              ) && (
-                <div className="text-slate-400">
-                  <span className="font-medium">People: </span>
-                  <span>
-                    {highlightText(memo.extracted.who.join(", "), searchQuery)}
-                  </span>
-                </div>
-              )}
-
-              {memo.tags?.some((tag) =>
-                tag.toLowerCase().includes(searchQuery.toLowerCase())
-              ) && (
-                <div className="text-slate-400">
-                  <span className="font-medium">Tags: </span>
-                  <span>
-                    {highlightText(memo.tags.join(", "), searchQuery)}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Date */}
-            <div className="text-slate-500 text-xs mt-2">
-              {new Date(memo.timestamp).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-                hour: "numeric",
-                minute: "2-digit",
-              })}
-            </div>
-          </div>
-
-          {/* Star indicator */}
-          {memo.starred && (
-            <Star className="w-4 h-4 text-amber-400 fill-amber-400 flex-shrink-0" />
-          )}
-
-          {/* Expand indicator */}
-          <div className="text-slate-400 text-xs">{isExpanded ? "▲" : "▼"}</div>
-        </div>
-      </div>
-
-      {/* Expanded content */}
-      {isExpanded && (
-        <div className="px-4 pb-4 border-t border-slate-700/20">
-          <div className="pt-3">
-            <div className="text-slate-400 text-xs font-medium mb-2">
-              Full Transcript:
-            </div>
-            <p className="text-[#cbd5e1] text-sm leading-relaxed select-text">
-              {highlightText(memo.transcript, searchQuery)}
-            </p>
-
-            {/* Extracted Data */}
-            {memo.extracted &&
-              (memo.extracted.title ||
-                memo.extracted.who ||
-                memo.extracted.when ||
-                memo.extracted.where ||
-                memo.extracted.what) && (
-                <div className="mt-3 p-3 bg-[#0a0a0f]/60 backdrop-blur-xl rounded-xl border border-slate-700/10 space-y-1.5 text-sm select-text">
-                  <div className="text-[#64748b] text-xs font-semibold uppercase tracking-wider mb-2">
-                    Extracted Information
-                  </div>
-                  {memo.extracted.title && (
-                    <div>
-                      <span className="text-[#64748b] font-medium">
-                        Title:{" "}
-                      </span>
-                      <span className="text-[#e2e8f0]">
-                        {memo.extracted.title}
-                      </span>
-                    </div>
-                  )}
-                  {memo.extracted.who && memo.extracted.who.length > 0 && (
-                    <div>
-                      <span className="text-[#64748b] font-medium">
-                        People:{" "}
-                      </span>
-                      <span className="text-[#cbd5e1]">
-                        {memo.extracted.who.join(", ")}
-                      </span>
-                    </div>
-                  )}
-                  {memo.extracted.when && (
-                    <div>
-                      <span className="text-[#64748b] font-medium">When: </span>
-                      <span className="text-[#cbd5e1]">
-                        {memo.extracted.when}
-                      </span>
-                    </div>
-                  )}
-                  {memo.extracted.where && (
-                    <div>
-                      <span className="text-[#64748b] font-medium">
-                        Where:{" "}
-                      </span>
-                      <span className="text-[#cbd5e1]">
-                        {memo.extracted.where}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function Home() {
   const [memos, setMemos] = useState<Memo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -259,9 +36,6 @@ export default function Home() {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Memo[]>([]);
-  const [expandedSearchResults, setExpandedSearchResults] = useState<
-    Set<string>
-  >(new Set());
 
   const {
     isRecording,
@@ -387,6 +161,15 @@ export default function Home() {
   const saveEdit = useCallback(
     async (memoId: string) => {
       try {
+        // Optimistic update: update transcript immediately in both memos and search results
+        setMemos((prev) =>
+          prev.map((m) => (m.id === memoId ? { ...m, transcript: editText } : m))
+        );
+        
+        setSearchResults((prev) =>
+          prev.map((m) => (m.id === memoId ? { ...m, transcript: editText } : m))
+        );
+
         const { error } = await supabase
           .from("memos")
           .update({ transcript: editText })
@@ -399,6 +182,8 @@ export default function Home() {
         loadMemos();
       } catch (err) {
         console.error("Error updating memo:", err);
+        // Revert optimistic update on error
+        loadMemos();
       }
     },
     [editText, loadMemos]
@@ -454,7 +239,6 @@ export default function Home() {
         setShowSearch(false);
         setSearchQuery("");
         setSearchResults([]);
-        setExpandedSearchResults(new Set());
       }
     };
 
@@ -496,6 +280,8 @@ export default function Home() {
     // Optimistic update: remove from list if not in archive view
     if (filter !== "archive") {
       setMemos((prev) => prev.filter((m) => m.id !== memoId));
+      // Also remove from search results
+      setSearchResults((prev) => prev.filter((m) => m.id !== memoId));
     }
 
     // Fire and forget - just update in background
@@ -510,8 +296,15 @@ export default function Home() {
 
   // Toggle starred status
   const toggleStar = async (memoId: string, currentStarred: boolean) => {
-    // Optimistic update: toggle immediately
+    // Optimistic update: toggle immediately in both memos and search results
     setMemos((prev) =>
+      prev.map((m) =>
+        m.id === memoId ? { ...m, starred: !currentStarred } : m
+      )
+    );
+    
+    // Also update search results if they exist
+    setSearchResults((prev) =>
       prev.map((m) =>
         m.id === memoId ? { ...m, starred: !currentStarred } : m
       )
@@ -533,8 +326,12 @@ export default function Home() {
     newCategory: Category,
     oldCategory: Category
   ) => {
-    // Optimistic update: change category immediately
+    // Optimistic update: change category immediately in both memos and search results
     setMemos((prev) =>
+      prev.map((m) => (m.id === memoId ? { ...m, category: newCategory } : m))
+    );
+    
+    setSearchResults((prev) =>
       prev.map((m) => (m.id === memoId ? { ...m, category: newCategory } : m))
     );
 
@@ -1489,7 +1286,6 @@ export default function Home() {
                     setShowSearch(false);
                     setSearchQuery("");
                     setSearchResults([]);
-                    setExpandedSearchResults(new Set());
                   }}
                   className="text-slate-400 hover:text-white transition-colors"
                 >
@@ -1524,7 +1320,6 @@ export default function Home() {
                       setShowSearch(false);
                       setSearchQuery("");
                       setSearchResults([]);
-                      setExpandedSearchResults(new Set());
                     }
                   }}
                 />
@@ -1548,26 +1343,24 @@ export default function Home() {
                       {searchResults.length !== 1 ? "s" : ""}
                     </p>
                     {searchResults.map((memo) => (
-                      <SearchResultItem
+                      <MemoItem
                         key={memo.id}
                         memo={memo}
+                        isNew={false}
+                        filter="all"
+                        editingId={editingId}
+                        editText={editText}
+                        setEditText={setEditText}
+                        startEdit={startEdit}
+                        cancelEdit={cancelEdit}
+                        saveEdit={saveEdit}
+                        softDelete={softDelete}
+                        toggleStar={toggleStar}
+                        restoreMemo={restoreMemo}
+                        hardDelete={hardDelete}
+                        onCategoryChange={handleCategoryChange}
                         searchQuery={searchQuery}
-                        isExpanded={expandedSearchResults.has(memo.id)}
-                        onToggleExpand={() => {
-                          const newExpanded = new Set(expandedSearchResults);
-                          if (newExpanded.has(memo.id)) {
-                            newExpanded.delete(memo.id);
-                          } else {
-                            newExpanded.add(memo.id);
-                          }
-                          setExpandedSearchResults(newExpanded);
-                        }}
-                        onClose={() => {
-                          setShowSearch(false);
-                          setSearchQuery("");
-                          setSearchResults([]);
-                          setExpandedSearchResults(new Set());
-                        }}
+                        isSearchMode={true}
                       />
                     ))}
                   </div>
