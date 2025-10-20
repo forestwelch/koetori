@@ -11,10 +11,13 @@ import {
 } from "./lib/ui-utils";
 import { useVoiceRecorder } from "./hooks/useVoiceRecorder";
 import { MemoItem } from "./components/MemoItem";
+import { UsernameInput } from "./components/UsernameInput";
+import { useUser } from "./contexts/UserContext";
 import { Star, Type, Search } from "lucide-react";
 
 // Helper component for search result items
 export default function Home() {
+  const { username, isLoading: userLoading } = useUser();
   const [memos, setMemos] = useState<Memo[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<
@@ -40,21 +43,30 @@ export default function Home() {
   const {
     isRecording,
     isProcessing,
-    error: recordingError,
-    memoId,
+    error: voiceError,
+    transcription,
+    category: voiceCategory,
+    confidence: voiceConfidence,
+    needsReview,
+    extracted,
+    tags,
+    memoId: voiceMemoId,
     recordingTime,
     startRecording,
     stopRecording,
     cancelRecording,
     clearTranscription,
-  } = useVoiceRecorder();
+  } = useVoiceRecorder(username || undefined);
 
   const loadMemos = useCallback(async () => {
+    if (!username) return; // Don't load if no username
+    
     setLoading(true);
     try {
       let query = supabase
         .from("memos")
         .select("*")
+        .eq("username", username) // Filter by current username
         .order("timestamp", { ascending: false });
 
       if (filter === "archive") {
@@ -91,7 +103,7 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }, [filter, categoryFilter, sizeFilter]);
+  }, [filter, categoryFilter, sizeFilter, username]);
 
   useEffect(() => {
     loadMemos();
@@ -121,10 +133,10 @@ export default function Home() {
 
   // Reload memos when processing completes (new memo saved)
   useEffect(() => {
-    if (!isProcessing && !isRecording && !recordingError && memoId) {
+    if (!isProcessing && !isRecording && !voiceError && voiceMemoId) {
       // Small delay to ensure Supabase has the new record
       const timer = setTimeout(() => {
-        setNewMemoId(memoId);
+        setNewMemoId(voiceMemoId);
         loadMemos();
         clearTranscription();
         // Clear highlight after animation (longer to allow smooth fade)
@@ -135,8 +147,8 @@ export default function Home() {
   }, [
     isProcessing,
     isRecording,
-    recordingError,
-    memoId,
+    voiceError,
+    voiceMemoId,
     loadMemos,
     clearTranscription,
   ]);
@@ -431,7 +443,7 @@ export default function Home() {
 
   // Handle text input submission (similar to voice recording but skips audio step)
   const handleTextSubmit = async () => {
-    if (!textInput.trim() || isProcessingText) return;
+    if (!textInput.trim() || isProcessingText || !username) return;
 
     setIsProcessingText(true);
     try {
@@ -443,6 +455,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           text: textInput.trim(),
+          username: username,
         }),
       });
 
@@ -569,9 +582,15 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen p-4 sm:p-8 relative overflow-hidden bg-[#0a0a0f] select-none">
-      {/* Background gradient glow */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1]/10 via-transparent to-[#f43f5e]/10 pointer-events-none" />
+    <>
+      {/* Show username input if user is not set */}
+      {!userLoading && !username && <UsernameInput />}
+      
+      {/* Main app content - only show if username is set */}
+      {username && (
+        <div className="min-h-screen p-4 sm:p-8 relative overflow-hidden bg-[#0a0a0f] select-none">
+          {/* Background gradient glow */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1]/10 via-transparent to-[#f43f5e]/10 pointer-events-none" />
 
       {/* Recording/Processing Overlay */}
       {(isRecording || isProcessing) && (
@@ -750,9 +769,9 @@ export default function Home() {
           </div>
 
           {/* Recording Error */}
-          {recordingError && (
+          {voiceError && (
             <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-              <p className="text-red-400 text-sm">{recordingError}</p>
+              <p className="text-red-400 text-sm">{voiceError}</p>
             </div>
           )}
 
@@ -1374,6 +1393,8 @@ export default function Home() {
           </div>
         </div>
       )}
-    </div>
+        </div>
+      )}
+    </>
   );
 }

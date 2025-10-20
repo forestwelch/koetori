@@ -93,6 +93,7 @@ export async function POST(request: NextRequest) {
     // Check if this is a text-only request
     const contentType = request.headers.get("content-type");
     let transcript: string;
+    let username: string;
 
     if (contentType?.includes("application/json")) {
       // Handle text input
@@ -106,16 +107,47 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      if (!body.username || typeof body.username !== "string" || !body.username.trim()) {
+        logRequest("warn", "No username provided", { clientId });
+        return NextResponse.json(
+          { error: "No username provided" },
+          { status: 400, headers }
+        );
+      }
+
       transcript = body.text.trim();
+      username = body.username.trim().toLowerCase();
 
       logRequest("info", "Processing text input", {
         clientId,
         textLength: transcript.length,
+        username,
       });
     } else {
       // Handle audio file (existing logic)
       const formData = await request.formData();
       const audioFile = formData.get("audio");
+      const usernameField = formData.get("username");
+
+      // Validate that audio file exists
+      if (!audioFile || !(audioFile instanceof Blob)) {
+        logRequest("warn", "No audio file provided", { clientId });
+
+        return NextResponse.json(
+          { error: "No audio file provided" },
+          { status: 400, headers }
+        );
+      }
+
+      if (!usernameField || typeof usernameField !== "string" || !usernameField.trim()) {
+        logRequest("warn", "No username provided", { clientId });
+        return NextResponse.json(
+          { error: "No username provided" },
+          { status: 400, headers }
+        );
+      }
+
+      username = usernameField.trim().toLowerCase();
 
       // Validate that audio file exists
       if (!audioFile || !(audioFile instanceof Blob)) {
@@ -228,6 +260,7 @@ export async function POST(request: NextRequest) {
         tags: categorization.tags,
         starred: categorization.starred || false,
         size: categorization.size || null,
+        username: username,
       })
       .select()
       .single();

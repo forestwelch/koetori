@@ -28,7 +28,7 @@ const MAX_RECORDING_TIME = 300; // 5 minutes in seconds
 const MAX_RETRY_ATTEMPTS = 3;
 const RETRY_DELAY = 2000; // 2 seconds
 
-export function useVoiceRecorder(): UseVoiceRecorderReturn {
+export function useVoiceRecorder(username?: string): UseVoiceRecorderReturn {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,6 +81,9 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
       try {
         const formData = new FormData();
         formData.append("audio", audioBlob, "recording.webm");
+        if (username) {
+          formData.append("username", username);
+        }
 
         const response = await fetch("/api/transcribe", {
           method: "POST",
@@ -117,7 +120,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
         throw err;
       }
     },
-    []
+    [username]
   );
 
   // Timer effect with auto-stop at max duration
