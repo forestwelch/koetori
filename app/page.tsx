@@ -93,19 +93,22 @@ export default function Home() {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: Event) => {
-      if (openDropdown && !(event.target as Element).closest('.dropdown-container')) {
+      if (
+        openDropdown &&
+        !(event.target as Element).closest(".dropdown-container")
+      ) {
         setOpenDropdown(null);
       }
     };
 
     if (openDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('touchstart', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
     };
   }, [openDropdown]);
 
