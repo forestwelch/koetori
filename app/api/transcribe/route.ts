@@ -107,7 +107,11 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      if (!body.username || typeof body.username !== "string" || !body.username.trim()) {
+      if (
+        !body.username ||
+        typeof body.username !== "string" ||
+        !body.username.trim()
+      ) {
         logRequest("warn", "No username provided", { clientId });
         return NextResponse.json(
           { error: "No username provided" },
@@ -139,7 +143,11 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      if (!usernameField || typeof usernameField !== "string" || !usernameField.trim()) {
+      if (
+        !usernameField ||
+        typeof usernameField !== "string" ||
+        !usernameField.trim()
+      ) {
         logRequest("warn", "No username provided", { clientId });
         return NextResponse.json(
           { error: "No username provided" },
