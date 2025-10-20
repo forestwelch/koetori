@@ -222,6 +222,24 @@ export default function Home() {
     cancelEdit,
   ]);
 
+  // Handle dropdown interactions - close on click outside (mobile)
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const dropdown = target.closest(".group");
+
+      // If click is outside any dropdown group, close all dropdowns
+      if (!dropdown && openDropdown) {
+        setOpenDropdown(null);
+      }
+    };
+
+    if (openDropdown) {
+      document.addEventListener("click", handleClickOutside);
+      return () => document.removeEventListener("click", handleClickOutside);
+    }
+  }, [openDropdown]);
+
   // Soft delete (move to archive)
   const softDelete = async (memoId: string) => {
     // Optimistic update: remove from list if not in archive view
@@ -541,7 +559,7 @@ export default function Home() {
           {/* Compact Filter Controls with Hover Menus */}
           <div className="flex gap-2 flex-wrap items-center">
             {/* Main View Filter */}
-            <div className="relative dropdown-container">
+            <div className="relative group">
               <button
                 onClick={() =>
                   setOpenDropdown(openDropdown === "view" ? null : "view")
@@ -553,11 +571,11 @@ export default function Home() {
 
               {/* Dropdown - hover on desktop, click on mobile */}
               <div
-                className={`absolute top-full left-0 mt-1 w-40 bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-lg shadow-2xl overflow-hidden transition-all z-50 sm:opacity-0 sm:invisible sm:group-hover:opacity-100 sm:group-hover:visible ${
+                className={`absolute top-full left-0 mt-1 w-40 bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-lg shadow-2xl overflow-hidden transition-all z-50 ${
                   openDropdown === "view"
                     ? "opacity-100 visible"
-                    : "opacity-0 invisible sm:group-hover:opacity-100 sm:group-hover:visible"
-                }`}
+                    : "opacity-0 invisible"
+                } sm:group-hover:opacity-100 sm:group-hover:visible`}
               >
                 <button
                   onClick={() => {
@@ -615,7 +633,7 @@ export default function Home() {
             </div>
 
             {/* Category Filter */}
-            <div className="relative">
+            <div className="relative group">
               <button
                 onClick={() =>
                   setOpenDropdown(
@@ -632,8 +650,8 @@ export default function Home() {
                 className={`absolute top-full left-0 mt-1 w-48 bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-lg shadow-2xl overflow-hidden max-h-80 overflow-y-auto transition-all z-50 ${
                   openDropdown === "category"
                     ? "opacity-100 visible"
-                    : "opacity-0 invisible sm:group-hover:opacity-100 sm:group-hover:visible"
-                }`}
+                    : "opacity-0 invisible"
+                } sm:group-hover:opacity-100 sm:group-hover:visible`}
               >
                 {categories.map((cat) => (
                   <button
@@ -659,7 +677,7 @@ export default function Home() {
             </div>
 
             {/* Size Filter */}
-            <div className="relative">
+            <div className="relative group">
               <button
                 onClick={() =>
                   setOpenDropdown(openDropdown === "size" ? null : "size")
@@ -674,8 +692,8 @@ export default function Home() {
                 className={`absolute top-full left-0 mt-1 w-40 bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-lg shadow-2xl overflow-hidden transition-all z-50 ${
                   openDropdown === "size"
                     ? "opacity-100 visible"
-                    : "opacity-0 invisible sm:group-hover:opacity-100 sm:group-hover:visible"
-                }`}
+                    : "opacity-0 invisible"
+                } sm:group-hover:opacity-100 sm:group-hover:visible`}
               >
                 <button
                   onClick={() => {
@@ -701,7 +719,7 @@ export default function Home() {
                       : "text-slate-300 hover:bg-slate-700/30"
                   }`}
                 >
-                  S - Small (&lt;5min)
+                  S (&lt;5min)
                 </button>
                 <button
                   onClick={() => {
@@ -714,7 +732,7 @@ export default function Home() {
                       : "text-slate-300 hover:bg-slate-700/30"
                   }`}
                 >
-                  M - Medium (&lt;30min)
+                  M (&lt;30min)
                 </button>
                 <button
                   onClick={() => {
@@ -727,7 +745,7 @@ export default function Home() {
                       : "text-slate-300 hover:bg-slate-700/30"
                   }`}
                 >
-                  L - Large (&gt;30min)
+                  L (&gt;30min)
                 </button>
               </div>
             </div>
