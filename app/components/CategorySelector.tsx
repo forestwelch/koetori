@@ -53,9 +53,9 @@ export function CategorySelector({
       aria-label="Category"
     >
       <Button
-        className={`px-3 py-1.5 rounded-full text-sm font-medium border backdrop-blur-xl ${getCategoryColor(
+        className={`px-2 py-1 rounded-lg text-xs font-medium border backdrop-blur-xl flex-shrink-0 ${getCategoryColor(
           currentCategory
-        )} flex items-center gap-2 hover:opacity-80 transition-opacity outline-none focus:ring-2 focus:ring-indigo-500/50`}
+        )} flex items-center gap-1.5 hover:opacity-80 transition-opacity outline-none focus:ring-2 focus:ring-indigo-500/50`}
       >
         <SelectValue>
           {({ selectedText }) => (

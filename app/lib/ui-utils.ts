@@ -50,3 +50,18 @@ export function getCategoryIcon(category: Category): string {
 export function formatConfidence(confidence: number): string {
   return `${Math.round(confidence * 100)}%`;
 }
+
+export function getCategoryLabel(category: Category): string {
+  const labels: Record<Category, string> = {
+    media: "Media",
+    event: "Event",
+    journal: "Journal",
+    therapy: "Therapy",
+    tarot: "Tarot",
+    todo: "To Do",
+    idea: "Idea",
+    "to buy": "To Buy",
+    other: "Other",
+  };
+  return labels[category] || labels.other;
+}

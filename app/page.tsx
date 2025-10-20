@@ -7,6 +7,7 @@ import {
   getCategoryColor,
   getCategoryGradient,
   getCategoryIcon,
+  getCategoryLabel,
   formatConfidence,
 } from "./lib/ui-utils";
 import { useVoiceRecorder } from "./hooks/useVoiceRecorder";
@@ -614,7 +615,7 @@ export default function Home() {
                     >
                       {isAllCategory
                         ? "All Categories"
-                        : `${getCategoryIcon(cat as Category)} ${cat}`}
+                        : `${getCategoryIcon(cat as Category)} ${getCategoryLabel(cat as Category)}`}
                     </button>
                   </div>
                 );
