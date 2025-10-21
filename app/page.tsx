@@ -9,6 +9,7 @@ import {
   getCategoryLabel,
   formatConfidence,
 } from "./lib/ui-utils";
+import { CategoryBadge } from "./components/CategoryBadge";
 import { useVoiceRecorder } from "./hooks/useVoiceRecorder";
 import { MemoItem } from "./components/MemoItem";
 import { UsernameInput } from "./components/UsernameInput";
@@ -902,9 +903,21 @@ export default function Home() {
                             : "text-slate-300 hover:bg-slate-700/30"
                         }`}
                       >
-                        {cat === "all"
-                          ? "All Categories"
-                          : `${getCategoryIcon(cat as Category)} ${getCategoryLabel(cat as Category)}`}
+                        {cat === "all" ? (
+                          "All Categories"
+                        ) : (
+                          <>
+                            {(() => {
+                              const IconComponent = getCategoryIcon(
+                                cat as Category
+                              );
+                              return (
+                                <IconComponent className="w-3 h-3 inline mr-2" />
+                              );
+                            })()}
+                            {getCategoryLabel(cat as Category)}
+                          </>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -1094,11 +1107,10 @@ export default function Home() {
 
                 {/* Category & Confidence */}
                 <div className="flex items-center gap-3 mb-6">
-                  <div
-                    className={`px-3 py-1 rounded-full text-sm font-medium backdrop-blur-xl border ${getCategoryColor(randomMemo.category)}`}
-                  >
-                    {getCategoryIcon(randomMemo.category)} {randomMemo.category}
-                  </div>
+                  <CategoryBadge
+                    category={randomMemo.category}
+                    mode="expanded"
+                  />
                   <div className="text-[#64748b] text-sm">
                     {formatConfidence(randomMemo.confidence)} confidence
                   </div>

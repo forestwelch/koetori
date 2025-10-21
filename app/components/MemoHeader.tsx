@@ -1,11 +1,7 @@
 import { Memo, Category } from "../types/memo";
-import {
-  getCategoryColor,
-  getCategoryGradient,
-  getCategoryIcon,
-  formatConfidence,
-} from "../lib/ui-utils";
+import { getCategoryGradient, formatConfidence } from "../lib/ui-utils";
 import { CategorySelector } from "./CategorySelector";
+import { CategoryBadge } from "./CategoryBadge";
 
 interface MemoHeaderProps {
   memo: Memo;
@@ -36,13 +32,11 @@ export function MemoHeader({
           <div
             className={`absolute inset-0 rounded-full bg-gradient-to-r ${getCategoryGradient(memo.category)} opacity-50 blur-sm`}
           />
-          <span
-            className={`relative px-3 py-1.5 rounded-full text-sm font-medium border backdrop-blur-xl ${getCategoryColor(
-              memo.category
-            )}`}
-          >
-            {getCategoryIcon(memo.category)} {memo.category}
-          </span>
+          <CategoryBadge
+            category={memo.category}
+            mode="expanded"
+            className="relative backdrop-blur-xl"
+          />
         </div>
       )}
 

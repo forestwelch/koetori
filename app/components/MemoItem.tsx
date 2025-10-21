@@ -2,11 +2,8 @@
 
 import { useState, useRef } from "react";
 import { Memo, Category } from "../types/memo";
-import {
-  getCategoryColor,
-  getCategoryIcon,
-  getCategoryLabel,
-} from "../lib/ui-utils";
+
+import { CategoryBadge } from "./CategoryBadge";
 import { Archive, Star, Edit2 } from "lucide-react";
 import { CategorySelector } from "./CategorySelector";
 
@@ -178,30 +175,18 @@ export function MemoItem({
         <div className="relative">
           {/* Compact header - always visible */}
           <div className="flex items-center gap-3">
-            {/* Category Badge - clickable in expanded view */}
-            {isExpanded && filter !== "archive" ? (
-              <div onClick={(e) => e.stopPropagation()}>
+            {/* Category - clickable badge that opens selector when expanded, static badge when collapsed */}
+            <div onClick={(e) => e.stopPropagation()}>
+              {isExpanded && filter !== "archive" ? (
                 <CategorySelector
                   currentCategory={memo.category}
                   memoId={memo.id}
                   onCategoryChange={onCategoryChange}
                 />
-              </div>
-            ) : (
-              <span
-                className={`px-2 py-1 rounded-lg text-xs font-medium border backdrop-blur-xl flex-shrink-0 ${getCategoryColor(
-                  memo.category
-                )}`}
-              >
-                <span className="sm:hidden">
-                  {getCategoryIcon(memo.category)}
-                </span>
-                <span className="hidden sm:inline">
-                  {getCategoryIcon(memo.category)}{" "}
-                  {getCategoryLabel(memo.category)}
-                </span>
-              </span>
-            )}
+              ) : (
+                <CategoryBadge category={memo.category} />
+              )}
+            </div>
 
             {/* Summary */}
             <div className="flex-1 min-w-0">

@@ -1,11 +1,8 @@
 "use client";
 
 import { Category, ExtractedData } from "../types/memo";
-import {
-  getCategoryColor,
-  getCategoryIcon,
-  formatConfidence,
-} from "../lib/ui-utils";
+import { formatConfidence } from "../lib/ui-utils";
+import { CategoryBadge } from "./CategoryBadge";
 
 interface MemoDisplayProps {
   transcript: string;
@@ -28,13 +25,7 @@ export function MemoDisplay({
     <div className="space-y-4">
       {/* Category Badge & Confidence */}
       <div className="flex flex-wrap items-center gap-3">
-        <span
-          className={`px-3 py-1.5 rounded-lg text-sm font-medium border ${getCategoryColor(
-            category
-          )}`}
-        >
-          {getCategoryIcon(category)} {category}
-        </span>
+        <CategoryBadge category={category} mode="expanded" />
 
         {/* Confidence Indicator */}
         <div className="flex items-center gap-2">

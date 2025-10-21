@@ -1,14 +1,14 @@
 "use client";
 
 import { Category } from "../types/memo";
-import { getCategoryColor, getCategoryIcon } from "../lib/ui-utils";
+import { getCategoryIcon } from "../lib/ui-utils";
+import { CategoryBadge } from "./CategoryBadge";
 import {
   Button,
   ListBox,
   ListBoxItem,
   Popover,
   Select,
-  SelectValue,
 } from "react-aria-components";
 
 interface CategorySelectorProps {
@@ -52,18 +52,11 @@ export function CategorySelector({
       onSelectionChange={handleSelectionChange}
       aria-label="Category"
     >
-      <Button
-        className={`px-2 py-1 rounded-lg text-xs font-medium border backdrop-blur-xl flex-shrink-0 ${getCategoryColor(
-          currentCategory
-        )} flex items-center gap-1.5 hover:opacity-80 transition-opacity outline-none focus:ring-2 focus:ring-indigo-500/50`}
-      >
-        <SelectValue>
-          {({ selectedText }) => (
-            <>
-              {getCategoryIcon(currentCategory)} {selectedText}
-            </>
-          )}
-        </SelectValue>
+      <Button className="outline-none focus:ring-2 focus:ring-indigo-500/50">
+        <CategoryBadge
+          category={currentCategory}
+          className="hover:opacity-80 transition-opacity cursor-pointer"
+        />
       </Button>
 
       <Popover
@@ -78,7 +71,10 @@ export function CategorySelector({
               textValue={cat.label}
               className="px-3 py-2 flex items-center gap-2.5 outline-none cursor-pointer text-slate-300 hover:bg-slate-700/30 focus:bg-slate-700/40 selected:bg-slate-700/40 selected:text-white transition-colors"
             >
-              <span className="text-base">{getCategoryIcon(cat.value)}</span>
+              {(() => {
+                const IconComponent = getCategoryIcon(cat.value);
+                return <IconComponent className="w-4 h-4" />;
+              })()}
               <span className="text-sm font-medium">{cat.label}</span>
             </ListBoxItem>
           ))}

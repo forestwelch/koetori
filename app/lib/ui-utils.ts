@@ -1,6 +1,18 @@
 // UI utilities for Phase 8
 
 import { Category } from "../types/memo";
+import {
+  Film,
+  Calendar,
+  BookOpen,
+  Heart,
+  Sparkles,
+  CheckSquare,
+  Lightbulb,
+  ShoppingCart,
+  FileText,
+  LucideIcon,
+} from "lucide-react";
 
 export function getCategoryColor(category: Category): string {
   const colors: Record<Category, string> = {
@@ -32,17 +44,17 @@ export function getCategoryGradient(category: Category): string {
   return gradients[category] || gradients.other;
 }
 
-export function getCategoryIcon(category: Category): string {
-  const icons: Record<Category, string> = {
-    media: "🎬",
-    event: "📅",
-    journal: "📔",
-    therapy: "💭",
-    tarot: "🔮",
-    todo: "✓",
-    idea: "💡",
-    "to buy": "🛒",
-    other: "📝",
+export function getCategoryIcon(category: Category): LucideIcon {
+  const icons: Record<Category, LucideIcon> = {
+    media: Film,
+    event: Calendar,
+    journal: BookOpen,
+    therapy: Heart,
+    tarot: Sparkles,
+    todo: CheckSquare,
+    idea: Lightbulb,
+    "to buy": ShoppingCart,
+    other: FileText,
   };
   return icons[category] || icons.other;
 }
@@ -64,4 +76,25 @@ export function getCategoryLabel(category: Category): string {
     other: "Other",
   };
   return labels[category] || labels.other;
+}
+
+// Compact badge: just icon, minimal padding, consistent size
+export function getCategoryBadgeCompact(category: Category): string {
+  const baseClasses =
+    "inline-flex items-center justify-center w-8 h-8 rounded-xl border";
+  const colorClasses = getCategoryColor(category);
+  return `${baseClasses} ${colorClasses}`;
+}
+
+// Expanded badge: icon + text on same line, consistent width
+export function getCategoryBadgeExpanded(category: Category): string {
+  const baseClasses =
+    "inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-xl border justify-start whitespace-nowrap overflow-hidden !w-24 !min-w-[96px] !max-w-[96px]";
+  const colorClasses = getCategoryColor(category);
+  return `${baseClasses} ${colorClasses}`;
+}
+
+// Legacy function - keeping for backwards compatibility
+export function getCategoryBadgeClasses(category: Category): string {
+  return getCategoryBadgeExpanded(category);
 }

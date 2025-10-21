@@ -9,6 +9,7 @@ import {
   getCategoryIcon,
   formatConfidence,
 } from "../lib/ui-utils";
+import { CategoryBadge } from "../components/CategoryBadge";
 
 export default function HistoryPage() {
   const [memos, setMemos] = useState<Memo[]>([]);
@@ -122,9 +123,19 @@ export default function HistoryPage() {
                       : "bg-[#14151f]/40 backdrop-blur-xl border-slate-700/20 text-[#64748b] hover:border-slate-600/50"
                   }`}
                 >
-                  {cat === "all"
-                    ? "All Categories"
-                    : `${getCategoryIcon(cat as Category)} ${cat}`}
+                  {cat === "all" ? (
+                    "All Categories"
+                  ) : (
+                    <>
+                      {(() => {
+                        const IconComponent = getCategoryIcon(cat as Category);
+                        return (
+                          <IconComponent className="w-3 h-3 inline mr-2" />
+                        );
+                      })()}
+                      {cat}
+                    </>
+                  )}
                 </button>
               ))}
             </div>
@@ -162,13 +173,7 @@ export default function HistoryPage() {
               >
                 {/* Header: Category, Confidence, Date */}
                 <div className="flex flex-wrap items-center gap-3 mb-3">
-                  <span
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border ${getCategoryColor(
-                      memo.category
-                    )}`}
-                  >
-                    {getCategoryIcon(memo.category)} {memo.category}
-                  </span>
+                  <CategoryBadge category={memo.category} mode="expanded" />
 
                   {/* Confidence */}
                   <div className="flex items-center gap-2">
