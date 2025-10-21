@@ -1,0 +1,42 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`StatusMessage Component renders idle state correctly 1`] = `
+<div
+  aria-atomic="true"
+  aria-live="polite"
+  class="text-center text-sm sm:text-base text-[#94a3b8] font-light"
+  role="status"
+>
+  Click to start recording
+</div>
+`;
+
+exports[`StatusMessage Component renders processing state correctly 1`] = `
+<div
+  aria-atomic="true"
+  aria-live="polite"
+  class="text-center text-sm sm:text-base text-[#94a3b8] font-light"
+  role="status"
+>
+  Processing audio...
+</div>
+`;
+
+exports[`StatusMessage Component renders recording state correctly 1`] = `
+<div
+  aria-atomic="true"
+  aria-live="polite"
+  class="text-center text-sm sm:text-base text-[#94a3b8] font-light"
+  role="status"
+>
+  <span>
+    Recording...
+     
+    <span
+      class="text-indigo-400"
+    >
+      0:15
+    </span>
+  </span>
+</div>
+`;

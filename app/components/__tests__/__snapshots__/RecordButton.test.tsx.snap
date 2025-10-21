@@ -1,0 +1,98 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`RecordButton Component renders idle state correctly 1`] = `
+<div
+  class="relative"
+>
+  <div
+    class="absolute inset-0 rounded-full blur-xl opacity-50 transition-colors duration-300 bg-[#6366f1] animate-pulse"
+  />
+  <button
+    aria-label="Start recording (Press Space)"
+    aria-pressed="false"
+    class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full transition-all duration-300 flex items-center justify-center shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] hover:from-[#4f46e5] hover:to-[#7c3aed] shadow-[#6366f1]/50 hover:shadow-xl hover:shadow-[#6366f1]/70"
+  >
+    <svg
+      aria-hidden="true"
+      class="h-8 w-8 sm:h-10 sm:w-10 text-white"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`RecordButton Component renders processing state correctly 1`] = `
+<div
+  class="relative"
+>
+  <div
+    class="absolute inset-0 rounded-full blur-xl opacity-50 transition-colors duration-300 bg-[#6366f1] animate-pulse"
+  />
+  <button
+    aria-label="Processing audio"
+    aria-pressed="false"
+    class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full transition-all duration-300 flex items-center justify-center shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] hover:from-[#4f46e5] hover:to-[#7c3aed] shadow-[#6366f1]/50 hover:shadow-xl hover:shadow-[#6366f1]/70"
+    disabled=""
+  >
+    <svg
+      aria-hidden="true"
+      class="h-8 w-8 sm:h-10 sm:w-10 text-white"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`RecordButton Component renders recording state correctly 1`] = `
+<div
+  class="relative"
+>
+  <div
+    class="absolute inset-0 rounded-full bg-[#f43f5e] animate-ping opacity-20"
+  />
+  <div
+    class="absolute inset-0 rounded-full blur-xl opacity-50 transition-colors duration-300 bg-[#f43f5e] animate-pulse"
+  />
+  <button
+    aria-label="Stop recording"
+    aria-pressed="true"
+    class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full transition-all duration-300 flex items-center justify-center shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-br from-[#f43f5e] to-[#fb7185] hover:from-[#e11d48] hover:to-[#f43f5e] shadow-[#f43f5e]/50 hover:shadow-xl hover:shadow-[#f43f5e]/70"
+  >
+    <svg
+      aria-hidden="true"
+      class="h-6 w-6 sm:h-8 sm:w-8 text-white"
+      fill="currentColor"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect
+        height="12"
+        rx="2"
+        width="12"
+        x="6"
+        y="6"
+      />
+    </svg>
+  </button>
+</div>
+`;
