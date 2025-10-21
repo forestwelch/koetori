@@ -588,7 +588,7 @@ export default function Home() {
 
       {/* Main app content - only show if username is set */}
       {username && (
-        <div className="min-h-screen p-4 sm:p-8 relative overflow-hidden bg-[#0a0a0f] select-none">
+        <div className="min-h-screen p-3 sm:p-4 md:p-8 relative overflow-hidden bg-[#0a0a0f] select-none">
           {/* Background gradient glow */}
           <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1]/10 via-transparent to-[#f43f5e]/10 pointer-events-none" />
 
@@ -655,10 +655,10 @@ export default function Home() {
             {/* Header with Floating Record Button */}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <h1
                     onClick={pickRandomMemo}
-                    className="text-3xl sm:text-4xl font-light bg-gradient-to-r from-[#818cf8] via-[#c084fc] to-[#fb7185] bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
+                    className="text-2xl sm:text-3xl md:text-4xl font-light bg-gradient-to-r from-[#818cf8] via-[#c084fc] to-[#fb7185] bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
                   >
                     koetori
                   </h1>
@@ -667,16 +667,16 @@ export default function Home() {
                       localStorage.removeItem("koetori_username");
                       window.location.reload();
                     }}
-                    className="text-slate-500 hover:text-slate-300 transition-colors p-2 rounded-lg bg-slate-800/20 hover:bg-slate-700/30 backdrop-blur-sm"
+                    className="text-slate-500 hover:text-slate-300 transition-colors p-1.5 sm:p-2 rounded-lg bg-slate-800/20 hover:bg-slate-700/30 backdrop-blur-sm"
                     title="Sign out"
                   >
-                    <LogOut className="w-5 h-5" />
+                    <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
                   {/* Text Input and Record Buttons */}
-                  <div className="flex items-center gap-3"></div>
+                  <div className="flex items-center gap-2 sm:gap-3"></div>
                   {/* Text Input Status */}
                   {isProcessingText && (
                     <div className="flex items-center gap-2 text-emerald-400 text-sm font-medium">
@@ -703,7 +703,7 @@ export default function Home() {
                   <button
                     onClick={() => setShowSearch(true)}
                     disabled={isProcessing || isProcessingText}
-                    className={`group relative w-14 h-14 rounded-full shadow-lg transition-all duration-300 ${
+                    className={`group relative w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-lg transition-all duration-300 ${
                       isProcessing || isProcessingText
                         ? "bg-gray-500 shadow-gray-500/50 cursor-not-allowed"
                         : "bg-gradient-to-br from-orange-500 to-pink-500 shadow-orange-500/50 hover:shadow-orange-500/70 hover:scale-105"
@@ -715,7 +715,7 @@ export default function Home() {
                       className={`absolute inset-0 rounded-full blur-xl transition-opacity duration-300 ${"bg-gradient-to-br from-orange-400 to-pink-400 opacity-0 group-hover:opacity-100"}`}
                     />
                     <div className="relative flex items-center justify-center w-full h-full">
-                      <Search className="w-6 h-6 text-white" />
+                      <Search className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
                   </button>
 
@@ -723,7 +723,7 @@ export default function Home() {
                   <button
                     onClick={() => setShowTextInput(true)}
                     disabled={isProcessing || isProcessingText}
-                    className={`group relative w-14 h-14 rounded-full shadow-lg transition-all duration-300 ${
+                    className={`group relative w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-lg transition-all duration-300 ${
                       isProcessing || isProcessingText
                         ? "bg-gray-500 shadow-gray-500/50 cursor-not-allowed"
                         : "bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-emerald-500/50 hover:shadow-emerald-500/70 hover:scale-105"
@@ -735,7 +735,7 @@ export default function Home() {
                       className={`absolute inset-0 rounded-full blur-xl transition-opacity duration-300 ${"bg-gradient-to-br from-emerald-400 to-cyan-400 opacity-0 group-hover:opacity-100"}`}
                     />
                     <div className="relative flex items-center justify-center w-full h-full">
-                      <Type className="w-6 h-6 text-white" />
+                      <Type className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
                   </button>
 
@@ -743,7 +743,7 @@ export default function Home() {
                   <button
                     onClick={handleRecordClick}
                     disabled={isProcessing || isProcessingText}
-                    className={`group relative w-14 h-14 rounded-full shadow-lg transition-all duration-300 ${
+                    className={`group relative w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-lg transition-all duration-300 ${
                       isRecording
                         ? "bg-red-500 shadow-red-500/50 hover:shadow-red-500/70 animate-pulse"
                         : isProcessing || isProcessingText
@@ -764,10 +764,10 @@ export default function Home() {
                     />
                     <div className="relative flex items-center justify-center">
                       {isRecording ? (
-                        <div className="w-4 h-4 bg-white rounded-sm" />
+                        <div className="w-3 h-3 sm:w-4 sm:h-4 bg-white rounded-sm" />
                       ) : (
                         <svg
-                          className="w-6 h-6 text-white"
+                          className="w-5 h-5 sm:w-6 sm:h-6 text-white"
                           fill="currentColor"
                           viewBox="0 0 20 20"
                         >
