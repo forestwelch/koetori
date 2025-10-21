@@ -300,7 +300,11 @@ export default function Home() {
   // Prevent background scrolling when any modal is open
   useEffect(() => {
     const anyModalOpen =
-      showTextInput || showSearch || isRecording || showRandomMemo || showFeedback;
+      showTextInput ||
+      showSearch ||
+      isRecording ||
+      showRandomMemo ||
+      showFeedback;
 
     if (anyModalOpen) {
       // Store original overflow style

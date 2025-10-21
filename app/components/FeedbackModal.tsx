@@ -11,7 +11,11 @@ interface FeedbackModalProps {
   onSubmit: (feedback: FeedbackSubmission) => Promise<void>;
 }
 
-export function FeedbackModal({ isOpen, onClose, onSubmit }: FeedbackModalProps) {
+export function FeedbackModal({
+  isOpen,
+  onClose,
+  onSubmit,
+}: FeedbackModalProps) {
   const [description, setDescription] = useState("");
   const [images, setImages] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -26,15 +30,15 @@ export function FeedbackModal({ isOpen, onClose, onSubmit }: FeedbackModalProps)
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const imageFiles = files.filter(file => file.type.startsWith('image/'));
-    
+    const imageFiles = files.filter((file) => file.type.startsWith("image/"));
+
     // Limit to 5 images max
     const newImages = [...images, ...imageFiles].slice(0, 5);
     setImages(newImages);
   };
 
   const removeImage = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
+    setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async () => {
@@ -47,11 +51,11 @@ export function FeedbackModal({ isOpen, onClose, onSubmit }: FeedbackModalProps)
         images,
         user_agent: navigator.userAgent,
         url: window.location.href,
-        username: localStorage.getItem('koetori_username') || undefined,
+        username: localStorage.getItem("koetori_username") || undefined,
       });
       handleClose();
     } catch (error) {
-      console.error('Error submitting feedback:', error);
+      console.error("Error submitting feedback:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -60,11 +64,11 @@ export function FeedbackModal({ isOpen, onClose, onSubmit }: FeedbackModalProps)
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       onClick={handleClose}
     >
-      <div 
+      <div
         className="bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
@@ -75,9 +79,7 @@ export function FeedbackModal({ isOpen, onClose, onSubmit }: FeedbackModalProps)
               <div className="p-2 bg-amber-500/10 rounded-lg">
                 <Bug className="w-5 h-5 text-amber-400" />
               </div>
-              <h2 className="text-xl font-semibold text-white">
-                Report a Bug
-              </h2>
+              <h2 className="text-xl font-semibold text-white">Report a Bug</h2>
             </div>
             <button
               onClick={handleClose}
@@ -106,7 +108,7 @@ export function FeedbackModal({ isOpen, onClose, onSubmit }: FeedbackModalProps)
             <label className="block text-sm font-medium text-slate-300 mb-2">
               Screenshots (optional)
             </label>
-            
+
             <input
               ref={fileInputRef}
               type="file"
@@ -115,7 +117,7 @@ export function FeedbackModal({ isOpen, onClose, onSubmit }: FeedbackModalProps)
               onChange={handleImageUpload}
               className="hidden"
             />
-            
+
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={images.length >= 5}
@@ -124,8 +126,8 @@ export function FeedbackModal({ isOpen, onClose, onSubmit }: FeedbackModalProps)
               <div className="flex flex-col items-center gap-2 text-slate-400">
                 <Upload className="w-6 h-6" />
                 <span className="text-sm">
-                  {images.length === 0 
-                    ? "Click to upload screenshots" 
+                  {images.length === 0
+                    ? "Click to upload screenshots"
                     : `${images.length}/5 images selected`}
                 </span>
               </div>
