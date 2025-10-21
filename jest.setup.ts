@@ -29,31 +29,33 @@ jest.mock("./app/lib/supabase", () => ({
       })),
     })),
   },
-}))(
-  // Mock Web APIs that may not be available in test environment
-  global as any
-).MediaRecorder = class MediaRecorder {
-  state: string;
-  ondataavailable: any;
-  onstop: any;
+}));
 
-  constructor() {
-    this.state = "inactive";
-    this.ondataavailable = null;
-    this.onstop = null;
-  }
-  start() {
-    this.state = "recording";
-  }
-  stop() {
-    this.state = "inactive";
-  }
-  addEventListener() {}
-  removeEventListener() {}
-  static isTypeSupported() {
-    return true;
-  }
-};
+// Mock Web APIs that may not be available in test environment
+Object.defineProperty(global, "MediaRecorder", {
+  value: class MediaRecorder {
+    state: string;
+    ondataavailable: ((event: BlobEvent) => void) | null;
+    onstop: ((event: Event) => void) | null;
+
+    constructor() {
+      this.state = "inactive";
+      this.ondataavailable = null;
+      this.onstop = null;
+    }
+    start() {
+      this.state = "recording";
+    }
+    stop() {
+      this.state = "inactive";
+    }
+    addEventListener() {}
+    removeEventListener() {}
+    static isTypeSupported() {
+      return true;
+    }
+  },
+});
 
 Object.defineProperty(global.navigator, "mediaDevices", {
   value: {
