@@ -15,6 +15,10 @@ import { MemoItem } from "./components/MemoItem";
 import { UsernameInput } from "./components/UsernameInput";
 import { useUser } from "./contexts/UserContext";
 import { Star, Type, Search, LogOut } from "lucide-react";
+import { FeedbackModal } from "./components/FeedbackModal";
+import { BugReportButton } from "./components/BugReportButton";
+import { FeedbackService } from "./lib/feedback";
+import { FeedbackSubmission } from "./types/feedback";
 
 // Helper component for search result items
 export default function Home() {
@@ -40,6 +44,7 @@ export default function Home() {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Memo[]>([]);
+  const [showFeedback, setShowFeedback] = useState(false);
 
   const {
     isRecording,
@@ -294,20 +299,21 @@ export default function Home() {
 
   // Prevent background scrolling when any modal is open
   useEffect(() => {
-    const anyModalOpen = showTextInput || showSearch || isRecording || showRandomMemo;
-    
+    const anyModalOpen =
+      showTextInput || showSearch || isRecording || showRandomMemo || showFeedback;
+
     if (anyModalOpen) {
       // Store original overflow style
       const originalOverflow = document.body.style.overflow;
       // Prevent scrolling
-      document.body.style.overflow = 'hidden';
-      
+      document.body.style.overflow = "hidden";
+
       return () => {
         // Restore original overflow when modal closes
         document.body.style.overflow = originalOverflow;
       };
     }
-  }, [showTextInput, showSearch, isRecording, showRandomMemo]);
+  }, [showTextInput, showSearch, isRecording, showRandomMemo, showFeedback]);
 
   // Soft delete (move to archive)
   const softDelete = async (memoId: string) => {
@@ -516,6 +522,19 @@ export default function Home() {
     }
   };
 
+  // Handle feedback submission
+  const handleFeedbackSubmit = async (feedback: FeedbackSubmission) => {
+    try {
+      await FeedbackService.submitFeedback(feedback);
+      // Could show a success toast here
+      console.log("Feedback submitted successfully!");
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      // Could show an error toast here
+      throw error;
+    }
+  };
+
   // Handle search functionality
   const handleSearch = useCallback(
     (query: string) => {
@@ -680,6 +699,7 @@ export default function Home() {
                   >
                     koetori
                   </h1>
+                  <BugReportButton onClick={() => setShowFeedback(true)} />
                   <button
                     onClick={() => {
                       localStorage.removeItem("koetori_username");
@@ -1256,14 +1276,14 @@ export default function Home() {
 
           {/* Text Input Modal */}
           {showTextInput && (
-            <div 
+            <div
               className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
               onClick={() => {
                 setShowTextInput(false);
                 setTextInput("");
               }}
             >
-              <div 
+              <div
                 className="bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-2xl shadow-2xl w-full max-w-2xl"
                 onClick={(e) => e.stopPropagation()}
               >
@@ -1358,7 +1378,7 @@ export default function Home() {
 
           {/* Search Modal */}
           {showSearch && (
-            <div 
+            <div
               className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start justify-center pt-16 p-4"
               onClick={() => {
                 setShowSearch(false);
@@ -1366,7 +1386,7 @@ export default function Home() {
                 setSearchResults([]);
               }}
             >
-              <div 
+              <div
                 className="bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
               >
@@ -1464,6 +1484,13 @@ export default function Home() {
               </div>
             </div>
           )}
+
+          {/* Feedback Modal */}
+          <FeedbackModal
+            isOpen={showFeedback}
+            onClose={() => setShowFeedback(false)}
+            onSubmit={handleFeedbackSubmit}
+          />
         </div>
       )}
     </>
