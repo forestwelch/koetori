@@ -292,6 +292,23 @@ export default function Home() {
     }
   }, [openDropdown]);
 
+  // Prevent background scrolling when any modal is open
+  useEffect(() => {
+    const anyModalOpen = showTextInput || showSearch || isRecording || showRandomMemo;
+    
+    if (anyModalOpen) {
+      // Store original overflow style
+      const originalOverflow = document.body.style.overflow;
+      // Prevent scrolling
+      document.body.style.overflow = 'hidden';
+      
+      return () => {
+        // Restore original overflow when modal closes
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [showTextInput, showSearch, isRecording, showRandomMemo]);
+
   // Soft delete (move to archive)
   const softDelete = async (memoId: string) => {
     // Optimistic update: remove from list if not in archive view
@@ -1239,8 +1256,17 @@ export default function Home() {
 
           {/* Text Input Modal */}
           {showTextInput && (
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <div className="bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-2xl shadow-2xl w-full max-w-2xl">
+            <div 
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+              onClick={() => {
+                setShowTextInput(false);
+                setTextInput("");
+              }}
+            >
+              <div 
+                className="bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-2xl shadow-2xl w-full max-w-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-semibold text-white">
@@ -1332,8 +1358,18 @@ export default function Home() {
 
           {/* Search Modal */}
           {showSearch && (
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start justify-center pt-16 p-4">
-              <div className="bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden">
+            <div 
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start justify-center pt-16 p-4"
+              onClick={() => {
+                setShowSearch(false);
+                setSearchQuery("");
+                setSearchResults([]);
+              }}
+            >
+              <div 
+                className="bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-semibold text-white">
