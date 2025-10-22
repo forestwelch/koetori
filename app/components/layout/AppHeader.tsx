@@ -1,7 +1,7 @@
 "use client";
 
 import { LogOut } from "lucide-react";
-import { KoetoríExplanation } from "../KoetoriExplanation";
+import { KoetoriExplanation } from "../KoetoriExplanation";
 import { ActionButtons } from "./ActionButtons";
 
 interface AppHeaderProps {
@@ -42,9 +42,9 @@ export function AppHeader({
             tabIndex={0}
             aria-label="Click for random memo"
           >
-            <KoetoríExplanation>
+            <KoetoriExplanation>
               <span>koetori</span>
-            </KoetoríExplanation>
+            </KoetoriExplanation>
           </h1>
           <button
             onClick={handleSignOut}
