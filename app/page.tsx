@@ -445,19 +445,6 @@ export default function Home() {
     }
   };
 
-  const categories: (Category | "all")[] = [
-    "all",
-    "media",
-    "event",
-    "journal",
-    "therapy",
-    "tarot",
-    "todo",
-    "idea",
-    "to buy",
-    "other",
-  ];
-
   const handleRecordClick = () => {
     if (isRecording) {
       stopRecording();
@@ -813,7 +800,6 @@ export default function Home() {
                 setSizeFilter={setSizeFilter}
                 openDropdown={openDropdown}
                 setOpenDropdown={setOpenDropdown}
-                categories={categories}
               />
             </div>
 

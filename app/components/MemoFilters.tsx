@@ -5,6 +5,7 @@ import {
   getCategoryLabel,
 } from "../lib/ui-utils";
 import { Category } from "../types/memo";
+import { categories } from "../lib/constants";
 
 interface MemoFiltersProps {
   filter: "all" | "review" | "archive" | "starred";
@@ -15,7 +16,6 @@ interface MemoFiltersProps {
   setSizeFilter: (size: "S" | "M" | "L" | "all") => void;
   openDropdown: "view" | "category" | "size" | null;
   setOpenDropdown: (dropdown: "view" | "category" | "size" | null) => void;
-  categories: (Category | "all")[];
 }
 
 export default function MemoFilters({
@@ -27,7 +27,6 @@ export default function MemoFilters({
   setSizeFilter,
   openDropdown,
   setOpenDropdown,
-  categories,
 }: MemoFiltersProps) {
   return (
     <div className="flex gap-2 flex-wrap items-center">
