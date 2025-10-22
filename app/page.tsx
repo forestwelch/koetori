@@ -3,8 +3,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "./lib/supabase";
 import { Memo, Category } from "./types/memo";
-import { formatConfidence } from "./lib/ui-utils";
-import { CategoryBadge } from "./components/CategoryBadge";
 import { useVoiceRecorder } from "./hooks/useVoiceRecorder";
 import { MemoItem } from "./components/MemoItem";
 import { UsernameInput } from "./components/UsernameInput";
@@ -14,6 +12,7 @@ import { FeedbackModal } from "./components/FeedbackModal";
 import { FeedbackService } from "./lib/feedback";
 import { FeedbackSubmission } from "./types/feedback";
 import { AppHeader } from "./components/layout/AppHeader";
+import { RandomMemoModal } from "./components/RandomMemoModal";
 
 // Helper component for search result items
 export default function Home() {
@@ -780,158 +779,12 @@ export default function Home() {
           </div>
 
           {/* Random Memo Modal */}
-          {showRandomMemo && randomMemo && (
-            <div
-              className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8"
-              onClick={() => setShowRandomMemo(false)}
-            >
-              {/* Backdrop */}
-              <div className="absolute inset-0 bg-[#0a0a0f]/95 backdrop-blur-xl" />
-
-              {/* Modal Content */}
-              <div
-                className="relative max-w-3xl w-full max-h-[90vh] overflow-y-auto bg-[#0d0e14]/80 border border-slate-700/30 rounded-2xl p-8 backdrop-blur-xl shadow-2xl"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* Close Button */}
-                <button
-                  onClick={() => setShowRandomMemo(false)}
-                  className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-[#1e1f2a]/60 hover:bg-[#1e1f2a] border border-slate-700/30 text-[#94a3b8] hover:text-white transition-all"
-                >
-                  ✕
-                </button>
-
-                {/* Category & Confidence */}
-                <div className="flex items-center gap-3 mb-6">
-                  <CategoryBadge
-                    category={randomMemo.category}
-                    mode="expanded"
-                  />
-                  <div className="text-[#64748b] text-sm">
-                    {formatConfidence(randomMemo.confidence)} confidence
-                  </div>
-                  {randomMemo.needs_review && (
-                    <span className="text-xs px-2 py-0.5 bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/40 rounded-full backdrop-blur-xl">
-                      Needs Review
-                    </span>
-                  )}
-                </div>
-
-                {/* Transcript */}
-                <div className="text-[#e2e8f0] text-lg leading-relaxed mb-6">
-                  {randomMemo.transcript}
-                </div>
-
-                {/* Timestamp */}
-                <div className="text-[#64748b] text-sm mb-6">
-                  {new Date(randomMemo.timestamp).toLocaleString("en-US", {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                    hour: "numeric",
-                    minute: "2-digit",
-                  })}
-                </div>
-
-                {/* Extracted Data */}
-                {randomMemo.extracted && (
-                  <div className="space-y-3 p-4 bg-[#0a0a0f]/40 rounded-lg border border-slate-700/20 mb-6">
-                    <div className="text-[#64748b] text-xs font-semibold uppercase tracking-wider mb-2">
-                      Extracted Information
-                    </div>
-                    {randomMemo.extracted.title && (
-                      <div>
-                        <span className="text-[#64748b] font-medium">
-                          Title:{" "}
-                        </span>
-                        <span className="text-[#cbd5e1]">
-                          {randomMemo.extracted.title}
-                        </span>
-                      </div>
-                    )}
-                    {randomMemo.extracted.who && (
-                      <div>
-                        <span className="text-[#64748b] font-medium">
-                          Who:{" "}
-                        </span>
-                        <span className="text-[#cbd5e1]">
-                          {randomMemo.extracted.who}
-                        </span>
-                      </div>
-                    )}
-                    {randomMemo.extracted.when && (
-                      <div>
-                        <span className="text-[#64748b] font-medium">
-                          When:{" "}
-                        </span>
-                        <span className="text-[#cbd5e1]">
-                          {randomMemo.extracted.when}
-                        </span>
-                      </div>
-                    )}
-                    {randomMemo.extracted.where && (
-                      <div>
-                        <span className="text-[#64748b] font-medium">
-                          Where:{" "}
-                        </span>
-                        <span className="text-[#cbd5e1]">
-                          {randomMemo.extracted.where}
-                        </span>
-                      </div>
-                    )}
-                    {randomMemo.extracted.what && (
-                      <div>
-                        <span className="text-[#64748b] font-medium">
-                          Summary:{" "}
-                        </span>
-                        <span className="text-[#cbd5e1]">
-                          {randomMemo.extracted.what}
-                        </span>
-                      </div>
-                    )}
-                    {randomMemo.extracted.actionable && (
-                      <div className="pt-1">
-                        <span className="text-xs px-2 py-0.5 bg-orange-500/10 text-orange-400 border border-orange-500/40 rounded-full backdrop-blur-xl">
-                          🎯 Actionable
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Tags */}
-                {randomMemo.tags && randomMemo.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {randomMemo.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="px-2 py-0.5 bg-[#0a0a0f]/60 text-[#94a3b8] border border-slate-700/20 rounded-full text-xs backdrop-blur-xl"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {/* Action Buttons */}
-                <div className="flex gap-3">
-                  <button
-                    onClick={pickRandomMemo}
-                    className="px-4 py-2 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 border border-indigo-500/40 rounded-lg transition-all backdrop-blur-xl"
-                  >
-                    Show Another
-                  </button>
-                  <button
-                    onClick={() => setShowRandomMemo(false)}
-                    className="px-4 py-2 bg-[#1e1f2a]/60 hover:bg-[#1e1f2a] text-[#94a3b8] hover:text-white border border-slate-700/30 rounded-lg transition-all backdrop-blur-xl"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          <RandomMemoModal
+            isOpen={showRandomMemo}
+            memo={randomMemo}
+            onClose={() => setShowRandomMemo(false)}
+            onShowAnother={pickRandomMemo}
+          />
 
           {/* Text Input Modal */}
           {showTextInput && (
