@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { useUser } from "../contexts/UserContext";
-import { KoetoríExplanation } from "./KoetoríExplanation";
+import { KoetoriExplanation } from "./KoetoriExplanation";
 
 export function UsernameInput() {
   const [input, setInput] = useState("");
@@ -166,11 +166,11 @@ export function UsernameInput() {
             ) : (
               <span className="text-white">
                 Welcome to{" "}
-                <KoetoríExplanation>
+                <KoetoriExplanation>
                   <span className="bg-gradient-to-r from-[#818cf8] via-[#c084fc] to-[#fb7185] bg-clip-text text-transparent">
                     Koetori
                   </span>
-                </KoetoríExplanation>
+                </KoetoriExplanation>
                 .
               </span>
             )}

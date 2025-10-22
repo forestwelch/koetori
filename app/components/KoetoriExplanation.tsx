@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 
-interface KoetoríExplanationProps {
+interface KoetoriExplanationProps {
   children: React.ReactNode;
 }
 
-export function KoetoríExplanation({ children }: KoetoríExplanationProps) {
+export function KoetoriExplanation({ children }: KoetoriExplanationProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
