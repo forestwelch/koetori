@@ -75,7 +75,7 @@ export function SearchModal({
       onClick={handleClose}
     >
       <div
-        className="w-full h-full sm:w-full sm:max-w-4xl sm:max-h-[80vh] bg-[#0d0e14]/98 backdrop-blur-xl sm:border sm:border-slate-700/40 sm:rounded-2xl shadow-2xl overflow-hidden"
+        className="w-full h-full sm:w-full sm:max-w-4xl sm:max-h-[80vh] bg-[#0d0e14] sm:bg-[#0d0e14]/98 backdrop-blur-xl sm:border sm:border-slate-700/40 sm:rounded-2xl shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-4 sm:p-6 h-full flex flex-col">
@@ -108,13 +108,12 @@ export function SearchModal({
               type="text"
               value={searchQuery}
               onChange={(e) => onSearch(e.target.value)}
-              placeholder="Search memos, people, tags, categories..."
+              placeholder="Search memos..."
               className="w-full pl-12 pr-4 py-4 sm:py-3 bg-[#1e1f2a]/60 border border-slate-700/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition-colors text-base sm:text-sm"
               onKeyDown={handleKeyDown}
             />
           </div>
 
-          {/* Search Results */}
           {/* Search Results */}
           <div className="flex-1 overflow-y-auto">
             <div className="space-y-4">
@@ -128,7 +127,7 @@ export function SearchModal({
                     Search by content, people, tags, or categories
                   </p>
                 </div>
-              ) : searchResults.length === 0 && !isLoading ? (
+              ) : searchResults.length === 0 ? (
                 <div className="text-center py-12">
                   <Search className="w-16 h-16 text-slate-600 mx-auto mb-4" />
                   <p className="text-slate-400 text-lg">No memos found</p>

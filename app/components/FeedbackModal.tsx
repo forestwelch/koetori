@@ -65,11 +65,12 @@ export function FeedbackModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center sm:p-4 overscroll-contain"
       onClick={handleClose}
+      style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0 }}
     >
       <div
-        className="bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        className="w-full h-full sm:w-full sm:max-w-2xl sm:h-auto sm:max-h-[90vh] bg-[#0d0e14] sm:bg-[#0d0e14]/98 backdrop-blur-xl sm:border sm:border-slate-700/40 sm:rounded-2xl shadow-2xl overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6">
@@ -83,7 +84,7 @@ export function FeedbackModal({
             </div>
             <button
               onClick={handleClose}
-              className="text-slate-400 hover:text-white transition-colors"
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800/20 hover:bg-slate-700/30 text-slate-400 hover:text-white transition-colors"
             >
               <X className="w-6 h-6" />
             </button>
@@ -162,33 +163,28 @@ export function FeedbackModal({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between">
-            <p className="text-slate-400 text-sm">
-              Help us fix bugs faster with screenshots!
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={handleClose}
-                className="px-4 py-2 bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-all"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSubmit}
-                disabled={!description.trim() || isSubmitting}
-                className={`px-6 py-2 rounded-lg font-medium transition-all ${
-                  !description.trim() || isSubmitting
-                    ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                    : "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg"
-                }`}
-              >
-                {isSubmitting ? (
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  "Send Report"
-                )}
-              </button>
-            </div>
+          <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
+            <button
+              onClick={handleSubmit}
+              disabled={!description.trim() || isSubmitting}
+              className={`w-full sm:w-auto px-6 py-3 sm:py-2 rounded-lg font-medium transition-all ${
+                !description.trim() || isSubmitting
+                  ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                  : "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg"
+              }`}
+            >
+              {isSubmitting ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                "Send Report"
+              )}
+            </button>
+            <button
+              onClick={handleClose}
+              className="w-full sm:w-auto px-4 py-3 sm:py-2 bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-all"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       </div>

@@ -51,7 +51,7 @@ export function TextInputModal({
       onClick={handleClose}
     >
       <div
-        className="w-full h-full sm:w-full sm:max-w-2xl sm:h-auto bg-[#0d0e14]/98 backdrop-blur-xl sm:border sm:border-slate-700/40 sm:rounded-2xl shadow-2xl"
+        className="w-full h-full sm:w-full sm:max-w-2xl sm:h-auto bg-[#0d0e14] sm:bg-[#0d0e14]/98 backdrop-blur-xl sm:border sm:border-slate-700/40 sm:rounded-2xl shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-4 sm:p-6 h-full flex flex-col">
@@ -98,12 +98,6 @@ export function TextInputModal({
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <button
-                onClick={handleClose}
-                className="w-full sm:w-auto px-6 py-3 sm:px-4 sm:py-2 bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-all font-medium"
-              >
-                Cancel
-              </button>
-              <button
                 onClick={onSubmit}
                 disabled={!value.trim() || isProcessing}
                 className={`w-full sm:w-auto px-6 py-3 sm:px-6 sm:py-2 rounded-lg font-medium transition-all ${
@@ -112,11 +106,13 @@ export function TextInputModal({
                     : "bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white shadow-lg"
                 }`}
               >
-                {isProcessing ? (
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  "Save"
-                )}
+                {isProcessing ? "Saving..." : "Save Memo"}
+              </button>
+              <button
+                onClick={handleClose}
+                className="w-full sm:w-auto px-6 py-3 sm:px-4 sm:py-2 bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-all font-medium"
+              >
+                Cancel
               </button>
             </div>
           </div>

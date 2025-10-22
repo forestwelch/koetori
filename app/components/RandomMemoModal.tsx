@@ -29,7 +29,7 @@ export function RandomMemoModal({
 
       {/* Modal Content - Full screen on mobile, centered on desktop */}
       <div
-        className="relative w-full h-full sm:max-w-3xl sm:w-full sm:max-h-[90vh] sm:h-auto overflow-y-auto bg-[#0d0e14]/80 sm:border sm:border-slate-700/30 sm:rounded-2xl p-4 sm:p-8 backdrop-blur-xl shadow-2xl"
+        className="relative w-full h-full sm:max-w-3xl sm:w-full sm:max-h-[90vh] sm:h-auto overflow-y-auto bg-[#0d0e14] sm:bg-[#0d0e14]/80 sm:border sm:border-slate-700/30 sm:rounded-2xl p-4 sm:p-8 backdrop-blur-xl shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button - Larger on mobile */}
