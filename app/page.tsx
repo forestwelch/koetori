@@ -19,6 +19,7 @@ import { FeedbackModal } from "./components/FeedbackModal";
 import { BugReportButton } from "./components/BugReportButton";
 import { FeedbackService } from "./lib/feedback";
 import { FeedbackSubmission } from "./types/feedback";
+import { ActionButton } from "./components/ActionButton";
 
 // Helper component for search result items
 export default function Home() {
@@ -742,70 +743,46 @@ export default function Home() {
                   )}
 
                   {/* Search Button */}
-                  <button
+                  <ActionButton
                     onClick={() => setShowSearch(true)}
                     disabled={isProcessing || isProcessingText}
-                    className={`group relative w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-lg transition-all duration-300 ${
-                      isProcessing || isProcessingText
-                        ? "bg-gray-500 shadow-gray-500/50 cursor-not-allowed"
-                        : "bg-gradient-to-br from-orange-500 to-pink-500 shadow-orange-500/50 hover:shadow-orange-500/70 hover:scale-105"
-                    }`}
-                    aria-label="Search memos"
-                    title="Search memos"
-                  >
-                    <div
-                      className={`absolute inset-0 rounded-full blur-xl transition-opacity duration-300 ${"bg-gradient-to-br from-orange-400 to-pink-400 opacity-0 group-hover:opacity-100"}`}
-                    />
-                    <div className="relative flex items-center justify-center w-full h-full">
+                    icon={
                       <Search className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                    </div>
-                  </button>
+                    }
+                    ariaLabel="Search memos"
+                    title="Search memos"
+                    gradient="bg-gradient-to-br from-orange-500 to-pink-500"
+                    shadowColor="shadow-orange-500/50 hover:shadow-orange-500/70"
+                    glowColor="bg-gradient-to-br from-orange-400 to-pink-400"
+                  />
 
                   {/* Text Input Button */}
-                  <button
+                  <ActionButton
                     onClick={() => setShowTextInput(true)}
                     disabled={isProcessing || isProcessingText}
-                    className={`group relative w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-lg transition-all duration-300 ${
-                      isProcessing || isProcessingText
-                        ? "bg-gray-500 shadow-gray-500/50 cursor-not-allowed"
-                        : "bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-emerald-500/50 hover:shadow-emerald-500/70 hover:scale-105"
-                    }`}
-                    aria-label="Add text memo"
+                    icon={<Type className="w-5 h-5 sm:w-6 sm:h-6 text-white" />}
+                    ariaLabel="Add text memo"
                     title="Add text memo"
-                  >
-                    <div
-                      className={`absolute inset-0 rounded-full blur-xl transition-opacity duration-300 ${"bg-gradient-to-br from-emerald-400 to-cyan-400 opacity-0 group-hover:opacity-100"}`}
-                    />
-                    <div className="relative flex items-center justify-center w-full h-full">
-                      <Type className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                    </div>
-                  </button>
+                    gradient="bg-gradient-to-br from-emerald-500 to-cyan-500"
+                    shadowColor="shadow-emerald-500/50 hover:shadow-emerald-500/70"
+                    glowColor="bg-gradient-to-br from-emerald-400 to-cyan-400"
+                  />
 
                   {/* Voice Record Button */}
-                  <button
+                  <ActionButton
                     onClick={handleRecordClick}
                     disabled={isProcessing || isProcessingText}
-                    className={`group relative w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-lg transition-all duration-300 ${
-                      isRecording
-                        ? "bg-red-500 shadow-red-500/50 hover:shadow-red-500/70 animate-pulse"
-                        : isProcessing || isProcessingText
-                          ? "bg-gray-500 shadow-gray-500/50 cursor-not-allowed"
-                          : "bg-gradient-to-br from-indigo-500 to-purple-500 shadow-indigo-500/50 hover:shadow-indigo-500/70 hover:scale-105"
-                    }`}
-                    aria-label={
+                    ariaLabel={
                       isRecording ? "Stop recording" : "Start recording"
                     }
                     title={isRecording ? "Stop recording" : "Start recording"}
-                  >
-                    <div
-                      className={`absolute inset-0 rounded-full blur-xl transition-opacity duration-300 ${
-                        isRecording
-                          ? "bg-red-400 opacity-100"
-                          : "bg-gradient-to-br from-indigo-400 to-purple-400 opacity-0 group-hover:opacity-100"
-                      }`}
-                    />
-                    <div className="relative flex items-center justify-center">
-                      {isRecording ? (
+                    gradient="bg-gradient-to-br from-indigo-500 to-purple-500"
+                    shadowColor="shadow-indigo-500/50 hover:shadow-indigo-500/70"
+                    glowColor="bg-gradient-to-br from-indigo-400 to-purple-400"
+                    isActive={isRecording}
+                    activeColor="bg-red-500 shadow-red-500/50 hover:shadow-red-500/70"
+                    icon={
+                      isRecording ? (
                         <div className="w-3 h-3 sm:w-4 sm:h-4 bg-white rounded-sm" />
                       ) : (
                         <svg
@@ -819,9 +796,9 @@ export default function Home() {
                             clipRule="evenodd"
                           />
                         </svg>
-                      )}
-                    </div>
-                  </button>
+                      )
+                    }
+                  />
                 </div>
               </div>
 
