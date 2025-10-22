@@ -21,21 +21,21 @@ export function RandomMemoModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8"
+      className="fixed inset-0 z-50 flex items-center justify-center sm:p-4 md:p-8"
       onClick={onClose}
     >
       {/* Backdrop */}
       <div className="absolute inset-0 bg-[#0a0a0f]/95 backdrop-blur-xl" />
 
-      {/* Modal Content */}
+      {/* Modal Content - Full screen on mobile, centered on desktop */}
       <div
-        className="relative max-w-3xl w-full max-h-[90vh] overflow-y-auto bg-[#0d0e14]/80 border border-slate-700/30 rounded-2xl p-8 backdrop-blur-xl shadow-2xl"
+        className="relative w-full h-full sm:max-w-3xl sm:w-full sm:max-h-[90vh] sm:h-auto overflow-y-auto bg-[#0d0e14]/80 sm:border sm:border-slate-700/30 sm:rounded-2xl p-4 sm:p-8 backdrop-blur-xl shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close Button */}
+        {/* Close Button - Larger on mobile */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-[#1e1f2a]/60 hover:bg-[#1e1f2a] border border-slate-700/30 text-[#94a3b8] hover:text-white transition-all"
+          className="absolute top-4 right-4 w-12 h-12 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-[#1e1f2a]/60 hover:bg-[#1e1f2a] border border-slate-700/30 text-[#94a3b8] hover:text-white transition-all"
         >
           ✕
         </button>
@@ -130,17 +130,17 @@ export function RandomMemoModal({
           </div>
         )}
 
-        {/* Action Buttons */}
-        <div className="flex gap-3">
+        {/* Action Buttons - Full width on mobile */}
+        <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={onShowAnother}
-            className="px-4 py-2 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 border border-indigo-500/40 rounded-lg transition-all backdrop-blur-xl"
+            className="w-full sm:w-auto px-6 py-3 sm:px-4 sm:py-2 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 border border-indigo-500/40 rounded-lg transition-all backdrop-blur-xl font-medium"
           >
             Show Another
           </button>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-[#1e1f2a]/60 hover:bg-[#1e1f2a] text-[#94a3b8] hover:text-white border border-slate-700/30 rounded-lg transition-all backdrop-blur-xl"
+            className="w-full sm:w-auto px-6 py-3 sm:px-4 sm:py-2 bg-[#1e1f2a]/60 hover:bg-[#1e1f2a] text-[#94a3b8] hover:text-white border border-slate-700/30 rounded-lg transition-all backdrop-blur-xl font-medium"
           >
             Close
           </button>

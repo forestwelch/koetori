@@ -71,19 +71,19 @@ export function SearchModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start justify-center pt-16 p-4"
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start justify-center sm:pt-16 sm:p-4"
       onClick={handleClose}
     >
       <div
-        className="bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden"
+        className="w-full h-full sm:w-full sm:max-w-4xl sm:max-h-[80vh] bg-[#0d0e14]/98 backdrop-blur-xl sm:border sm:border-slate-700/40 sm:rounded-2xl shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-6">
+        <div className="p-4 sm:p-6 h-full flex flex-col">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-white">Search Memos</h2>
             <button
               onClick={handleClose}
-              className="text-slate-400 hover:text-white transition-colors"
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800/20 hover:bg-slate-700/30 text-slate-400 hover:text-white transition-colors"
             >
               <svg
                 className="w-6 h-6"
@@ -94,7 +94,7 @@ export function SearchModal({
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth="2"
+                  strokeWidth={2}
                   d="M6 18L18 6M6 6l12 12"
                 />
               </svg>
@@ -109,51 +109,59 @@ export function SearchModal({
               value={searchQuery}
               onChange={(e) => onSearch(e.target.value)}
               placeholder="Search memos, people, tags, categories..."
-              className="w-full pl-12 pr-4 py-3 bg-[#1e1f2a]/60 border border-slate-700/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition-colors"
+              className="w-full pl-12 pr-4 py-4 sm:py-3 bg-[#1e1f2a]/60 border border-slate-700/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition-colors text-base sm:text-sm"
               onKeyDown={handleKeyDown}
             />
           </div>
 
           {/* Search Results */}
-          <div className="max-h-96 overflow-y-auto">
-            {searchQuery.trim() === "" ? (
-              <div className="text-center py-12 text-slate-400">
-                <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Start typing to search your memos</p>
-              </div>
-            ) : searchResults.length === 0 ? (
-              <div className="text-center py-12 text-slate-400">
-                <p>No memos found for &ldquo;{searchQuery}&rdquo;</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <p className="text-slate-400 text-sm mb-4">
-                  Found {searchResults.length} memo
-                  {searchResults.length !== 1 ? "s" : ""}
-                </p>
-                {searchResults.map((memo) => (
-                  <MemoItem
-                    key={memo.id}
-                    memo={memo}
-                    isNew={false}
-                    filter="all"
-                    editingId={editingId}
-                    editText={editText}
-                    setEditText={setEditText}
-                    startEdit={startEdit}
-                    cancelEdit={cancelEdit}
-                    saveEdit={saveEdit}
-                    softDelete={softDelete}
-                    toggleStar={toggleStar}
-                    restoreMemo={restoreMemo}
-                    hardDelete={hardDelete}
-                    onCategoryChange={onCategoryChange}
-                    searchQuery={searchQuery}
-                    isSearchMode={true}
-                  />
-                ))}
-              </div>
-            )}
+          {/* Search Results */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="space-y-4">
+              {searchQuery.trim() === "" ? (
+                <div className="text-center py-12">
+                  <Search className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+                  <p className="text-slate-400 text-lg">
+                    Start typing to search your memos
+                  </p>
+                  <p className="text-slate-500 text-sm mt-2">
+                    Search by content, people, tags, or categories
+                  </p>
+                </div>
+              ) : searchResults.length === 0 && !isLoading ? (
+                <div className="text-center py-12">
+                  <Search className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+                  <p className="text-slate-400 text-lg">No memos found</p>
+                  <p className="text-slate-500 text-sm mt-2">
+                    Try adjusting your search terms
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {searchResults.map((memo) => (
+                    <MemoItem
+                      key={memo.id}
+                      memo={memo}
+                      isNew={false}
+                      filter="all"
+                      editingId={editingId}
+                      editText={editText}
+                      setEditText={setEditText}
+                      startEdit={startEdit}
+                      cancelEdit={cancelEdit}
+                      saveEdit={saveEdit}
+                      softDelete={softDelete}
+                      toggleStar={toggleStar}
+                      restoreMemo={restoreMemo}
+                      hardDelete={hardDelete}
+                      onCategoryChange={onCategoryChange}
+                      searchQuery={searchQuery}
+                      isSearchMode={true}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
