@@ -91,9 +91,7 @@ export function Modal({
           )}
 
           {/* Content */}
-          <div className="p-4 sm:p-6 h-[calc(100%-theme(spacing.16))] sm:h-auto">
-            {children}
-          </div>
+          <div className="p-4 sm:p-6">{children}</div>
         </Dialog>
       </AriaModal>
     </ModalOverlay>
