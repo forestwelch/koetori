@@ -77,65 +77,67 @@ export function SearchModal({
       size="xl"
       className="sm:items-start sm:pt-16"
     >
-      <div className="mb-6">
-        <Input
-          ref={inputRef}
-          type="text"
-          value={searchQuery}
-          onChange={(e) => onSearch(e.target.value)}
-          placeholder="Search memos..."
-          leftIcon={<Search className="w-5 h-5" />}
-          className="text-base sm:text-sm py-4 sm:py-3"
-          onKeyDown={handleKeyDown}
-        />
-      </div>
+      <div className="flex flex-col h-full sm:h-auto">
+        <div className="mb-6 flex-shrink-0">
+          <Input
+            ref={inputRef}
+            type="text"
+            value={searchQuery}
+            onChange={(e) => onSearch(e.target.value)}
+            placeholder="Search memos..."
+            leftIcon={<Search className="w-5 h-5" />}
+            className="text-base sm:text-sm py-4 sm:py-3"
+            onKeyDown={handleKeyDown}
+          />
+        </div>
 
-      {/* Search Results */}
-      <div className="max-h-[60vh] overflow-y-auto">
-        <div className="space-y-4">
-          {searchQuery.trim() === "" ? (
-            <div className="text-center py-12">
-              <Search className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-              <p className="text-slate-400 text-lg">
-                Start typing to search your memos
-              </p>
-              <p className="text-slate-500 text-sm mt-2">
-                Search by content, people, tags, or categories
-              </p>
-            </div>
-          ) : searchResults.length === 0 ? (
-            <div className="text-center py-12">
-              <Search className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-              <p className="text-slate-400 text-lg">No memos found</p>
-              <p className="text-slate-500 text-sm mt-2">
-                Try adjusting your search terms
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {searchResults.map((memo) => (
-                <MemoItem
-                  key={memo.id}
-                  memo={memo}
-                  isNew={false}
-                  filter="all"
-                  editingId={editingId}
-                  editText={editText}
-                  setEditText={setEditText}
-                  startEdit={startEdit}
-                  cancelEdit={cancelEdit}
-                  saveEdit={saveEdit}
-                  softDelete={softDelete}
-                  toggleStar={toggleStar}
-                  restoreMemo={restoreMemo}
-                  hardDelete={hardDelete}
-                  onCategoryChange={onCategoryChange}
-                  searchQuery={searchQuery}
-                  isSearchMode={true}
-                />
-              ))}
-            </div>
-          )}
+        {/* Search Results */}
+        <div className="flex-1 sm:flex-none sm:max-h-[60vh] overflow-y-auto min-h-0">
+          <div className="space-y-4">
+            {searchQuery.trim() === "" ? (
+              <div className="text-center py-12">
+                <Search className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+                <p className="text-slate-400 text-lg">
+                  Start typing to search your memos
+                </p>
+                <p className="text-slate-500 text-sm mt-2">
+                  Search by content, people, tags, or categories
+                </p>
+              </div>
+            ) : searchResults.length === 0 ? (
+              <div className="text-center py-12">
+                <Search className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+                <p className="text-slate-400 text-lg">No memos found</p>
+                <p className="text-slate-500 text-sm mt-2">
+                  Try adjusting your search terms
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {searchResults.map((memo) => (
+                  <MemoItem
+                    key={memo.id}
+                    memo={memo}
+                    isNew={false}
+                    filter="all"
+                    editingId={editingId}
+                    editText={editText}
+                    setEditText={setEditText}
+                    startEdit={startEdit}
+                    cancelEdit={cancelEdit}
+                    saveEdit={saveEdit}
+                    softDelete={softDelete}
+                    toggleStar={toggleStar}
+                    restoreMemo={restoreMemo}
+                    hardDelete={hardDelete}
+                    onCategoryChange={onCategoryChange}
+                    searchQuery={searchQuery}
+                    isSearchMode={true}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </Modal>

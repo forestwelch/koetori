@@ -53,16 +53,17 @@ export function Modal({
       <AriaModal
         className={cn(
           "relative w-full bg-[#0d0e14] shadow-2xl outline-none",
-          "h-full sm:h-auto sm:max-h-[90vh] overflow-y-auto",
+          "h-full sm:h-auto sm:max-h-[90vh]",
+          "flex flex-col",
           "rounded-none sm:rounded-2xl",
           "border-0 sm:border sm:border-slate-700/40",
           sizeClasses[size]
         )}
       >
-        <Dialog className="outline-none">
+        <Dialog className="outline-none flex flex-col h-full sm:h-auto overflow-hidden">
           {/* Header */}
           {(title || showCloseButton) && (
-            <div className="flex items-center justify-between p-4 sm:p-6">
+            <div className="flex items-center justify-between p-4 sm:p-6 flex-shrink-0">
               <div>
                 {title && (
                   <Heading
@@ -91,7 +92,9 @@ export function Modal({
           )}
 
           {/* Content */}
-          <div className="p-4 sm:p-6">{children}</div>
+          <div className="p-4 sm:p-6 flex-1 overflow-y-auto min-h-0">
+            {children}
+          </div>
         </Dialog>
       </AriaModal>
     </ModalOverlay>

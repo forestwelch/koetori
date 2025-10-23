@@ -50,7 +50,7 @@ export default function RecordingModal({
       title="Record Memo"
     >
       {/* Content */}
-      <div className="space-y-8 max-h-[60vh] overflow-y-auto -mx-4 sm:-mx-6 px-4 sm:px-6">
+      <div className="space-y-8 flex-1 sm:flex-none sm:max-h-[60vh] overflow-y-auto -mx-4 sm:-mx-6 px-4 sm:px-6 min-h-0">
         <div className="space-y-8">
           {/* Error Display */}
           {error && <ErrorAlert message={error} />}

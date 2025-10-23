@@ -52,17 +52,17 @@ export function TextInputModal({
       title="Add Text Memo"
       size="lg"
     >
-      <div className="h-full flex flex-col">
+      <div className="h-full flex flex-col min-h-0">
         <textarea
           ref={textareaRef}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Enter your memo text here..."
-          className="w-full flex-1 min-h-[60vh] sm:min-h-0 sm:h-40 bg-[#1e1f2a]/60 border border-slate-700/30 rounded-lg p-4 text-base sm:text-sm text-white placeholder-slate-400 resize-none focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-colors"
+          className="w-full flex-1 min-h-0 sm:min-h-0 sm:h-40 bg-[#1e1f2a]/60 border border-slate-700/30 rounded-lg p-4 text-base sm:text-sm text-white placeholder-slate-400 resize-none focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-colors"
           onKeyDown={handleKeyDown}
         />
 
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3 pb-safe">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3 pb-safe flex-shrink-0">
           <p className="text-slate-400 text-sm hidden sm:block">
             Press{" "}
             <kbd className="px-2 py-1 bg-slate-700/50 rounded text-xs">
