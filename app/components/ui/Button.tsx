@@ -54,6 +54,7 @@ export interface ButtonProps extends VariantProps<typeof buttonVariants> {
   onClick?: () => void;
   type?: "button" | "submit" | "reset";
   "aria-label"?: string;
+  title?: string;
 }
 
 export function Button({
@@ -69,6 +70,7 @@ export function Button({
   onClick,
   type = "button",
   "aria-label": ariaLabel,
+  title,
 }: ButtonProps) {
   return (
     <AriaButton
@@ -79,7 +81,10 @@ export function Button({
       aria-label={ariaLabel}
     >
       {isLoading && (
-        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+        <div
+          className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2"
+          title={title}
+        />
       )}
       {leftIcon && <span className="mr-2">{leftIcon}</span>}
       {children}

@@ -1,24 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import { supabase } from "@/app/lib/supabase";
 import { Memo } from "@/app/types/memo";
 import { CategoryBadge } from "@/app/components/CategoryBadge";
 import { ArrowLeft, RefreshCw } from "lucide-react";
 
+// Admin memo type includes username from database
+type AdminMemo = Memo & { username: string };
+
 export default function AdminPage() {
-  const [memos, setMemos] = useState<Memo[]>([]);
+  const [memos, setMemos] = useState<AdminMemo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedUsername, setSelectedUsername] = useState<string>("all");
   const [selectedSource, setSelectedSource] = useState<string>("all");
   const [usernames, setUsernames] = useState<string[]>([]);
 
-  useEffect(() => {
-    fetchMemos();
-  }, [selectedUsername, selectedSource]);
-
-  async function fetchMemos() {
+  const fetchMemos = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -65,7 +65,11 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [selectedUsername, selectedSource]);
+
+  useEffect(() => {
+    fetchMemos();
+  }, [fetchMemos]);
 
   function formatTimestamp(date: Date): string {
     const now = new Date();
@@ -84,7 +88,7 @@ export default function AdminPage() {
     });
   }
 
-  function getSourceDisplay(memo: Memo): string {
+  function getSourceDisplay(memo: AdminMemo): string {
     if (memo.source === "device") {
       return `📱 ${memo.device_id || "device"}`;
     }
@@ -118,13 +122,13 @@ export default function AdminPage() {
                 className={`w-4 h-4 text-[#94a3b8] ${loading ? "animate-spin" : ""}`}
               />
             </button>
-            <a
+            <Link
               href="/"
               className="flex items-center gap-2 px-3 py-2 bg-[#0d0e14]/60 backdrop-blur-xl border border-slate-700/20 rounded-lg hover:border-indigo-500/40 transition-colors text-[#cbd5e1] text-sm"
             >
               <ArrowLeft className="w-4 h-4" />
               <span className="hidden sm:inline">Back to App</span>
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -226,10 +230,7 @@ export default function AdminPage() {
                         {getSourceDisplay(memo)}
                       </td>
                       <td className="px-3 py-2.5">
-                        <CategoryBadge
-                          category={memo.category}
-                          size={memo.size || undefined}
-                        />
+                        <CategoryBadge category={memo.category} />
                       </td>
                       <td className="px-3 py-2.5 text-[#cbd5e1] max-w-md text-xs">
                         <div className="truncate" title={memo.transcript}>

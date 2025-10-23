@@ -33,6 +33,7 @@ export function ActionButton({
       variant="unstyled"
       size="custom"
       aria-label={ariaLabel}
+      title={title}
       className={`group relative w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-lg transition-all duration-300 ${
         isActive
           ? `${activeColor} animate-pulse`

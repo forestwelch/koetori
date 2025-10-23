@@ -30,7 +30,6 @@ export default function Home() {
   const {
     data: memos = [],
     isLoading: loading,
-    error: memosError,
     refetch: refetchMemos,
   } = useMemosQuery({
     username: username || "",
@@ -58,8 +57,6 @@ export default function Home() {
     isRecording,
     isProcessing,
     error: voiceError,
-    transcription,
-    category: voiceCategory,
     memoId: voiceMemoId,
     recordingTime,
     startRecording,
@@ -434,6 +431,8 @@ export default function Home() {
         size: result.size || null,
         timestamp: new Date(),
         deleted_at: null,
+        source: "app",
+        input_type: "text",
       };
 
       // Refetch memos to get updated data
