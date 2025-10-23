@@ -278,13 +278,15 @@ export function MemoItem({
             </div>
 
             {/* Actions - Star always visible, Edit and Archive on desktop hover only */}
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div
+              className="flex items-center gap-1 flex-shrink-0"
+              onClick={(e) => e.stopPropagation()}
+            >
               {filter !== "archive" ? (
                 <>
                   {!isEditing && (
                     <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
+                      onClick={() => {
                         if (!isExpanded) {
                           setIsExpanded(true);
                         }
@@ -299,10 +301,7 @@ export function MemoItem({
                     </Button>
                   )}
                   <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      softDelete(memo.id);
-                    }}
+                    onClick={() => softDelete(memo.id)}
                     variant="unstyled"
                     size="custom"
                     aria-label="Archive"
@@ -311,10 +310,7 @@ export function MemoItem({
                     <Archive className="w-4 h-4 text-slate-400" />
                   </Button>
                   <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleStar(memo.id, memo.starred || false);
-                    }}
+                    onClick={() => toggleStar(memo.id, memo.starred || false)}
                     variant="unstyled"
                     size="custom"
                     aria-label={memo.starred ? "Unstar" : "Star"}

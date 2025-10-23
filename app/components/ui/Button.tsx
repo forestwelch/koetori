@@ -74,7 +74,7 @@ export function Button({
     <AriaButton
       className={cn(buttonVariants({ variant, size, isActive, className }))}
       isDisabled={disabled || isLoading}
-      onPress={onClick}
+      onPress={() => onClick?.()}
       type={type}
       aria-label={ariaLabel}
     >
