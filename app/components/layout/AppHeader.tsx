@@ -1,8 +1,8 @@
 "use client";
 
-import { LogOut, Mic, Search, Type } from "lucide-react";
-import { BugReportButton } from "../BugReportButton";
+import { LogOut, Mic, Search, Type, Bug } from "lucide-react";
 import { ActionButton } from "../ActionButton";
+import { Button } from "../ui/Button";
 import MemoFilters from "../MemoFilters";
 import { Category } from "../../types/memo";
 
@@ -131,17 +131,27 @@ export function AppHeader({
           />
 
           <div className="flex items-center gap-2">
-            <BugReportButton onClick={() => setShowFeedback(true)} />
-            <button
+            <Button
+              onClick={() => setShowFeedback(true)}
+              variant="unstyled"
+              size="custom"
+              aria-label="Report a bug"
+              className="text-amber-500 hover:text-amber-300 transition-colors p-1.5 sm:p-2 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 backdrop-blur-sm"
+            >
+              <Bug className="w-4 h-4 sm:w-5 sm:h-5 group-hover:rotate-[20deg] transition-transform duration-200" />
+            </Button>
+            <Button
               onClick={() => {
                 localStorage.removeItem("koetori_username");
                 window.location.reload();
               }}
+              variant="unstyled"
+              size="custom"
+              aria-label="Sign out"
               className="text-slate-500 hover:text-slate-300 transition-colors p-2 rounded-lg bg-slate-800/20 hover:bg-slate-700/30 backdrop-blur-sm"
-              title="Sign out"
             >
               <LogOut className="w-5 h-5" />
-            </button>
+            </Button>
           </div>
         </div>
       </div>
