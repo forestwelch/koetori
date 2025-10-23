@@ -47,9 +47,6 @@ export function Modal({
       className={cn(
         "fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4",
         "bg-black/90 backdrop-blur-sm",
-        // React Aria animation classes
-        "data-[entering]:animate-in data-[entering]:fade-in data-[entering]:duration-300",
-        "data-[exiting]:animate-out data-[exiting]:fade-out data-[exiting]:duration-200",
         className
       )}
     >
@@ -59,9 +56,6 @@ export function Modal({
           "h-full sm:h-auto sm:max-h-[90vh] overflow-y-auto",
           "rounded-none sm:rounded-2xl",
           "border-0 sm:border sm:border-slate-700/40",
-          // React Aria animation classes
-          "data-[entering]:animate-in data-[entering]:slide-in-from-bottom sm:data-[entering]:slide-in-from-bottom-0 sm:data-[entering]:zoom-in-95 data-[entering]:duration-300",
-          "data-[exiting]:animate-out data-[exiting]:slide-out-to-bottom sm:data-[exiting]:slide-out-to-bottom-0 sm:data-[exiting]:zoom-out-95 data-[exiting]:duration-200",
           sizeClasses[size]
         )}
       >
