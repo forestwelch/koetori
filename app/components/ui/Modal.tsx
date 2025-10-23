@@ -62,7 +62,7 @@ export function Modal({
         <Dialog className="outline-none">
           {/* Header */}
           {(title || showCloseButton) && (
-            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-700/20">
+            <div className="flex items-center justify-between p-4 sm:p-6">
               <div>
                 {title && (
                   <Heading
