@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "./lib/supabase";
 import { Memo, Category } from "./types/memo";
 import { useVoiceRecorder } from "./hooks/useVoiceRecorder";
+import { useMemosQuery } from "./hooks/useMemosQuery";
 import { MemoItem } from "./components/MemoItem";
 import { UsernameInput } from "./components/UsernameInput";
 import { useUser } from "./contexts/UserContext";
@@ -19,13 +20,24 @@ import { RecordingOverlay } from "./components/RecordingOverlay";
 // Helper component for search result items
 export default function Home() {
   const { username, isLoading: userLoading } = useUser();
-  const [memos, setMemos] = useState<Memo[]>([]);
-  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<
     "all" | "review" | "archive" | "starred"
   >("all");
   const [categoryFilter, setCategoryFilter] = useState<Category | "all">("all");
   const [sizeFilter, setSizeFilter] = useState<"S" | "M" | "L" | "all">("all");
+
+  // React Query for memos
+  const {
+    data: memos = [],
+    isLoading: loading,
+    error: memosError,
+    refetch: refetchMemos,
+  } = useMemosQuery({
+    username: username || "",
+    filter,
+    categoryFilter,
+    sizeFilter,
+  });
   const [newMemoId, setNewMemoId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
@@ -60,56 +72,7 @@ export default function Home() {
     clearTranscription,
   } = useVoiceRecorder(username || undefined);
 
-  const loadMemos = useCallback(async () => {
-    if (!username) return; // Don't load if no username
-
-    setLoading(true);
-    try {
-      let query = supabase
-        .from("memos")
-        .select("*")
-        .eq("username", username) // Filter by current username
-        .order("timestamp", { ascending: false });
-
-      if (filter === "archive") {
-        query = query.not("deleted_at", "is", null);
-      } else {
-        query = query.is("deleted_at", null);
-
-        if (filter === "review") {
-          query = query.eq("needs_review", true);
-        }
-
-        if (filter === "starred") {
-          query = query.eq("starred", true);
-        }
-
-        if (categoryFilter !== "all") {
-          query = query.eq("category", categoryFilter);
-        }
-
-        if (sizeFilter !== "all") {
-          query = query.eq("size", sizeFilter);
-        }
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error("Error loading memos:", error);
-      } else {
-        setMemos(data || []);
-      }
-    } catch (err) {
-      console.error("Error:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [filter, categoryFilter, sizeFilter, username]);
-
-  useEffect(() => {
-    loadMemos();
-  }, [loadMemos]);
+  // React Query handles loading and caching automatically
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -139,7 +102,7 @@ export default function Home() {
       // Small delay to ensure Supabase has the new record
       const timer = setTimeout(() => {
         setNewMemoId(voiceMemoId);
-        loadMemos();
+        refetchMemos();
         clearTranscription();
         // Clear highlight after animation (longer to allow smooth fade)
         setTimeout(() => setNewMemoId(null), 2000);
@@ -151,7 +114,7 @@ export default function Home() {
     isRecording,
     voiceError,
     voiceMemoId,
-    loadMemos,
+    refetchMemos,
     clearTranscription,
   ]);
 
@@ -175,12 +138,8 @@ export default function Home() {
   const saveEdit = useCallback(
     async (memoId: string) => {
       try {
-        // Optimistic update: update transcript immediately in both memos and search results
-        setMemos((prev) =>
-          prev.map((m) =>
-            m.id === memoId ? { ...m, transcript: editText } : m
-          )
-        );
+        // Refetch memos to get updated data
+        refetchMemos();
 
         setSearchResults((prev) =>
           prev.map((m) =>
@@ -197,14 +156,14 @@ export default function Home() {
 
         setEditingId(null);
         setEditText("");
-        loadMemos();
+        refetchMemos();
       } catch (err) {
         console.error("Error updating memo:", err);
         // Revert optimistic update on error
-        loadMemos();
+        refetchMemos();
       }
     },
-    [editText, loadMemos]
+    [editText, refetchMemos]
   );
 
   // Space bar to toggle recording, Escape to cancel
@@ -317,12 +276,10 @@ export default function Home() {
 
   // Soft delete (move to archive)
   const softDelete = async (memoId: string) => {
-    // Optimistic update: remove from list if not in archive view
-    if (filter !== "archive") {
-      setMemos((prev) => prev.filter((m) => m.id !== memoId));
-      // Also remove from search results
-      setSearchResults((prev) => prev.filter((m) => m.id !== memoId));
-    }
+    // Refetch memos to get updated data
+    refetchMemos();
+    // Also remove from search results
+    setSearchResults((prev) => prev.filter((m) => m.id !== memoId));
 
     // Fire and forget - just update in background
     supabase
@@ -336,12 +293,8 @@ export default function Home() {
 
   // Toggle starred status
   const toggleStar = async (memoId: string, currentStarred: boolean) => {
-    // Optimistic update: toggle immediately in both memos and search results
-    setMemos((prev) =>
-      prev.map((m) =>
-        m.id === memoId ? { ...m, starred: !currentStarred } : m
-      )
-    );
+    // Refetch memos to get updated data
+    refetchMemos();
 
     // Also update search results if they exist
     setSearchResults((prev) =>
@@ -366,10 +319,8 @@ export default function Home() {
     newCategory: Category,
     oldCategory: Category
   ) => {
-    // Optimistic update: change category immediately in both memos and search results
-    setMemos((prev) =>
-      prev.map((m) => (m.id === memoId ? { ...m, category: newCategory } : m))
-    );
+    // Refetch memos to get updated data
+    refetchMemos();
 
     setSearchResults((prev) =>
       prev.map((m) => (m.id === memoId ? { ...m, category: newCategory } : m))
@@ -413,10 +364,8 @@ export default function Home() {
 
   // Restore from archive
   const restoreMemo = async (memoId: string) => {
-    // Optimistic update: remove from archive view
-    if (filter === "archive") {
-      setMemos((prev) => prev.filter((m) => m.id !== memoId));
-    }
+    // Refetch memos to get updated data
+    refetchMemos();
 
     // Fire and forget - just update in background
     supabase
@@ -438,7 +387,7 @@ export default function Home() {
       const { error } = await supabase.from("memos").delete().eq("id", memoId);
 
       if (error) throw error;
-      loadMemos();
+      refetchMemos();
     } catch (err) {
       console.error("Error permanently deleting memo:", err);
     }
@@ -491,8 +440,8 @@ export default function Home() {
         deleted_at: null,
       };
 
-      // Optimistic update
-      setMemos((prev) => [newMemo, ...prev]);
+      // Refetch memos to get updated data
+      refetchMemos();
       setNewMemoId(newMemo.id);
 
       // Clear and close

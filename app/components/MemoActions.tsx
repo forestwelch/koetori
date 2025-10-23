@@ -1,5 +1,6 @@
 import { Memo } from "../types/memo";
 import { Star, Archive, Edit2, RotateCcw, Trash2 } from "lucide-react";
+import { Button } from "./ui/Button";
 
 interface MemoActionsProps {
   memo: Memo;
@@ -26,20 +27,24 @@ export function MemoActions({
   if (filter === "archive") {
     return (
       <div className="flex gap-2 pt-3 border-t border-slate-700/10">
-        <button
+        <Button
           onClick={() => handleRestore(memo.id)}
+          variant="unstyled"
+          size="custom"
+          leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
           className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/40 rounded-full text-xs font-medium transition-all backdrop-blur-xl"
         >
-          <RotateCcw className="w-3.5 h-3.5" />
           Restore
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => handleDeleteForever(memo.id)}
+          variant="unstyled"
+          size="custom"
+          leftIcon={<Trash2 className="w-3.5 h-3.5" />}
           className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/40 rounded-full text-xs font-medium transition-all backdrop-blur-xl"
         >
-          <Trash2 className="w-3.5 h-3.5" />
           Delete Forever
-        </button>
+        </Button>
       </div>
     );
   }
