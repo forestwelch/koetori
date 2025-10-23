@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { useUser } from "../contexts/UserContext";
 import { KoetoriExplanation } from "./KoetoriExplanation";
+import { Button } from "./ui/Button";
 
 export function UsernameInput() {
   const [input, setInput] = useState("");
@@ -186,7 +187,7 @@ export function UsernameInput() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {(mode === "signup" || mode === "login") && (
-            <button
+            <Button
               type="button"
               onClick={() => {
                 setMode("username");
@@ -194,10 +195,12 @@ export function UsernameInput() {
                 setError("");
                 setExistingUsername("");
               }}
+              variant="unstyled"
+              size="custom"
               className="w-full p-2 text-slate-400 hover:text-white transition-colors text-sm"
             >
               ← Try a different name
-            </button>
+            </Button>
           )}
 
           <div>
@@ -225,9 +228,11 @@ export function UsernameInput() {
             )}
           </div>
 
-          <button
+          <Button
             type="submit"
             disabled={!input.trim() || isChecking}
+            variant="unstyled"
+            size="custom"
             className="w-full p-4 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 disabled:from-slate-500 disabled:to-slate-600 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:hover:scale-100"
           >
             {isChecking ? (
@@ -242,7 +247,7 @@ export function UsernameInput() {
                 {mode === "login" && "Sign In"}
               </>
             )}
-          </button>
+          </Button>
         </form>
 
         <p className="text-center text-slate-500 text-sm mt-6">

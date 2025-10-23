@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "./ui/Button";
 
 interface TranscriptionDisplayProps {
   text: string;
@@ -25,8 +26,10 @@ export function TranscriptionDisplay({ text }: TranscriptionDisplayProps) {
         <h3 className="text-[#e2e8f0] text-sm sm:text-base font-light">
           Transcription
         </h3>
-        <button
+        <Button
           onClick={handleCopy}
+          variant="unstyled"
+          size="custom"
           aria-label={
             copied ? "Copied to clipboard" : "Copy transcription to clipboard"
           }
@@ -63,7 +66,7 @@ export function TranscriptionDisplay({ text }: TranscriptionDisplayProps) {
               Copy
             </>
           )}
-        </button>
+        </Button>
       </div>
       <p className="text-[#94a3b8] text-sm sm:text-base font-light leading-relaxed">
         {text}

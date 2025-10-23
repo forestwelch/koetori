@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "./ui/Button";
+
 interface RecordingOverlayProps {
   isRecording: boolean;
   isProcessing: boolean;
@@ -25,13 +27,15 @@ export function RecordingOverlay({
             {/* Recording Animation */}
             <div className="relative mb-8 flex items-center justify-center">
               <div className="w-32 h-32 bg-red-500/20 rounded-full absolute animate-ping" />
-              <button
+              <Button
                 onClick={onStopRecording}
+                variant="unstyled"
+                size="custom"
                 className="relative w-32 h-32 bg-red-500 rounded-full shadow-2xl shadow-red-500/50 hover:bg-red-600 transition-all flex items-center justify-center"
                 aria-label="Stop recording"
               >
                 <div className="w-12 h-12 bg-white rounded-sm" />
-              </button>
+              </Button>
             </div>
             <div className="flex flex-col items-center gap-3">
               <div className="flex items-center gap-3 text-red-400 text-2xl font-medium">

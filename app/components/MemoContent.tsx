@@ -1,4 +1,5 @@
 import { Memo } from "../types/memo";
+import { Button } from "./ui/Button";
 
 interface MemoContentProps {
   memo: Memo;
@@ -28,18 +29,22 @@ export function MemoContent({
           autoFocus
         />
         <div className="flex gap-2 mt-2">
-          <button
+          <Button
             onClick={() => saveEdit(memo.id)}
+            variant="unstyled"
+            size="custom"
             className="px-3 py-1.5 bg-indigo-500/90 hover:bg-indigo-600 text-white rounded-full text-xs font-medium transition-all shadow-lg shadow-indigo-500/20"
           >
             ✓ Save
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={cancelEdit}
+            variant="unstyled"
+            size="custom"
             className="px-3 py-1.5 bg-[#14151f]/60 hover:bg-[#14151f]/80 text-[#94a3b8] border border-slate-700/30 rounded-full text-xs font-medium transition-all"
           >
             ✕ Cancel
-          </button>
+          </Button>
         </div>
       </div>
     );

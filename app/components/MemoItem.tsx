@@ -6,6 +6,7 @@ import { Memo, Category } from "../types/memo";
 import { CategoryBadge } from "./CategoryBadge";
 import { Archive, Star, Edit2 } from "lucide-react";
 import { CategorySelector } from "./CategorySelector";
+import { Button } from "./ui/Button";
 
 import { MemoActions } from "./MemoActions";
 import { SwipeIndicator } from "./SwipeIndicator";
@@ -281,7 +282,7 @@ export function MemoItem({
               {filter !== "archive" ? (
                 <>
                   {!isEditing && (
-                    <button
+                    <Button
                       onClick={(e) => {
                         e.stopPropagation();
                         if (!isExpanded) {
@@ -289,32 +290,40 @@ export function MemoItem({
                         }
                         startEdit(memo);
                       }}
+                      variant="unstyled"
+                      size="custom"
+                      aria-label="Edit"
                       className="hidden sm:block p-1.5 hover:bg-slate-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-                      title="Edit"
                     >
                       <Edit2 className="w-4 h-4 text-slate-400" />
-                    </button>
+                    </Button>
                   )}
-                  <button
+                  <Button
                     onClick={(e) => {
                       e.stopPropagation();
                       softDelete(memo.id);
                     }}
+                    variant="unstyled"
+                    size="custom"
+                    aria-label="Archive"
                     className="hidden sm:block p-1.5 hover:bg-slate-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                   >
                     <Archive className="w-4 h-4 text-slate-400" />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleStar(memo.id, memo.starred || false);
                     }}
+                    variant="unstyled"
+                    size="custom"
+                    aria-label={memo.starred ? "Unstar" : "Star"}
                     className="p-1.5 hover:bg-amber-500/10 rounded-lg transition-colors"
                   >
                     <Star
                       className={`w-4 h-4 ${memo.starred ? "text-amber-400 fill-amber-400" : "text-slate-400"}`}
                     />
-                  </button>
+                  </Button>
                 </>
               ) : null}
             </div>
@@ -337,18 +346,22 @@ export function MemoItem({
                     autoFocus
                   />
                   <div className="flex gap-2 mt-2">
-                    <button
+                    <Button
                       onClick={() => saveEdit(memo.id)}
+                      variant="unstyled"
+                      size="custom"
                       className="px-2 py-1 bg-indigo-500/90 hover:bg-indigo-600 text-white rounded-lg text-xs font-medium transition-all"
                     >
                       ✓ Save
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={cancelEdit}
+                      variant="unstyled"
+                      size="custom"
                       className="px-2 py-1 bg-[#14151f]/60 hover:bg-[#14151f]/80 text-[#94a3b8] border border-slate-700/30 rounded-lg text-xs font-medium transition-all"
                     >
                       ✕ Cancel
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ) : (

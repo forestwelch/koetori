@@ -52,33 +52,39 @@ export function MemoActions({
   // Active view - floating corner circular icon buttons
   return (
     <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex gap-2 z-10">
-      <button
+      <Button
         onClick={() => toggleStar(memo.id, memo.starred || false)}
+        variant="unstyled"
+        size="custom"
+        aria-label={memo.starred ? "Unstar" : "Star"}
         className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
           memo.starred
             ? "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30"
             : "bg-slate-700/30 text-slate-400 hover:bg-slate-600/40 backdrop-blur-xl"
         }`}
-        title={memo.starred ? "Unstar" : "Star"}
       >
         <Star className={`w-5 h-5 ${memo.starred ? "fill-amber-400" : ""}`} />
-      </button>
+      </Button>
       {!isEditing && (
-        <button
+        <Button
           onClick={() => startEdit(memo)}
+          variant="unstyled"
+          size="custom"
+          aria-label="Edit"
           className="w-9 h-9 rounded-full flex items-center justify-center bg-slate-700/30 hover:bg-slate-600/40 text-slate-400 backdrop-blur-xl transition-all"
-          title="Edit"
         >
           <Edit2 className="w-5 h-5" />
-        </button>
+        </Button>
       )}
-      <button
+      <Button
         onClick={() => handleArchive(memo.id)}
+        variant="unstyled"
+        size="custom"
+        aria-label="Archive"
         className="w-9 h-9 rounded-full flex items-center justify-center bg-slate-700/30 hover:bg-slate-600/40 text-slate-400 backdrop-blur-xl transition-all"
-        title="Archive"
       >
         <Archive className="w-5 h-5" />
-      </button>
+      </Button>
     </div>
   );
 }

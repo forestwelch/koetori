@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Button } from "./ui/Button";
 
 interface KoetoriExplanationProps {
   children: React.ReactNode;
@@ -93,12 +94,15 @@ export function KoetoriExplanation({ children }: KoetoriExplanationProps) {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close button */}
-            <button
+            <Button
               onClick={() => setIsOpen(false)}
+              variant="unstyled"
+              size="custom"
+              aria-label="Close explanation"
               className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
             >
               ✕
-            </button>
+            </Button>
 
             <div className="text-center">
               {/* Bird emoji */}
