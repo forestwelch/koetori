@@ -94,9 +94,11 @@ export async function POST(request: NextRequest) {
     const contentType = request.headers.get("content-type");
     let transcript: string;
     let username: string;
+    let inputType: "audio" | "text" = "audio";
 
     if (contentType?.includes("application/json")) {
       // Handle text input
+      inputType = "text";
       const body = await request.json();
 
       if (!body.text || typeof body.text !== "string" || !body.text.trim()) {
@@ -269,6 +271,8 @@ export async function POST(request: NextRequest) {
         starred: categorization.starred || false,
         size: categorization.size || null,
         username: username,
+        source: "app",
+        input_type: inputType,
       })
       .select()
       .single();

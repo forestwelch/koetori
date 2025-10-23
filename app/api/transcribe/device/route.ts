@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
     // Get form data
     const formData = await request.formData();
     const audioFile = formData.get("audio");
-    const deviceId = formData.get("device_id") as string | null;
+    const deviceId = (formData.get("device_id") as string | null) || "unknown";
     const username = formData.get("username") as string | null;
 
     // Validate audio file
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate or use default username
-    const finalUsername = username?.trim().toLowerCase() || "device_user";
+    const finalUsername = username?.trim().toLowerCase() || "forest";
 
     logRequest("info", "Processing device audio upload", {
       deviceId: deviceId || "unknown",
@@ -187,6 +187,9 @@ export async function POST(request: NextRequest) {
         starred: categorization.starred || false,
         size: categorization.size || null,
         username: finalUsername,
+        source: "device",
+        input_type: "audio",
+        device_id: deviceId,
       })
       .select()
       .single();

@@ -22,6 +22,9 @@ export interface ExtractedData {
   actionable?: boolean; // Requires follow-up action
 }
 
+export type MemoSource = "app" | "device";
+export type MemoInputType = "audio" | "text";
+
 export interface Memo {
   id: string;
   transcript: string;
@@ -34,6 +37,9 @@ export interface Memo {
   deleted_at?: Date | null; // For soft delete
   starred?: boolean; // Starred/priority items
   size?: TaskSize; // T-shirt size for tasks (S: <5min, M: <30min, L: >30min)
+  source: MemoSource; // Where the memo came from: app or device
+  input_type: MemoInputType; // How it was captured: audio or text
+  device_id?: string; // Device identifier (only for device sources)
 }
 
 export interface CategorizationResult {
