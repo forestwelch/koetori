@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { Button } from "./ui/Button";
 
 interface ActionButtonProps {
   onClick: () => void;
@@ -26,9 +27,12 @@ export function ActionButton({
   activeColor,
 }: ActionButtonProps) {
   return (
-    <button
+    <Button
       onClick={onClick}
       disabled={disabled}
+      variant="unstyled"
+      size="custom"
+      aria-label={ariaLabel}
       className={`group relative w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-lg transition-all duration-300 ${
         isActive
           ? `${activeColor} animate-pulse`
@@ -36,8 +40,6 @@ export function ActionButton({
             ? "bg-gray-500 shadow-gray-500/50 cursor-not-allowed"
             : `${gradient} ${shadowColor} hover:scale-105`
       }`}
-      aria-label={ariaLabel}
-      title={title}
     >
       <div
         className={`absolute inset-0 rounded-full blur-xl transition-opacity duration-300 ${
@@ -49,6 +51,6 @@ export function ActionButton({
       <div className="relative flex items-center justify-center w-full h-full">
         {icon}
       </div>
-    </button>
+    </Button>
   );
 }
