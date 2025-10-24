@@ -4,8 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:clean": "npm run clean && next dev",
     "build": "next build",
+    "build:clean": "npm run clean && next build",
     "start": "next start",
+    "clean": "rm -rf .next",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "test": "jest",
