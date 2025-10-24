@@ -167,6 +167,18 @@ export function MemoItem({
             : "border-slate-700/20 hover:border-slate-600/40"
         } ${isNew ? "animate-in fade-in slide-in-from-top-4" : ""}`}
         onClick={() => setIsExpanded(!isExpanded)}
+        role="button"
+        tabIndex={0}
+        aria-expanded={isExpanded}
+        aria-label={
+          isExpanded ? "Collapse memo details" : "Expand memo details"
+        }
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setIsExpanded(!isExpanded);
+          }
+        }}
       >
         {/* New memo highlight */}
         {isNew && (

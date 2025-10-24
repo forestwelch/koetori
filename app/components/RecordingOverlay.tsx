@@ -21,7 +21,7 @@ export function RecordingOverlay({
 
   return (
     <div className="fixed inset-0 bg-[#0a0a0f]/80 backdrop-blur-md z-50 flex items-center justify-center animate-in fade-in duration-300">
-      <div className="text-center flex flex-col items-center">
+      <div className="text-center w-full max-w-md mx-auto px-4">
         {isRecording ? (
           <>
             {/* Recording Animation */}
@@ -62,9 +62,16 @@ export function RecordingOverlay({
             </div>
           </>
         ) : (
-          <>
+          <div
+            role="status"
+            aria-live="polite"
+            className="flex flex-col items-center"
+          >
             {/* Processing Animation */}
-            <div className="w-32 h-32 border-8 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mb-6" />
+            <div
+              className="w-32 h-32 border-8 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mb-6"
+              aria-hidden="true"
+            />
             <div className="flex flex-col items-center gap-3">
               <div className="text-indigo-400 text-2xl font-medium">
                 Processing...
@@ -73,7 +80,7 @@ export function RecordingOverlay({
                 Transcribing and categorizing your memo
               </p>
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>

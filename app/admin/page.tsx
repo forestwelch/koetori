@@ -96,7 +96,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen p-3 sm:p-4 md:p-8 select-none">
+    <div className="min-h-screen p-3 sm:p-4 md:p-8 safe-y select-none">
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
@@ -172,8 +172,11 @@ export default function AdminPage() {
 
         {/* Loading state */}
         {loading && (
-          <div className="text-center py-12">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-indigo-500 border-r-transparent"></div>
+          <div className="py-12 text-center" role="status" aria-live="polite">
+            <div
+              className="h-8 w-8 mx-auto animate-spin rounded-full border-4 border-solid border-indigo-500 border-r-transparent"
+              aria-hidden="true"
+            ></div>
             <p className="mt-4 text-[#94a3b8] text-sm">Loading memos...</p>
           </div>
         )}

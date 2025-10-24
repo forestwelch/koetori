@@ -55,6 +55,33 @@ body {
   min-height: -webkit-fill-available;
 }
 
+/* Safe area insets for notched devices */
+.safe-top {
+  padding-top: max(1rem, env(safe-area-inset-top));
+}
+
+.safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.safe-left {
+  padding-left: max(1rem, env(safe-area-inset-left));
+}
+
+.safe-right {
+  padding-right: max(1rem, env(safe-area-inset-right));
+}
+
+.safe-x {
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+}
+
+.safe-y {
+  padding-top: max(1rem, env(safe-area-inset-top));
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
 /* Utility classes for our design system */
 .bg-primary {
   background-color: var(--color-bg-primary);

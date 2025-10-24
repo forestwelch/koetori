@@ -48,11 +48,44 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       leftIcon,
       rightIcon,
       id,
+      type = "text",
       ...props
     },
     ref
   ) => {
     const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+
+    // Set appropriate mobile keyboard attributes based on input type
+    const getMobileAttributes = () => {
+      const attrs: Partial<React.InputHTMLAttributes<HTMLInputElement>> = {
+        autoCapitalize: "sentences",
+        autoCorrect: "on",
+        spellCheck: true,
+      };
+
+      if (type === "email") {
+        attrs.inputMode = "email";
+        attrs.autoComplete = "email";
+        attrs.autoCapitalize = "none";
+        attrs.autoCorrect = "off";
+      } else if (type === "tel") {
+        attrs.inputMode = "tel";
+        attrs.autoComplete = "tel";
+      } else if (type === "url") {
+        attrs.inputMode = "url";
+        attrs.autoComplete = "url";
+        attrs.autoCapitalize = "none";
+      } else if (type === "number") {
+        attrs.inputMode = "numeric";
+      } else if (type === "search") {
+        attrs.inputMode = "search";
+        attrs.autoComplete = "off";
+      }
+
+      return attrs;
+    };
+
+    const mobileAttrs = getMobileAttributes();
 
     return (
       <div className="space-y-2">
@@ -73,6 +106,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <AriaInput
             ref={ref}
             id={inputId}
+            type={type}
             className={cn(
               inputVariants({ size, variant, className }),
               leftIcon && "pl-10",
@@ -80,6 +114,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               error &&
                 "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/50"
             )}
+            {...mobileAttrs}
             {...props}
           />
           {rightIcon && (

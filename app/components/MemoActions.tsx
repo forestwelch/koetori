@@ -57,7 +57,7 @@ export function MemoActions({
         variant="unstyled"
         size="custom"
         aria-label={memo.starred ? "Unstar" : "Star"}
-        className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
+        className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
           memo.starred
             ? "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30"
             : "bg-slate-700/30 text-slate-400 hover:bg-slate-600/40 backdrop-blur-xl"
@@ -71,7 +71,7 @@ export function MemoActions({
           variant="unstyled"
           size="custom"
           aria-label="Edit"
-          className="w-9 h-9 rounded-full flex items-center justify-center bg-slate-700/30 hover:bg-slate-600/40 text-slate-400 backdrop-blur-xl transition-all"
+          className="w-11 h-11 rounded-full flex items-center justify-center bg-slate-700/30 hover:bg-slate-600/40 text-slate-400 backdrop-blur-xl transition-all"
         >
           <Edit2 className="w-5 h-5" />
         </Button>
@@ -81,7 +81,7 @@ export function MemoActions({
         variant="unstyled"
         size="custom"
         aria-label="Archive"
-        className="w-9 h-9 rounded-full flex items-center justify-center bg-slate-700/30 hover:bg-slate-600/40 text-slate-400 backdrop-blur-xl transition-all"
+        className="w-11 h-11 rounded-full flex items-center justify-center bg-slate-700/30 hover:bg-slate-600/40 text-slate-400 backdrop-blur-xl transition-all"
       >
         <Archive className="w-5 h-5" />
       </Button>

@@ -125,9 +125,14 @@ export async function POST(request: NextRequest) {
       username: finalUsername,
     });
 
-    // Convert Blob to File for Groq API
-    const file = new File([audioFile], "recording.wav", {
-      type: audioFile.type || "audio/wav",
+    // Create FileLike object for Groq API by wrapping the Blob
+    // Groq SDK needs an object with name, lastModified, and all Blob methods
+    const file = new Proxy(audioFile, {
+      get(target, prop) {
+        if (prop === "name") return "recording.wav";
+        if (prop === "lastModified") return Date.now();
+        return target[prop as keyof typeof target];
+      },
     });
 
     // Transcribe audio using Groq Whisper

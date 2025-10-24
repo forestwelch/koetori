@@ -169,7 +169,10 @@ export default function Home() {
         target.tagName === "TEXTAREA" ||
         target.isContentEditable;
 
-      if (e.code === "Space" && !isInputField) {
+      // Don't trigger if a button is focused (to avoid conflict with button's Space activation)
+      const isButton = target.tagName === "BUTTON" || target.closest("button");
+
+      if (e.code === "Space" && !isInputField && !isButton) {
         e.preventDefault();
         if (isRecording) {
           stopRecording();
@@ -556,7 +559,7 @@ export default function Home() {
 
       {/* Main app content - only show if username is set */}
       {username && (
-        <div className="min-h-screen p-3 sm:p-4 md:p-8 relative overflow-hidden select-none">
+        <div className="min-h-screen p-3 sm:p-4 md:p-8 safe-y relative overflow-hidden select-none">
           {/* Recording/Processing Overlay */}
           <RecordingOverlay
             isRecording={isRecording}
@@ -589,8 +592,15 @@ export default function Home() {
 
             {/* Loading State */}
             {loading && (
-              <div className="text-center py-12">
-                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-indigo-500 border-r-transparent"></div>
+              <div
+                className="py-12 text-center"
+                role="status"
+                aria-live="polite"
+              >
+                <div
+                  className="h-8 w-8 mx-auto animate-spin rounded-full border-4 border-solid border-indigo-500 border-r-transparent"
+                  aria-hidden="true"
+                ></div>
                 <p className="mt-4 text-[#94a3b8] text-sm">Loading memos...</p>
               </div>
             )}
