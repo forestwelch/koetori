@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { UserProvider } from "./contexts/UserContext";
 import { QueryProvider } from "./providers/QueryProvider";
+import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
+import { OfflineIndicator } from "./components/OfflineIndicator";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,11 +23,24 @@ export const metadata: Metadata = {
     "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover",
   icons: {
     icon: [
-      {
-        url: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="0.9em" font-size="90">🐔</text></svg>',
-        type: "image/svg+xml",
-      },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
     ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Koetori",
+  },
+  applicationName: "Koetori",
+  themeColor: "#6366f1",
+  other: {
+    "mobile-web-app-capable": "yes",
   },
 };
 
@@ -41,7 +56,11 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <QueryProvider>
-          <UserProvider>{children}</UserProvider>
+          <UserProvider>
+            {children}
+            <PWAInstallPrompt />
+            <OfflineIndicator />
+          </UserProvider>
         </QueryProvider>
       </body>
     </html>
