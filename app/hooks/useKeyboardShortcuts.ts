@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useFilters } from "../contexts/FilterContext";
 import { useModals } from "../contexts/ModalContext";
+import { Category } from "../types/memo";
 
 interface UseKeyboardShortcutsProps {
   onRecordToggle: () => void;
@@ -59,187 +60,153 @@ export function useKeyboardShortcuts({
         target.tagName === "INPUT" ||
         target.tagName === "TEXTAREA" ||
         target.isContentEditable ||
-        editingId !== null; // Disable shortcuts when editing a memo
+        editingId !== null;
 
-      // Cmd/Ctrl+P for command palette
-      if ((e.metaKey || e.ctrlKey) && e.key === "p") {
-        e.preventDefault();
-        setShowCommandPalette(!showCommandPalette);
-      }
+      const isModalOpen =
+        showSettings ||
+        showTextInput ||
+        showSearch ||
+        showRandomMemo ||
+        showCommandPalette ||
+        isSpotlightMode;
 
-      // Cmd/Ctrl + E for text input (CMD+T opens new tab)
-      if ((e.metaKey || e.ctrlKey) && e.key === "e" && !isInputField) {
-        e.preventDefault();
-        setShowTextInput(true);
-      }
+      // Helper to check if only specified modifiers are pressed
+      const hasOnlyModifiers = (
+        alt = false,
+        meta = false,
+        ctrl = false,
+        shift = false
+      ) =>
+        e.altKey === alt &&
+        e.metaKey === meta &&
+        e.ctrlKey === ctrl &&
+        e.shiftKey === shift;
 
-      // Cmd/Ctrl + J for random memo (J = "Jump to random")
-      if ((e.metaKey || e.ctrlKey) && e.key === "j" && !isInputField) {
-        e.preventDefault();
-        onPickRandomMemo();
-      }
-
-      // Cmd/Ctrl + K for search
-      if ((e.metaKey || e.ctrlKey) && e.key === "k" && !isInputField) {
-        e.preventDefault();
-        setShowSearch(true);
-      }
-
-      // Cmd/Ctrl + ; for spotlight mode (semicolon is near filters keys)
-      if ((e.metaKey || e.ctrlKey) && e.key === ";" && !isInputField) {
-        e.preventDefault();
-        setIsSpotlightMode(!isSpotlightMode);
-      }
-
-      // Filter shortcuts work globally when not typing (and close spotlight if open)
-      if (!isInputField && !e.metaKey && !e.ctrlKey) {
-        // View filters: Q, W, E, R
-        if (e.key === "q") {
+      // Helper to handle shortcut with consistent pattern
+      const handleShortcut = (condition: boolean, action: () => void) => {
+        if (condition) {
           e.preventDefault();
-          setFilter("all");
-          setIsSpotlightMode(false);
-          return;
-        } else if (e.key === "w") {
+          action();
+          return true;
+        }
+        return false;
+      };
+
+      // Space for recording (only when no modifiers and no modal/input is active)
+      if (
+        handleShortcut(
+          e.code === "Space" &&
+            !isInputField &&
+            !isModalOpen &&
+            hasOnlyModifiers(),
+          onRecordToggle
+        )
+      )
+        return;
+
+      // Option/Alt shortcuts (use e.code instead of e.key for macOS compatibility)
+      if (
+        handleShortcut(e.code === "KeyP" && hasOnlyModifiers(true), () =>
+          setShowCommandPalette(!showCommandPalette)
+        )
+      )
+        return;
+
+      if (
+        handleShortcut(
+          e.code === "KeyT" && hasOnlyModifiers(true) && !isInputField,
+          () => setShowTextInput(true)
+        )
+      )
+        return;
+
+      if (
+        handleShortcut(
+          e.code === "KeyJ" && hasOnlyModifiers(true) && !isInputField,
+          onPickRandomMemo
+        )
+      )
+        return;
+
+      if (
+        handleShortcut(
+          e.code === "KeyK" && hasOnlyModifiers(true) && !isInputField,
+          () => setShowSearch(true)
+        )
+      )
+        return;
+
+      if (
+        handleShortcut(
+          e.code === "KeyF" && hasOnlyModifiers(true) && !isInputField,
+          () => setIsSpotlightMode(!isSpotlightMode)
+        )
+      )
+        return;
+
+      // Single-key filter shortcuts ONLY work when spotlight is active
+      if (isSpotlightMode && !isInputField && hasOnlyModifiers()) {
+        const closeSpotlight = (action: () => void) => {
           e.preventDefault();
-          setFilter("starred");
+          action();
           setIsSpotlightMode(false);
-          return;
-        } else if (e.key === "e") {
-          e.preventDefault();
-          setFilter("review");
-          setIsSpotlightMode(false);
-          return;
-        } else if (e.key === "r") {
-          e.preventDefault();
-          setFilter("archive");
-          setIsSpotlightMode(false);
+        };
+
+        // View filters
+        const viewFilters: Record<
+          string,
+          "all" | "starred" | "review" | "archive"
+        > = {
+          q: "all",
+          w: "starred",
+          e: "review",
+          r: "archive",
+        };
+        if (e.key in viewFilters) {
+          closeSpotlight(() => setFilter(viewFilters[e.key]));
           return;
         }
-        // Category filters: A, S, D, F, G, H, J, K, L, ;
-        else if (e.key === "a") {
-          e.preventDefault();
-          setCategoryFilter("all");
-          setIsSpotlightMode(false);
-          return;
-        } else if (e.key === "s") {
-          e.preventDefault();
-          setCategoryFilter("media");
-          setIsSpotlightMode(false);
-          return;
-        } else if (e.key === "d") {
-          e.preventDefault();
-          setCategoryFilter("event");
-          setIsSpotlightMode(false);
-          return;
-        } else if (e.key === "f") {
-          e.preventDefault();
-          setCategoryFilter("journal");
-          setIsSpotlightMode(false);
-          return;
-        } else if (e.key === "g") {
-          e.preventDefault();
-          setCategoryFilter("therapy");
-          setIsSpotlightMode(false);
-          return;
-        } else if (e.key === "h") {
-          e.preventDefault();
-          setCategoryFilter("tarot");
-          setIsSpotlightMode(false);
-          return;
-        } else if (e.key === "j") {
-          e.preventDefault();
-          setCategoryFilter("todo");
-          setIsSpotlightMode(false);
-          return;
-        } else if (e.key === "k") {
-          e.preventDefault();
-          setCategoryFilter("idea");
-          setIsSpotlightMode(false);
-          return;
-        } else if (e.key === "l") {
-          e.preventDefault();
-          setCategoryFilter("to buy");
-          setIsSpotlightMode(false);
-          return;
-        } else if (e.key === ";") {
-          e.preventDefault();
-          setCategoryFilter("other");
-          setIsSpotlightMode(false);
-          return;
-        }
-        // Size filters: Z, X, C, V
-        else if (e.key === "z") {
-          e.preventDefault();
-          setSizeFilter("all");
-          setIsSpotlightMode(false);
-          return;
-        } else if (e.key === "x") {
-          e.preventDefault();
-          setSizeFilter("S");
-          setIsSpotlightMode(false);
-          return;
-        } else if (e.key === "c") {
-          e.preventDefault();
-          setSizeFilter("M");
-          setIsSpotlightMode(false);
-          return;
-        } else if (e.key === "v") {
-          e.preventDefault();
-          setSizeFilter("L");
-          setIsSpotlightMode(false);
-          return;
-        }
-      }
 
-      // Cmd+1/2/3 for quick "All" filters
-      if (!isInputField && (e.metaKey || e.ctrlKey)) {
-        if (e.key === "1") {
-          e.preventDefault();
-          setFilter("all");
-          setIsSpotlightMode(false);
+        // Category filters
+        const categoryFilters: Record<string, Category | "all"> = {
+          a: "all",
+          s: "media",
+          d: "event",
+          f: "journal",
+          g: "therapy",
+          h: "tarot",
+          j: "todo",
+          k: "idea",
+          l: "to buy",
+          ";": "other",
+        };
+        if (e.key in categoryFilters) {
+          closeSpotlight(() => setCategoryFilter(categoryFilters[e.key]));
           return;
         }
-        if (e.key === "2") {
-          e.preventDefault();
-          setCategoryFilter("all");
-          setIsSpotlightMode(false);
-          return;
-        }
-        if (e.key === "3") {
-          e.preventDefault();
-          setSizeFilter("all");
-          setIsSpotlightMode(false);
+
+        // Size filters
+        const sizeFilters: Record<string, "all" | "S" | "M" | "L"> = {
+          z: "all",
+          x: "S",
+          c: "M",
+          v: "L",
+        };
+        if (e.key in sizeFilters) {
+          closeSpotlight(() => setSizeFilter(sizeFilters[e.key]));
           return;
         }
       }
 
-      // Escape priority order: recording, modals, spotlight, then reset filters
+      // Escape handler - priority order: recording, modals, spotlight, then reset filters
       if (e.code === "Escape") {
         e.preventDefault();
 
-        // Cancel recording first
-        if (isRecording) {
-          onCancelRecording();
-          return;
-        }
-
-        // Close modals
-        if (showSettings) {
-          setShowSettings(false);
-          return;
-        }
-        if (isSpotlightMode) {
-          setIsSpotlightMode(false);
-          return;
-        }
-        if (editingId) {
-          cancelEdit();
-          return;
-        }
-        if (showRandomMemo) {
-          setShowRandomMemo(false);
-          return;
-        }
+        if (isRecording) return onCancelRecording();
+        if (showSettings) return setShowSettings(false);
+        if (isSpotlightMode) return setIsSpotlightMode(false);
+        if (editingId) return cancelEdit();
+        if (showRandomMemo) return setShowRandomMemo(false);
         if (showTextInput) {
           setShowTextInput(false);
           setTextInput("");
@@ -251,19 +218,10 @@ export function useKeyboardShortcuts({
           setSearchResults([]);
           return;
         }
-        if (showCommandPalette) {
-          setShowCommandPalette(false);
-          return;
-        }
+        if (showCommandPalette) return setShowCommandPalette(false);
 
-        // If nothing is open, reset all filters to "all"
+        // If nothing is open, reset all filters
         resetFilters();
-      }
-
-      // Space to start/stop recording (only when not in input field)
-      if (e.code === "Space" && !isInputField) {
-        e.preventDefault();
-        onRecordToggle();
       }
     };
 

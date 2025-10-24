@@ -37,10 +37,12 @@ export function TextInputModal({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
+      e.stopPropagation();
       onSubmit();
     }
     if (e.key === "Escape") {
       e.preventDefault();
+      e.stopPropagation();
       handleClose();
     }
   };
@@ -65,7 +67,7 @@ export function TextInputModal({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3 pb-safe flex-shrink-0">
           <p className="text-slate-400 text-sm hidden sm:block">
             Press{" "}
-            <kbd className="px-2 py-1 bg-slate-700/50 rounded text-xs">
+            <kbd className="px-1.5 py-0.5 bg-slate-700/50 rounded text-[10px]">
               Cmd+Enter
             </kbd>{" "}
             to save

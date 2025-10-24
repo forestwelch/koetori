@@ -72,11 +72,19 @@ export function Button({
   "aria-label": ariaLabel,
   title,
 }: ButtonProps) {
+  const handlePress = () => {
+    // Blur the button after press to prevent Space key from re-triggering it
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    onClick?.();
+  };
+
   return (
     <AriaButton
       className={cn(buttonVariants({ variant, size, isActive, className }))}
       isDisabled={disabled || isLoading}
-      onPress={() => onClick?.()}
+      onPress={handlePress}
       type={type}
       aria-label={ariaLabel}
     >

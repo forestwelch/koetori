@@ -19,6 +19,12 @@ export function ActionButtons({
 }: ActionButtonsProps) {
   const { setShowSearch, setShowTextInput, setShowSettings } = useModals();
 
+  // Blur the clicked button to prevent Space key from re-triggering it
+  const handleSettingsClick = (e: React.MouseEvent) => {
+    (e.currentTarget as HTMLElement).blur();
+    setShowSettings(true);
+  };
+
   return (
     <>
       {/* Desktop Action Buttons */}
@@ -27,29 +33,29 @@ export function ActionButtons({
           onClick={() => setShowSearch(true)}
           icon={Search}
           label="Search"
-          shortcut="⌘K"
+          shortcut="⌥K"
           variant="secondary"
         />
         <ActionButton
           onClick={() => setShowTextInput(true)}
           icon={Type}
           label="Type"
-          shortcut="⌘E"
+          shortcut="⌥T"
           variant="secondary"
         />
         <ActionButton
-          onClick={onPickRandomMemo}
+          onClick={() => onPickRandomMemo()}
           icon={Shuffle}
           label="Random"
-          shortcut="⌘J"
+          shortcut="⌥J"
           variant="secondary"
         />
         <button
-          onClick={() => setShowSettings(true)}
-          className="p-2.5 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700/50 transition-all"
+          onClick={handleSettingsClick}
+          className="px-3 py-2.5 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700/50 transition-all"
           aria-label="Settings"
         >
-          <Settings className="w-4 h-4 text-white" />
+          <Settings className="w-5 h-5 text-white" />
         </button>
         <ActionButton
           onClick={onRecordClick}
@@ -88,8 +94,8 @@ export function ActionButtons({
         />
         {/* Settings icon-only on tablet and mobile */}
         <button
-          onClick={() => setShowSettings(true)}
-          className="p-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700/50 transition-all"
+          onClick={handleSettingsClick}
+          className="px-2.5 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700/50 transition-all"
           aria-label="Settings"
         >
           <Settings className="w-4 h-4 text-white" />

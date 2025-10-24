@@ -260,7 +260,7 @@ export function FilterCommandPalette({
                     </div>
                     {isSelected && (
                       <div className="flex items-center gap-1 text-xs text-indigo-400">
-                        <kbd className="px-2 py-0.5 bg-indigo-500/20 rounded border border-indigo-500/30">
+                        <kbd className="px-1.5 py-0.5 bg-indigo-500/20 rounded border border-indigo-500/30 text-[10px]">
                           ↵
                         </kbd>
                       </div>
@@ -275,19 +275,19 @@ export function FilterCommandPalette({
         {/* Footer hints */}
         <div className="border-t border-slate-700/50 px-4 py-2 flex items-center gap-4 text-xs text-slate-500">
           <div className="flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 bg-slate-800/50 rounded border border-slate-700/50">
+            <kbd className="px-1.5 py-0.5 bg-slate-800/50 rounded border border-slate-700/50 text-[10px]">
               ↑↓
             </kbd>
             <span>Navigate</span>
           </div>
           <div className="flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 bg-slate-800/50 rounded border border-slate-700/50">
+            <kbd className="px-1.5 py-0.5 bg-slate-800/50 rounded border border-slate-700/50 text-[10px]">
               ↵
             </kbd>
             <span>Confirm</span>
           </div>
           <div className="flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 bg-slate-800/50 rounded border border-slate-700/50">
+            <kbd className="px-1.5 py-0.5 bg-slate-800/50 rounded border border-slate-700/50 text-[10px]">
               Esc
             </kbd>
             <span>Close</span>

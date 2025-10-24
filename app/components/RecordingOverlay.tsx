@@ -48,11 +48,11 @@ export function RecordingOverlay({
               <p className="text-[#94a3b8] text-sm mt-2">
                 <span className="hidden sm:inline">
                   Press{" "}
-                  <kbd className="px-2 py-1 bg-[#1e1f2a] rounded text-xs font-mono">
+                  <kbd className="px-1.5 py-0.5 bg-[#1e1f2a] rounded text-[10px] font-mono">
                     Space
                   </kbd>{" "}
                   to stop or{" "}
-                  <kbd className="px-2 py-1 bg-[#1e1f2a] rounded text-xs font-mono">
+                  <kbd className="px-1.5 py-0.5 bg-[#1e1f2a] rounded text-[10px] font-mono">
                     Esc
                   </kbd>{" "}
                   to cancel

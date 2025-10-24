@@ -120,6 +120,7 @@ export function SearchModal({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Escape") {
       e.preventDefault();
+      e.stopPropagation();
       handleClose();
     }
   };

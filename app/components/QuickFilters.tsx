@@ -94,9 +94,11 @@ export function QuickFilters({
                   : "bg-[#0d0e14]/30 border border-slate-700/10 text-slate-400 hover:bg-[#0d0e14]/50 hover:border-slate-600/20 hover:text-slate-300"
               }`}
             >
-              {viewFilter.id !== "all" && <Icon className="w-3 h-3" />}
+              {viewFilter.id !== "all" && (
+                <Icon className="w-3 h-3 flex-shrink-0" />
+              )}
               <span className="truncate">{viewFilter.label}</span>
-              <kbd className="text-[9px] opacity-40 font-mono">
+              <kbd className="text-[8px] opacity-40 font-mono whitespace-nowrap">
                 {keys[index]}
               </kbd>
             </Button>
@@ -134,13 +136,17 @@ export function QuickFilters({
                   : "bg-[#0d0e14]/30 border border-slate-700/10 text-slate-400 hover:bg-[#0d0e14]/50 hover:border-slate-600/20 hover:text-slate-300"
               }`}
             >
-              {IconComponent && <IconComponent className="w-3 h-3" />}
+              {IconComponent && (
+                <IconComponent className="w-3 h-3 flex-shrink-0" />
+              )}
               <span className="truncate">
                 {cat === "all"
                   ? FILTER_LABELS.CATEGORY_ALL
                   : getCategoryLabel(cat as Category)}
               </span>
-              <kbd className="text-[9px] opacity-40 font-mono">{keyLabel}</kbd>
+              <kbd className="text-[8px] opacity-40 font-mono whitespace-nowrap">
+                {keyLabel}
+              </kbd>
             </Button>
           );
         })}
@@ -174,7 +180,9 @@ export function QuickFilters({
               }`}
             >
               <span className="truncate">{label}</span>
-              <kbd className="text-[9px] opacity-40 font-mono">{keyLabel}</kbd>
+              <kbd className="text-[8px] opacity-40 font-mono whitespace-nowrap">
+                {keyLabel}
+              </kbd>
             </Button>
           );
         })}
@@ -339,10 +347,14 @@ export function QuickFilters({
             </div>
             <p className="text-[10px] text-slate-500 mt-2">
               Press{" "}
-              <kbd className="px-1 py-0.5 bg-slate-800/50 rounded">⌘;</kbd> to
-              toggle spotlight •{" "}
-              <kbd className="px-1 py-0.5 bg-slate-800/50 rounded">Esc</kbd> to
-              cancel
+              <kbd className="px-1 py-0.5 bg-slate-800/50 rounded text-[9px]">
+                ⌥F
+              </kbd>{" "}
+              to toggle spotlight •{" "}
+              <kbd className="px-1 py-0.5 bg-slate-800/50 rounded text-[9px]">
+                Esc
+              </kbd>{" "}
+              to cancel
             </p>
           </div>
         </div>

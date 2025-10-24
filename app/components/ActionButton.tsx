@@ -2,7 +2,7 @@ import { LucideIcon } from "lucide-react";
 import { Button } from "./ui/Button";
 
 interface ActionButtonProps {
-  onClick: () => void;
+  onClick: (e?: React.MouseEvent) => void;
   disabled?: boolean;
   icon: LucideIcon;
   label: string;
@@ -25,9 +25,17 @@ export function ActionButton({
   const isPrimary = variant === "primary";
   const isSmall = size === "sm";
 
+  const handleClick = (e?: React.MouseEvent) => {
+    // Blur the button after click to prevent Space key from re-triggering it
+    if (e) {
+      (e.currentTarget as HTMLElement).blur();
+    }
+    onClick(e);
+  };
+
   return (
     <Button
-      onClick={onClick}
+      onClick={handleClick}
       disabled={disabled}
       variant="unstyled"
       size="custom"
@@ -41,15 +49,17 @@ export function ActionButton({
           : "bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700/50"
       } ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
     >
-      <div className="flex items-center gap-2">
-        <Icon className={`${isSmall ? "w-4 h-4" : "w-5 h-5"} text-white`} />
+      <div className="flex items-center gap-2 whitespace-nowrap">
+        <Icon
+          className={`${isSmall ? "w-4 h-4" : "w-5 h-5"} text-white flex-shrink-0`}
+        />
         <span
           className={`${isSmall ? "text-sm" : "text-base"} font-medium text-white`}
         >
           {label}
         </span>
         {shortcut && !isSmall && (
-          <kbd className="hidden sm:inline-block px-2 py-0.5 text-xs font-mono bg-slate-900/50 rounded border border-slate-700/50 text-slate-400">
+          <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-slate-900/50 rounded border border-slate-700/50 text-slate-400">
             {shortcut}
           </kbd>
         )}
