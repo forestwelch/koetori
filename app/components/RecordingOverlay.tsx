@@ -20,7 +20,7 @@ export function RecordingOverlay({
   if (!isRecording && !isProcessing) return null;
 
   return (
-    <div className="fixed inset-0 bg-[#0a0a0f]/80 backdrop-blur-md z-50 flex items-center justify-center animate-in fade-in duration-300">
+    <div className="fixed inset-0 bg-[#0a0a0f]/80 backdrop-blur-md z-[100] flex items-center justify-center animate-in fade-in duration-300">
       <div className="text-center w-full max-w-md mx-auto px-4">
         {isRecording ? (
           <>

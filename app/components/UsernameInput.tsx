@@ -151,7 +151,7 @@ export function UsernameInput() {
   };
 
   return (
-    <div className="fixed inset-0 bg-[#0a0a0f]/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-[#0a0a0f]/95 backdrop-blur-md z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1]/10 via-transparent to-[#f43f5e]/10 pointer-events-none" />
 
       <div className="relative max-w-md w-full">
