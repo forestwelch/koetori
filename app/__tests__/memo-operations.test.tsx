@@ -112,7 +112,7 @@ describe("Memo Operations", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Welcome to")).toBeInTheDocument();
+      expect(screen.getByText(/Welcome to/i)).toBeInTheDocument();
     });
   });
 

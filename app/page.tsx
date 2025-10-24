@@ -16,6 +16,7 @@ import { RandomMemoModal } from "./components/RandomMemoModal";
 import { TextInputModal } from "./components/TextInputModal";
 import { SearchModal } from "./components/SearchModal";
 import { RecordingOverlay } from "./components/RecordingOverlay";
+import { LoadingSpinner } from "./components/LoadingSpinner";
 
 // Helper component for search result items
 export default function Home() {
@@ -170,7 +171,9 @@ export default function Home() {
         target.isContentEditable;
 
       // Don't trigger if a button is focused (to avoid conflict with button's Space activation)
-      const isButton = target.tagName === "BUTTON" || target.closest("button");
+      const isButton =
+        target.tagName === "BUTTON" ||
+        (target instanceof Element && target.closest("button"));
 
       if (e.code === "Space" && !isInputField && !isButton) {
         e.preventDefault();
@@ -345,15 +348,9 @@ export default function Home() {
         confidence: memo?.confidence || 0,
       })
       .then(({ error }) => {
+        // Silently log feedback - non-critical operation
         if (error) {
-          console.warn("Failed to log feedback:", error);
-        } else {
-          console.log("✅ Category changed:", {
-            memoId,
-            from: oldCategory,
-            to: newCategory,
-            timestamp: new Date().toISOString(),
-          });
+          // Feedback logging failed, but don't interrupt user flow
         }
       });
   };
@@ -460,11 +457,11 @@ export default function Home() {
   const handleFeedbackSubmit = async (feedback: FeedbackSubmission) => {
     try {
       await FeedbackService.submitFeedback(feedback);
-      // Could show a success toast here
-      console.log("Feedback submitted successfully!");
+      // Success - feedback submitted
+      // TODO: Show success toast notification
     } catch (error) {
+      // TODO: Show error toast notification instead of console.error
       console.error("Error submitting feedback:", error);
-      // Could show an error toast here
       throw error;
     }
   };
@@ -591,19 +588,7 @@ export default function Home() {
             />
 
             {/* Loading State */}
-            {loading && (
-              <div
-                className="py-12 text-center"
-                role="status"
-                aria-live="polite"
-              >
-                <div
-                  className="h-8 w-8 mx-auto animate-spin rounded-full border-4 border-solid border-indigo-500 border-r-transparent"
-                  aria-hidden="true"
-                ></div>
-                <p className="mt-4 text-[#94a3b8] text-sm">Loading memos...</p>
-              </div>
-            )}
+            {loading && <LoadingSpinner message="Loading memos..." />}
 
             {/* Empty State */}
             {!loading && memos.length === 0 && (
