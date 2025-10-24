@@ -556,10 +556,7 @@ export default function Home() {
 
       {/* Main app content - only show if username is set */}
       {username && (
-        <div className="min-h-screen p-3 sm:p-4 md:p-8 relative overflow-hidden bg-[#0a0a0f] select-none">
-          {/* Background gradient glow */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1]/10 via-transparent to-[#f43f5e]/10 pointer-events-none" />
-
+        <div className="min-h-screen p-3 sm:p-4 md:p-8 relative overflow-hidden select-none">
           {/* Recording/Processing Overlay */}
           <RecordingOverlay
             isRecording={isRecording}

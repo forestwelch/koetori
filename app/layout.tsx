@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     title: "Koetori",
   },
   applicationName: "Koetori",
-  themeColor: "#6366f1",
+  themeColor: "#0a0a0f",
   other: {
     "mobile-web-app-capable": "yes",
   },

@@ -96,10 +96,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen p-3 sm:p-4 md:p-8 bg-[#0a0a0f] select-none">
-      {/* Background gradient glow */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1]/10 via-transparent to-[#f43f5e]/10 pointer-events-none" />
-
+    <div className="min-h-screen p-3 sm:p-4 md:p-8 select-none">
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
