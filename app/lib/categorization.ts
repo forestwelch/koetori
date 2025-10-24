@@ -28,10 +28,16 @@ INSTRUCTIONS:
    - Star if it's a time-sensitive task or deadline
    - Star if user explicitly requests emphasis
 7. Estimate task SIZE (for actionable items only):
-   - "S" (Small): Quick task, <5 minutes (e.g., send text, make call, buy one item)
-   - "M" (Medium): Moderate task, 5-30 minutes (e.g., write email, short meeting, small errand)
-   - "L" (Large): Substantial task, >30 minutes (e.g., project work, major planning, big shopping trip)
-   - null: Not an actionable task (journals, media recommendations, reflections)
+   - "S" (Small): Quick task, <5 minutes (e.g., send text, make call, buy one item, add song to playlist)
+   - "M" (Medium): Moderate task, 5-60 minutes (e.g., write email, short meeting, small errand, read article, listen to podcast episode)
+   - "L" (Large): Substantial task, >60 minutes (e.g., watch movie/show, read book, major project work, big shopping trip, attend long event)
+   - null: Not an actionable task (journals, reflections, observations)
+   
+   SIZE GUIDELINES FOR MEDIA:
+   - Movies, TV shows, books: "L" (they take hours)
+   - Podcast episodes: "M" (typically 30-60 min)
+   - Short videos, articles: "S" or "M" depending on length
+   - Music tracks/albums: Consider if it's just adding to queue ("S") or actively listening ("M")
 
 IMPORTANT: For the "what" field, create a SPECIFIC, ACTIONABLE summary that includes actual names/titles:
 - For media: "Watch [Title]", "Read [Book]", "Listen to [Podcast]", etc.
@@ -71,7 +77,8 @@ Output:
     "what": "Watch Ghost in the Shell",
     "actionable": true
   },
-  "tags": ["movie", "recommendation", "anime"]
+  "tags": ["movie", "recommendation", "anime"],
+  "size": "L"
 }
 
 Input: "Tomorrow Max said we could meet at Dandelion Chocolate at 6PM to discuss the book he's writing"
@@ -142,7 +149,8 @@ Output:
     "what": "Watch Sleepy Hollow",
     "actionable": true
   },
-  "tags": ["movie", "1999", "reminder"]
+  "tags": ["movie", "1999", "reminder"],
+  "size": "L"
 }
 
 Input: "Check out Amy Pollard's podcast"
@@ -156,7 +164,8 @@ Output:
     "what": "Amy Pollard's podcast",
     "actionable": true
   },
-  "tags": ["podcast", "recommendation"]
+  "tags": ["podcast", "recommendation"],
+  "size": "M"
 }
 
 Input: "I gotta order the Murder on the Orient Express tickets, probably for this Friday"
@@ -185,7 +194,8 @@ Output:
     "what": "Watch Cadet Kelly",
     "actionable": true
   },
-  "tags": ["movie", "rewatch", "iconic"]
+  "tags": ["movie", "rewatch", "iconic"],
+  "size": "L"
 }
 
 Input: "I gotta read the book, The Eyes are the Best Part"
@@ -198,7 +208,8 @@ Output:
     "what": "Read Eyes are the Best Part",
     "actionable": true
   },
-  "tags": ["book", "reading"]
+  "tags": ["book", "reading"],
+  "size": "L"
 }
 
 Input: "This is really important - I need to submit that grant application by Friday or we lose the funding. Top priority!"
