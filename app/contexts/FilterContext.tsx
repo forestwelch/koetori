@@ -7,6 +7,7 @@ import {
   useCallback,
   ReactNode,
   useEffect,
+  Suspense,
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Category } from "../types/memo";
@@ -25,7 +26,7 @@ interface FilterContextType {
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
 
-export function FilterProvider({ children }: { children: ReactNode }) {
+function FilterProviderInner({ children }: { children: ReactNode }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -117,6 +118,15 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     >
       {children}
     </FilterContext.Provider>
+  );
+}
+
+export function FilterProvider({ children }: { children: ReactNode }) {
+  return (
+    // NextJS 15 requirement: useSearchParams must be wrapped in a Suspency boundary
+    <Suspense fallback={null}>
+      <FilterProviderInner>{children}</FilterProviderInner>
+    </Suspense>
   );
 }
 
