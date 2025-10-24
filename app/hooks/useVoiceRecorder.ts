@@ -53,11 +53,26 @@ export function useVoiceRecorder(username?: string): UseVoiceRecorderReturn {
   // Define stopRecording early so it can be used in useEffect
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
+      // Discard recordings less than 1.5 seconds
+      if (recordingTime < 1.5) {
+        shouldProcessRef.current = false; // Don't process
+        mediaRecorderRef.current.stop();
+        setIsRecording(false);
+
+        // Clean up immediately
+        if (audioStream) {
+          audioStream.getTracks().forEach((track) => track.stop());
+          setAudioStream(null);
+        }
+        audioChunksRef.current = [];
+        return;
+      }
+
       shouldProcessRef.current = true; // Process this recording
       mediaRecorderRef.current.stop();
       setIsRecording(false);
     }
-  }, [isRecording]);
+  }, [isRecording, recordingTime, audioStream]);
 
   // Cancel recording without saving
   const cancelRecording = useCallback(() => {
