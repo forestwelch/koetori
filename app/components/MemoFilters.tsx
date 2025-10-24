@@ -5,7 +5,7 @@ import {
   getCategoryLabel,
 } from "../lib/ui-utils";
 import { Category } from "../types/memo";
-import { categories } from "../lib/constants";
+import { categories, FILTER_LABELS } from "../lib/constants";
 import { Button } from "./ui/Button";
 
 interface MemoFiltersProps {
@@ -42,14 +42,14 @@ export default function MemoFilters({
           className="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium bg-[#0d0e14]/40 border border-slate-700/20 text-[#cbd5e1] hover:bg-[#0d0e14]/60 transition-all backdrop-blur-xl whitespace-nowrap min-w-[4rem]"
         >
           {filter === "all"
-            ? "All"
+            ? FILTER_LABELS.VIEW_ALL
             : filter === "starred"
-              ? "Starred"
+              ? FILTER_LABELS.VIEW_STARRED
               : filter === "review"
-                ? "Review"
+                ? FILTER_LABELS.VIEW_REVIEW
                 : filter === "archive"
-                  ? "Archive"
-                  : "All"}{" "}
+                  ? FILTER_LABELS.VIEW_ARCHIVE
+                  : FILTER_LABELS.VIEW_ALL}{" "}
           ▾
         </Button>
 
@@ -74,7 +74,7 @@ export default function MemoFilters({
                 : "text-slate-300 hover:bg-slate-700/30"
             }`}
           >
-            All Memos
+            {FILTER_LABELS.VIEW_ALL}
           </Button>
           <Button
             onClick={() => {
@@ -89,7 +89,7 @@ export default function MemoFilters({
                 : "text-slate-300 hover:bg-slate-700/30"
             }`}
           >
-            <Star className="w-3.5 h-3.5" /> Starred
+            <Star className="w-3.5 h-3.5" /> {FILTER_LABELS.VIEW_STARRED}
           </Button>
           <Button
             onClick={() => {
@@ -104,7 +104,7 @@ export default function MemoFilters({
                 : "text-slate-300 hover:bg-slate-700/30"
             }`}
           >
-            Needs Review
+            {FILTER_LABELS.VIEW_REVIEW}
           </Button>
           <Button
             onClick={() => {
@@ -119,7 +119,7 @@ export default function MemoFilters({
                 : "text-slate-300 hover:bg-slate-700/30"
             }`}
           >
-            Archive
+            {FILTER_LABELS.VIEW_ARCHIVE}
           </Button>
         </div>
       </div>
@@ -164,7 +164,7 @@ export default function MemoFilters({
               }`}
             >
               {cat === "all" ? (
-                "All Categories"
+                FILTER_LABELS.CATEGORY_ALL
               ) : (
                 <>
                   {(() => {
@@ -213,7 +213,7 @@ export default function MemoFilters({
                 : "text-slate-300 hover:bg-slate-700/30"
             }`}
           >
-            All Sizes
+            {FILTER_LABELS.SIZE_ALL}
           </Button>
           <Button
             onClick={() => {
@@ -228,7 +228,7 @@ export default function MemoFilters({
                 : "text-slate-300 hover:bg-slate-700/30"
             }`}
           >
-            S (&lt;5min)
+            {FILTER_LABELS.SIZE_S}
           </Button>
           <Button
             onClick={() => {
@@ -243,7 +243,7 @@ export default function MemoFilters({
                 : "text-slate-300 hover:bg-slate-700/30"
             }`}
           >
-            M (&lt;30min)
+            {FILTER_LABELS.SIZE_M}
           </Button>
           <Button
             onClick={() => {
@@ -258,7 +258,7 @@ export default function MemoFilters({
                 : "text-slate-300 hover:bg-slate-700/30"
             }`}
           >
-            L (&gt;30min)
+            {FILTER_LABELS.SIZE_L}
           </Button>
         </div>
       </div>

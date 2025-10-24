@@ -12,6 +12,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { Category } from "../types/memo";
+import { getCategoryDisplayLabel } from "./constants";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -78,21 +79,9 @@ export function getCategoryColor(category: Category) {
   return colorMap[category] || colorMap.other;
 }
 
-// Category display labels
+// Category display labels - now uses centralized constants
 export function getCategoryLabel(category: Category) {
-  const labelMap: Record<Category, string> = {
-    journal: "Journal",
-    media: "Media",
-    event: "Event",
-    therapy: "Therapy",
-    tarot: "Tarot",
-    todo: "Todo",
-    idea: "Idea",
-    "to buy": "To Buy",
-    other: "Other",
-  };
-
-  return labelMap[category] || labelMap.other;
+  return getCategoryDisplayLabel(category);
 }
 
 // Format confidence as percentage

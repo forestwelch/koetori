@@ -1,9 +1,9 @@
 "use client";
 
-import { LogOut, Mic, Search, Type, Bug } from "lucide-react";
+import { Mic, Search, Type, Settings } from "lucide-react";
 import { ActionButton } from "../ActionButton";
 import { Button } from "../ui/Button";
-import MemoFilters from "../MemoFilters";
+import { QuickFilters } from "../QuickFilters";
 import { Category } from "../../types/memo";
 
 interface AppHeaderProps {
@@ -14,6 +14,7 @@ interface AppHeaderProps {
   isProcessing: boolean;
   isProcessingText: boolean;
   setShowFeedback: (show: boolean) => void;
+  setShowSettings: (show: boolean) => void;
   handleRecordClick: () => void;
   voiceError?: string | null;
   filter: "all" | "review" | "archive" | "starred";
@@ -22,8 +23,7 @@ interface AppHeaderProps {
   setCategoryFilter: (category: Category | "all") => void;
   sizeFilter: "S" | "M" | "L" | "all";
   setSizeFilter: (size: "S" | "M" | "L" | "all") => void;
-  openDropdown: "view" | "category" | "size" | null;
-  setOpenDropdown: (dropdown: "view" | "category" | "size" | null) => void;
+  isSpotlighted?: boolean;
 }
 
 export function AppHeader({
@@ -34,6 +34,7 @@ export function AppHeader({
   isProcessing,
   isProcessingText,
   setShowFeedback,
+  setShowSettings,
   handleRecordClick,
   voiceError,
   filter,
@@ -42,8 +43,7 @@ export function AppHeader({
   setCategoryFilter,
   sizeFilter,
   setSizeFilter,
-  openDropdown,
-  setOpenDropdown,
+  isSpotlighted = false,
 }: AppHeaderProps) {
   return (
     <header className="mb-8">
@@ -78,6 +78,17 @@ export function AppHeader({
                 <span className="hidden sm:inline">Processing...</span>
               </div>
             )}
+
+            {/* Settings button - Mobile only */}
+            <Button
+              onClick={() => setShowSettings(true)}
+              variant="unstyled"
+              size="custom"
+              aria-label="Settings"
+              className="lg:hidden text-slate-400 hover:text-white transition-all p-2 rounded-lg bg-slate-800/20 hover:bg-slate-700/30 backdrop-blur-sm"
+            >
+              <Settings className="w-5 h-5" />
+            </Button>
 
             {/* Action buttons */}
             <ActionButton
@@ -117,42 +128,17 @@ export function AppHeader({
           </div>
         </div>
 
-        {/* Second row: Filters and utility buttons */}
-        <div className="flex items-center justify-between">
-          <MemoFilters
+        {/* Second row: Filters */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+          <QuickFilters
             filter={filter}
             setFilter={setFilter}
             categoryFilter={categoryFilter}
             setCategoryFilter={setCategoryFilter}
             sizeFilter={sizeFilter}
             setSizeFilter={setSizeFilter}
-            openDropdown={openDropdown}
-            setOpenDropdown={setOpenDropdown}
+            isSpotlighted={isSpotlighted}
           />
-
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={() => setShowFeedback(true)}
-              variant="unstyled"
-              size="custom"
-              aria-label="Report a bug"
-              className="text-amber-500 hover:text-amber-300 transition-colors p-1.5 sm:p-2 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 backdrop-blur-sm"
-            >
-              <Bug className="w-4 h-4 sm:w-5 sm:h-5 group-hover:rotate-[20deg] transition-transform duration-200" />
-            </Button>
-            <Button
-              onClick={() => {
-                localStorage.removeItem("koetori_username");
-                window.location.reload();
-              }}
-              variant="unstyled"
-              size="custom"
-              aria-label="Sign out"
-              className="text-slate-500 hover:text-slate-300 transition-colors p-2 rounded-lg bg-slate-800/20 hover:bg-slate-700/30 backdrop-blur-sm"
-            >
-              <LogOut className="w-5 h-5" />
-            </Button>
-          </div>
         </div>
       </div>
 

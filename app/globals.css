@@ -160,3 +160,33 @@ body {
 *::-webkit-scrollbar-corner {
   background: rgba(20, 21, 31, 0.3);
 }
+
+/* Hide scrollbar for horizontal filters */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+/* Move and shrink React Query and Next.js devtools */
+#react-query-devtools-btn,
+[data-tanstack-query-devtools-toggle-button] {
+  bottom: 1rem !important;
+  left: 1rem !important;
+  right: auto !important;
+  transform: scale(0.6) !important;
+  transform-origin: bottom left !important;
+  z-index: 20 !important;
+}
+
+/* Move Next.js build indicator */
+#__next-build-watcher {
+  bottom: 1rem !important;
+  left: 1rem !important;
+  right: auto !important;
+  transform: scale(0.7) !important;
+  transform-origin: bottom left !important;
+}
