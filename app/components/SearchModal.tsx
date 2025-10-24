@@ -6,11 +6,13 @@ import { Modal } from "./ui/Modal";
 import { Input } from "./ui/Input";
 import { Memo, Category } from "../types/memo";
 import { MemoItem } from "./MemoItem";
+import { useModals } from "../contexts/ModalContext";
 
 interface SearchModalProps {
   isOpen: boolean;
   searchQuery: string;
   searchResults: Memo[];
+  isSearching: boolean;
   onSearch: (query: string) => void;
   onClose: () => void;
   // MemoItem props
@@ -29,12 +31,14 @@ interface SearchModalProps {
     newCategory: Category,
     oldCategory: Category
   ) => void;
+  onSizeChange: (memoId: string, newSize: "S" | "M" | "L" | null) => void;
 }
 
 export function SearchModal({
   isOpen,
   searchQuery,
   searchResults,
+  isSearching,
   onSearch,
   onClose,
   editingId,
@@ -48,14 +52,65 @@ export function SearchModal({
   restoreMemo,
   hardDelete,
   onCategoryChange,
+  onSizeChange,
 }: SearchModalProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const { setSearchResults } = useModals();
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
       inputRef.current.focus();
     }
   }, [isOpen]);
+
+  // Wrapper functions to update results instantly without reload
+  const handleToggleStar = (id: string, starred: boolean) => {
+    toggleStar(id, starred);
+    // Update search results in memory immediately
+    setSearchResults(
+      searchResults.map((memo) =>
+        memo.id === id ? { ...memo, starred: !starred } : memo
+      )
+    );
+  };
+
+  const handleSoftDelete = (id: string) => {
+    softDelete(id);
+    // Remove from search results immediately
+    setSearchResults(searchResults.filter((memo) => memo.id !== id));
+  };
+
+  const handleSaveEdit = (id: string) => {
+    saveEdit(id);
+    // Update transcript in search results immediately
+    setSearchResults(
+      searchResults.map((memo) =>
+        memo.id === id ? { ...memo, transcript: editText } : memo
+      )
+    );
+  };
+
+  const handleCategoryChange = (
+    id: string,
+    newCat: Category,
+    oldCat: Category
+  ) => {
+    onCategoryChange(id, newCat, oldCat);
+    // Update category in memory
+    setSearchResults(
+      searchResults.map((memo) =>
+        memo.id === id ? { ...memo, category: newCat } : memo
+      )
+    );
+  };
+
+  const handleSizeChange = (id: string, size: "S" | "M" | "L" | null) => {
+    onSizeChange(id, size);
+    // Update size in memory
+    setSearchResults(
+      searchResults.map((memo) => (memo.id === id ? { ...memo, size } : memo))
+    );
+  };
 
   const handleClose = () => {
     onSearch(""); // Clear search query
@@ -104,6 +159,11 @@ export function SearchModal({
                   Search by content, people, tags, or categories
                 </p>
               </div>
+            ) : isSearching ? (
+              <div className="text-center py-12">
+                <div className="w-8 h-8 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mx-auto mb-4" />
+                <p className="text-slate-400 text-lg">Searching...</p>
+              </div>
             ) : searchResults.length === 0 ? (
               <div className="text-center py-12">
                 <Search className="w-16 h-16 text-slate-600 mx-auto mb-4" />
@@ -125,12 +185,13 @@ export function SearchModal({
                     setEditText={setEditText}
                     startEdit={startEdit}
                     cancelEdit={cancelEdit}
-                    saveEdit={saveEdit}
-                    softDelete={softDelete}
-                    toggleStar={toggleStar}
+                    saveEdit={handleSaveEdit}
+                    softDelete={handleSoftDelete}
+                    toggleStar={handleToggleStar}
                     restoreMemo={restoreMemo}
                     hardDelete={hardDelete}
-                    onCategoryChange={onCategoryChange}
+                    onCategoryChange={handleCategoryChange}
+                    onSizeChange={handleSizeChange}
                     searchQuery={searchQuery}
                     isSearchMode={true}
                   />

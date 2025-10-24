@@ -314,7 +314,7 @@ export function QuickFilters({
       {/* Explanation box - Fixed popup below filters */}
       {isSpotlighted && containerRef.current && (
         <div
-          className="fixed z-50 max-w-5xl mx-auto left-0 right-0 px-3 sm:px-4 md:px-8"
+          className="fixed z-[60] max-w-5xl mx-auto left-0 right-0 px-3 sm:px-4 md:px-8"
           style={{
             top: `${
               containerRef.current.getBoundingClientRect().bottom + 12
@@ -338,7 +338,9 @@ export function QuickFilters({
               </div>
             </div>
             <p className="text-[10px] text-slate-500 mt-2">
-              Or press{" "}
+              Press{" "}
+              <kbd className="px-1 py-0.5 bg-slate-800/50 rounded">⌘;</kbd> to
+              toggle spotlight •{" "}
               <kbd className="px-1 py-0.5 bg-slate-800/50 rounded">Esc</kbd> to
               cancel
             </p>

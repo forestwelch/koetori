@@ -30,6 +30,7 @@ interface MemoItemProps {
     newCategory: Category,
     oldCategory: Category
   ) => void;
+  onSizeChange?: (memoId: string, newSize: "S" | "M" | "L" | null) => void;
   // Search props
   searchQuery?: string;
   isSearchMode?: boolean;

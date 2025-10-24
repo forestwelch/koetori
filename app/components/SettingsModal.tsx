@@ -77,7 +77,7 @@ export function SettingsModal({
             aria-label="View GitHub profile"
             className="w-full flex items-center gap-3 text-slate-300 hover:text-white transition-all p-4 rounded-xl bg-slate-800/30 hover:bg-slate-700/50 backdrop-blur-sm group border border-slate-700/30"
           >
-            <Github className="w-5 h-5 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-200" />
+            <Github className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
             <span className="text-sm font-medium">GitHub</span>
           </Button>
 
@@ -89,7 +89,7 @@ export function SettingsModal({
             aria-label="Sign out"
             className="w-full flex items-center gap-3 text-red-400 hover:text-red-300 transition-all p-4 rounded-xl bg-red-500/10 hover:bg-red-500/20 backdrop-blur-sm group border border-red-500/20"
           >
-            <LogOut className="w-5 h-5 group-hover:scale-110 group-hover:-translate-x-1 transition-transform duration-200" />
+            <LogOut className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
             <span className="text-sm font-medium">Sign Out</span>
           </Button>
         </div>

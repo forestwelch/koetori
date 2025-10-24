@@ -44,7 +44,13 @@ async function fetchMemos(filters: MemoFilters): Promise<Memo[]> {
     throw new Error(`Failed to fetch memos: ${error.message}`);
   }
 
-  return data || [];
+  // Transform database records to Memo type
+  const transformedData = (data || []).map((memo) => ({
+    ...memo,
+    timestamp: new Date(memo.timestamp),
+  }));
+
+  return transformedData;
 }
 
 export function useMemosQuery(filters: MemoFilters) {

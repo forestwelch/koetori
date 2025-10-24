@@ -2,6 +2,21 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Home from "../page";
 import { UserProvider } from "../contexts/UserContext";
+import { FilterProvider } from "../contexts/FilterContext";
+import { ModalProvider } from "../contexts/ModalContext";
+
+// Mock Next.js navigation
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn(),
+  }),
+  useSearchParams: () => ({
+    get: jest.fn(() => null),
+  }),
+  usePathname: () => "/",
+}));
 
 // Mock Supabase
 jest.mock("../lib/supabase", () => ({
@@ -64,7 +79,11 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <UserProvider>{children}</UserProvider>
+      <UserProvider>
+        <FilterProvider>
+          <ModalProvider>{children}</ModalProvider>
+        </FilterProvider>
+      </UserProvider>
     </QueryClientProvider>
   );
 };

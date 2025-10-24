@@ -52,7 +52,7 @@ export function MobileFooter({ setShowFeedback }: MobileFooterProps) {
           title="Sign out"
           className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-slate-300 transition-all rounded-lg bg-slate-800/20 hover:bg-slate-700/30 backdrop-blur-sm group"
         >
-          <LogOut className="w-4 h-4 group-hover:scale-110 group-hover:-translate-x-1 transition-transform duration-200" />
+          <LogOut className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
         </Button>
       </div>
     </div>

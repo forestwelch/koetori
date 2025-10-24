@@ -1,7 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { UserProvider } from "./contexts/UserContext";
+import { FilterProvider } from "./contexts/FilterContext";
+import { ModalProvider } from "./contexts/ModalContext";
 import { QueryProvider } from "./providers/QueryProvider";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import { OfflineIndicator } from "./components/OfflineIndicator";
@@ -16,11 +18,18 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#0a0a0f",
+};
+
 export const metadata: Metadata = {
   title: "Koetori",
   description: "Voice memo app with AI categorization",
-  viewport:
-    "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover",
   icons: {
     icon: [
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
@@ -38,7 +47,6 @@ export const metadata: Metadata = {
     title: "Koetori",
   },
   applicationName: "Koetori",
-  themeColor: "#0a0a0f",
   other: {
     "mobile-web-app-capable": "yes",
   },
@@ -57,9 +65,13 @@ export default function RootLayout({
       >
         <QueryProvider>
           <UserProvider>
-            {children}
-            <PWAInstallPrompt />
-            <OfflineIndicator />
+            <FilterProvider>
+              <ModalProvider>
+                {children}
+                <PWAInstallPrompt />
+                <OfflineIndicator />
+              </ModalProvider>
+            </FilterProvider>
           </UserProvider>
         </QueryProvider>
       </body>
