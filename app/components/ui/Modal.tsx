@@ -45,7 +45,7 @@ export function Modal({
       onOpenChange={(open) => !open && onClose()}
       isDismissable
       className={cn(
-        "fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4",
+        "fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4",
         "bg-black/90 backdrop-blur-sm",
         className
       )}
