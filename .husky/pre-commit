@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+
+# Load nvm if available
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+# Run lint-staged to format and lint staged files
+npx lint-staged
+
+# Run tests to ensure nothing is broken
+npm test
