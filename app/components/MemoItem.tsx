@@ -33,6 +33,9 @@ interface MemoItemProps {
   // Search props
   searchQuery?: string;
   isSearchMode?: boolean;
+  // Expansion props
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
 }
 
 export function MemoItem({
@@ -52,11 +55,19 @@ export function MemoItem({
   onCategoryChange,
   searchQuery,
   isSearchMode = false,
+  isExpanded: controlledExpanded,
+  onToggleExpand,
 }: MemoItemProps) {
   const [swipeX, setSwipeX] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [localExpanded, setLocalExpanded] = useState(false);
   const startX = useRef(0);
+
+  // Use controlled expansion if provided, otherwise use local state
+  const isExpanded =
+    controlledExpanded !== undefined ? controlledExpanded : localExpanded;
+  const toggleExpanded =
+    onToggleExpand || (() => setLocalExpanded(!localExpanded));
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (filter === "archive") return;
@@ -166,7 +177,7 @@ export function MemoItem({
             ? "border-indigo-500/50 shadow-lg shadow-indigo-500/20"
             : "border-slate-700/20 hover:border-slate-600/40"
         } ${isNew ? "animate-in fade-in slide-in-from-top-4" : ""}`}
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={toggleExpanded}
         role="button"
         tabIndex={0}
         aria-expanded={isExpanded}
@@ -176,7 +187,7 @@ export function MemoItem({
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
-            setIsExpanded(!isExpanded);
+            toggleExpanded();
           }
         }}
       >
@@ -300,7 +311,11 @@ export function MemoItem({
                     <Button
                       onClick={() => {
                         if (!isExpanded) {
-                          setIsExpanded(true);
+                          if (!isExpanded && onToggleExpand) {
+                            onToggleExpand();
+                          } else if (!isExpanded) {
+                            setLocalExpanded(true);
+                          }
                         }
                         startEdit(memo);
                       }}
