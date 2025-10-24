@@ -75,12 +75,9 @@ export function PWAInstallPrompt() {
     }
 
     deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
+    await deferredPrompt.userChoice;
 
-    if (outcome === "accepted") {
-      console.log("User accepted the install prompt");
-    }
-
+    // User made a choice - hide the prompt regardless of outcome
     setDeferredPrompt(null);
     setShowPrompt(false);
   };

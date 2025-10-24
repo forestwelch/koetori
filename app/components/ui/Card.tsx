@@ -1,12 +1,14 @@
 "use client";
 
 /**
- * NOTE: This Card component is currently UNUSED but kept for future use.
- * TODO: Integrate Card component to replace manual card-like divs throughout the app:
+ * Reusable Card component with variants for different styles and use cases.
+ * Currently used in: PWAInstallPrompt
+ *
+ * Future integration opportunities:
  * - MemoItem.tsx
  * - MemoDisplay.tsx
  * - TranscriptionDisplay.tsx
- * - Other components with: bg-[#14151f]/60 backdrop-blur-xl rounded-xl border border-slate-700/30
+ * - Other components with manual card-like divs
  */
 
 import { cva, type VariantProps } from "class-variance-authority";

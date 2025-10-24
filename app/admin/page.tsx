@@ -5,6 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/app/lib/supabase";
 import { Memo } from "@/app/types/memo";
 import { CategoryBadge } from "@/app/components/CategoryBadge";
+import { LoadingSpinner } from "@/app/components/LoadingSpinner";
 import { ArrowLeft, RefreshCw } from "lucide-react";
 
 // Admin memo type includes username from database
@@ -171,15 +172,7 @@ export default function AdminPage() {
         )}
 
         {/* Loading state */}
-        {loading && (
-          <div className="py-12 text-center" role="status" aria-live="polite">
-            <div
-              className="h-8 w-8 mx-auto animate-spin rounded-full border-4 border-solid border-indigo-500 border-r-transparent"
-              aria-hidden="true"
-            ></div>
-            <p className="mt-4 text-[#94a3b8] text-sm">Loading memos...</p>
-          </div>
-        )}
+        {loading && <LoadingSpinner message="Loading memos..." />}
 
         {/* Memos table */}
         {!loading && (

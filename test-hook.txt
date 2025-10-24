@@ -1,2 +1,0 @@
-Testing pre-commit hook
-

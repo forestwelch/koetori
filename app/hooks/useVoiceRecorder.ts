@@ -100,9 +100,7 @@ export function useVoiceRecorder(username?: string): UseVoiceRecorderReturn {
 
           // Retry on server errors (5xx)
           if (attempt < MAX_RETRY_ATTEMPTS) {
-            console.log(
-              `Retry attempt ${attempt} of ${MAX_RETRY_ATTEMPTS - 1}`
-            );
+            // Wait before retry
             await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
             return uploadWithRetry(audioBlob, attempt + 1);
           }
@@ -113,7 +111,7 @@ export function useVoiceRecorder(username?: string): UseVoiceRecorderReturn {
         return await response.json();
       } catch (err) {
         if (attempt < MAX_RETRY_ATTEMPTS && !(err instanceof TypeError)) {
-          console.log(`Retry attempt ${attempt} of ${MAX_RETRY_ATTEMPTS - 1}`);
+          // Wait before retry
           await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
           return uploadWithRetry(audioBlob, attempt + 1);
         }
