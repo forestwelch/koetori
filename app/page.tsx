@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "./lib/supabase";
 import { Memo, Category } from "./types/memo";
 import { useVoiceRecorder } from "./hooks/useVoiceRecorder";
@@ -26,12 +27,63 @@ import { QuickFilters } from "./components/QuickFilters";
 
 // Helper component for search result items
 export default function Home() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { username, isLoading: userLoading } = useUser();
-  const [filter, setFilter] = useState<
+
+  // Initialize filters from URL params
+  const [filter, setFilterState] = useState<
     "all" | "review" | "archive" | "starred"
-  >("all");
-  const [categoryFilter, setCategoryFilter] = useState<Category | "all">("all");
-  const [sizeFilter, setSizeFilter] = useState<"S" | "M" | "L" | "all">("all");
+  >(
+    (searchParams.get("view") as "all" | "review" | "archive" | "starred") ||
+      "all"
+  );
+  const [categoryFilter, setCategoryFilterState] = useState<Category | "all">(
+    (searchParams.get("type") as Category | "all") || "all"
+  );
+  const [sizeFilter, setSizeFilterState] = useState<"S" | "M" | "L" | "all">(
+    (searchParams.get("size") as "S" | "M" | "L" | "all") || "all"
+  );
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  // Update URL when filters change
+  const updateURL = useCallback(
+    (view: string, type: string, size: string) => {
+      const params = new URLSearchParams();
+      if (view !== "all") params.set("view", view);
+      if (type !== "all") params.set("type", type);
+      if (size !== "all") params.set("size", size);
+
+      const query = params.toString();
+      router.push(query ? `?${query}` : "/", { scroll: false });
+    },
+    [router]
+  );
+
+  // Wrapper functions that update both state and URL
+  const setFilter = useCallback(
+    (newFilter: "all" | "review" | "archive" | "starred") => {
+      setFilterState(newFilter);
+      updateURL(newFilter, categoryFilter, sizeFilter);
+    },
+    [categoryFilter, sizeFilter, updateURL]
+  );
+
+  const setCategoryFilter = useCallback(
+    (newCategory: Category | "all") => {
+      setCategoryFilterState(newCategory);
+      updateURL(filter, newCategory, sizeFilter);
+    },
+    [filter, sizeFilter, updateURL]
+  );
+
+  const setSizeFilter = useCallback(
+    (newSize: "S" | "M" | "L" | "all") => {
+      setSizeFilterState(newSize);
+      updateURL(filter, categoryFilter, newSize);
+    },
+    [filter, categoryFilter, updateURL]
+  );
 
   // React Query for memos
   const {
@@ -44,6 +96,16 @@ export default function Home() {
     categoryFilter,
     sizeFilter,
   });
+
+  // Auto-expand when exactly 1 memo matches filters
+  useEffect(() => {
+    if (memos.length === 1 && !loading) {
+      setExpandedId(memos[0].id);
+    } else if (memos.length !== 1) {
+      setExpandedId(null);
+    }
+  }, [memos, loading]);
+
   const [newMemoId, setNewMemoId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
@@ -174,49 +236,54 @@ export default function Home() {
         setShowCommandPalette(false);
       }
 
-      // Escape to cancel recording (stops without saving)
+      // Escape to cancel recording (higher priority than filter reset)
       if (e.code === "Escape" && isRecording) {
         e.preventDefault();
         cancelRecording();
+        return;
       }
 
-      // Escape to cancel editing
-      if (e.code === "Escape" && editingId) {
+      // Escape priority order: modals first, then spotlight, then reset filters
+      if (e.code === "Escape") {
         e.preventDefault();
-        cancelEdit();
-      }
 
-      // Escape to close random memo modal
-      if (e.code === "Escape" && showRandomMemo) {
-        e.preventDefault();
-        setShowRandomMemo(false);
-      }
+        // Close modals first
+        if (showSettings) {
+          setShowSettings(false);
+          return;
+        }
+        if (isSpotlightMode) {
+          setIsSpotlightMode(false);
+          return;
+        }
+        if (editingId) {
+          cancelEdit();
+          return;
+        }
+        if (showRandomMemo) {
+          setShowRandomMemo(false);
+          return;
+        }
+        if (showTextInput) {
+          setShowTextInput(false);
+          setTextInput("");
+          return;
+        }
+        if (showSearch) {
+          setShowSearch(false);
+          setSearchQuery("");
+          setSearchResults([]);
+          return;
+        }
+        if (showCommandPalette) {
+          setShowCommandPalette(false);
+          return;
+        }
 
-      // Escape to close text input modal
-      if (e.code === "Escape" && showTextInput) {
-        e.preventDefault();
-        setShowTextInput(false);
-        setTextInput("");
-      }
-
-      // Escape to close search modal
-      if (e.code === "Escape" && showSearch) {
-        e.preventDefault();
-        setShowSearch(false);
-        setSearchQuery("");
-        setSearchResults([]);
-      }
-
-      // Escape to exit spotlight mode
-      if (e.code === "Escape" && isSpotlightMode) {
-        e.preventDefault();
-        setIsSpotlightMode(false);
-      }
-
-      // Escape to close settings modal
-      if (e.code === "Escape" && showSettings) {
-        e.preventDefault();
-        setShowSettings(false);
+        // If nothing is open, reset all filters to "all"
+        setFilter("all");
+        setCategoryFilter("all");
+        setSizeFilter("all");
       }
 
       // Cmd/Ctrl + K for search
@@ -237,112 +304,125 @@ export default function Home() {
         setIsSpotlightMode(!isSpotlightMode);
       }
 
-      // When in spotlight mode or with Cmd held, handle filter shortcuts
-      if (!isInputField && (isSpotlightMode || e.metaKey || e.ctrlKey)) {
-        // Cmd+1 = All Memos
-        if ((e.metaKey || e.ctrlKey) && e.key === "1") {
+      // Filter shortcuts work globally when not typing (and close spotlight if open)
+      if (!isInputField && !e.metaKey && !e.ctrlKey) {
+        // View filters: Q, W, E, R
+        if (e.key === "q") {
+          e.preventDefault();
+          setFilter("all");
+          setIsSpotlightMode(false);
+          return;
+        } else if (e.key === "w") {
+          e.preventDefault();
+          setFilter("starred");
+          setIsSpotlightMode(false);
+          return;
+        } else if (e.key === "e") {
+          e.preventDefault();
+          setFilter("review");
+          setIsSpotlightMode(false);
+          return;
+        } else if (e.key === "r") {
+          e.preventDefault();
+          setFilter("archive");
+          setIsSpotlightMode(false);
+          return;
+        }
+        // Category filters: A, S, D, F, G, H, J, K, L, ;
+        else if (e.key === "a") {
+          e.preventDefault();
+          setCategoryFilter("all");
+          setIsSpotlightMode(false);
+          return;
+        } else if (e.key === "s") {
+          e.preventDefault();
+          setCategoryFilter("media");
+          setIsSpotlightMode(false);
+          return;
+        } else if (e.key === "d") {
+          e.preventDefault();
+          setCategoryFilter("event");
+          setIsSpotlightMode(false);
+          return;
+        } else if (e.key === "f") {
+          e.preventDefault();
+          setCategoryFilter("journal");
+          setIsSpotlightMode(false);
+          return;
+        } else if (e.key === "g") {
+          e.preventDefault();
+          setCategoryFilter("therapy");
+          setIsSpotlightMode(false);
+          return;
+        } else if (e.key === "h") {
+          e.preventDefault();
+          setCategoryFilter("tarot");
+          setIsSpotlightMode(false);
+          return;
+        } else if (e.key === "j") {
+          e.preventDefault();
+          setCategoryFilter("todo");
+          setIsSpotlightMode(false);
+          return;
+        } else if (e.key === "k") {
+          e.preventDefault();
+          setCategoryFilter("idea");
+          setIsSpotlightMode(false);
+          return;
+        } else if (e.key === "l") {
+          e.preventDefault();
+          setCategoryFilter("to buy");
+          setIsSpotlightMode(false);
+          return;
+        } else if (e.key === ";") {
+          e.preventDefault();
+          setCategoryFilter("other");
+          setIsSpotlightMode(false);
+          return;
+        }
+        // Size filters: Z, X, C, V
+        else if (e.key === "z") {
+          e.preventDefault();
+          setSizeFilter("all");
+          setIsSpotlightMode(false);
+          return;
+        } else if (e.key === "x") {
+          e.preventDefault();
+          setSizeFilter("S");
+          setIsSpotlightMode(false);
+          return;
+        } else if (e.key === "c") {
+          e.preventDefault();
+          setSizeFilter("M");
+          setIsSpotlightMode(false);
+          return;
+        } else if (e.key === "v") {
+          e.preventDefault();
+          setSizeFilter("L");
+          setIsSpotlightMode(false);
+          return;
+        }
+      }
+
+      // Cmd+1/2/3 for quick "All" filters
+      if (!isInputField && (e.metaKey || e.ctrlKey)) {
+        if (e.key === "1") {
           e.preventDefault();
           setFilter("all");
           setIsSpotlightMode(false);
           return;
         }
-
-        // Cmd+2 = All Types
-        if ((e.metaKey || e.ctrlKey) && e.key === "2") {
+        if (e.key === "2") {
           e.preventDefault();
           setCategoryFilter("all");
           setIsSpotlightMode(false);
           return;
         }
-
-        // Cmd+3 = All Sizes
-        if ((e.metaKey || e.ctrlKey) && e.key === "3") {
+        if (e.key === "3") {
           e.preventDefault();
           setSizeFilter("all");
           setIsSpotlightMode(false);
           return;
-        }
-
-        // Only in spotlight mode, handle letter shortcuts
-        if (isSpotlightMode && !(e.metaKey || e.ctrlKey)) {
-          // View filters: Q, W, E, R
-          if (e.key === "q") {
-            e.preventDefault();
-            setFilter("all");
-            setIsSpotlightMode(false);
-          } else if (e.key === "w") {
-            e.preventDefault();
-            setFilter("starred");
-            setIsSpotlightMode(false);
-          } else if (e.key === "e") {
-            e.preventDefault();
-            setFilter("review");
-            setIsSpotlightMode(false);
-          } else if (e.key === "r") {
-            e.preventDefault();
-            setFilter("archive");
-            setIsSpotlightMode(false);
-          }
-          // Category filters: A, S, D, F, G, H, J, K, L, ;
-          else if (e.key === "a") {
-            e.preventDefault();
-            setCategoryFilter("all");
-            setIsSpotlightMode(false);
-          } else if (e.key === "s") {
-            e.preventDefault();
-            setCategoryFilter("media");
-            setIsSpotlightMode(false);
-          } else if (e.key === "d") {
-            e.preventDefault();
-            setCategoryFilter("event");
-            setIsSpotlightMode(false);
-          } else if (e.key === "f") {
-            e.preventDefault();
-            setCategoryFilter("journal");
-            setIsSpotlightMode(false);
-          } else if (e.key === "g") {
-            e.preventDefault();
-            setCategoryFilter("therapy");
-            setIsSpotlightMode(false);
-          } else if (e.key === "h") {
-            e.preventDefault();
-            setCategoryFilter("tarot");
-            setIsSpotlightMode(false);
-          } else if (e.key === "j") {
-            e.preventDefault();
-            setCategoryFilter("todo");
-            setIsSpotlightMode(false);
-          } else if (e.key === "k") {
-            e.preventDefault();
-            setCategoryFilter("idea");
-            setIsSpotlightMode(false);
-          } else if (e.key === "l") {
-            e.preventDefault();
-            setCategoryFilter("to buy");
-            setIsSpotlightMode(false);
-          } else if (e.key === ";") {
-            e.preventDefault();
-            setCategoryFilter("other");
-            setIsSpotlightMode(false);
-          }
-          // Size filters: Z, X, C, V
-          else if (e.key === "z") {
-            e.preventDefault();
-            setSizeFilter("all");
-            setIsSpotlightMode(false);
-          } else if (e.key === "x") {
-            e.preventDefault();
-            setSizeFilter("S");
-            setIsSpotlightMode(false);
-          } else if (e.key === "c") {
-            e.preventDefault();
-            setSizeFilter("M");
-            setIsSpotlightMode(false);
-          } else if (e.key === "v") {
-            e.preventDefault();
-            setSizeFilter("L");
-            setIsSpotlightMode(false);
-          }
         }
       }
     };
@@ -808,6 +888,7 @@ export default function Home() {
               sizeFilter={sizeFilter}
               setSizeFilter={setSizeFilter}
               isSpotlighted={isSpotlightMode}
+              onFilterClick={() => setIsSpotlightMode(false)}
             />
           </div>
 
@@ -835,12 +916,30 @@ export default function Home() {
                       </svg>
                     </div>
                   </div>
-                  <h3 className="text-xl text-[#cbd5e1] mb-2">No memos yet</h3>
+                  <h3 className="text-xl text-[#cbd5e1] mb-2">
+                    {filter !== "all" ||
+                    categoryFilter !== "all" ||
+                    sizeFilter !== "all"
+                      ? "No matching memos"
+                      : "No memos yet"}
+                  </h3>
                   <p className="text-[#64748b] mb-6">
-                    {filter === "review" ? (
-                      "No memos need review! 🎉"
-                    ) : categoryFilter !== "all" ? (
-                      `No ${categoryFilter} memos yet`
+                    {filter !== "all" ||
+                    categoryFilter !== "all" ||
+                    sizeFilter !== "all" ? (
+                      <>
+                        No memos match these filters.{" "}
+                        <button
+                          onClick={() => {
+                            setFilter("all");
+                            setCategoryFilter("all");
+                            setSizeFilter("all");
+                          }}
+                          className="text-indigo-400 hover:text-indigo-300 underline"
+                        >
+                          Clear filters
+                        </button>
+                      </>
                     ) : (
                       <>
                         <span className="hidden sm:inline">
@@ -881,6 +980,10 @@ export default function Home() {
                         startEdit={startEdit}
                         cancelEdit={cancelEdit}
                         saveEdit={saveEdit}
+                        isExpanded={expandedId === memo.id}
+                        onToggleExpand={() =>
+                          setExpandedId(expandedId === memo.id ? null : memo.id)
+                        }
                         softDelete={softDelete}
                         toggleStar={toggleStar}
                         restoreMemo={restoreMemo}
