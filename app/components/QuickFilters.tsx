@@ -24,6 +24,7 @@ interface QuickFiltersProps {
   sizeFilter: "S" | "M" | "L" | "all";
   setSizeFilter: (size: "S" | "M" | "L" | "all") => void;
   isSpotlighted?: boolean;
+  onFilterClick?: () => void; // Callback to close spotlight when filter is clicked
 }
 
 export function QuickFilters({
@@ -34,8 +35,33 @@ export function QuickFilters({
   sizeFilter,
   setSizeFilter,
   isSpotlighted = false,
+  onFilterClick,
 }: QuickFiltersProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Wrapper functions that close spotlight when clicked
+  const handleFilterClick = (
+    newFilter: "all" | "review" | "archive" | "starred"
+  ) => {
+    setFilter(newFilter);
+    if (isSpotlighted && onFilterClick) {
+      onFilterClick();
+    }
+  };
+
+  const handleCategoryClick = (newCategory: Category | "all") => {
+    setCategoryFilter(newCategory);
+    if (isSpotlighted && onFilterClick) {
+      onFilterClick();
+    }
+  };
+
+  const handleSizeClick = (newSize: "S" | "M" | "L" | "all") => {
+    setSizeFilter(newSize);
+    if (isSpotlighted && onFilterClick) {
+      onFilterClick();
+    }
+  };
 
   // Desktop Grid View (lg and up)
   const DesktopView = () => (
@@ -50,7 +76,7 @@ export function QuickFilters({
             <Button
               key={viewFilter.id}
               onClick={() =>
-                setFilter(
+                handleFilterClick(
                   viewFilter.id as "all" | "review" | "archive" | "starred"
                 )
               }
@@ -91,7 +117,7 @@ export function QuickFilters({
           return (
             <Button
               key={cat}
-              onClick={() => setCategoryFilter(cat as Category | "all")}
+              onClick={() => handleCategoryClick(cat as Category | "all")}
               variant="unstyled"
               size="custom"
               className={`px-2 py-1.5 rounded-md text-xs font-medium transition-all flex items-center justify-center gap-1 ${
@@ -138,7 +164,7 @@ export function QuickFilters({
           return (
             <Button
               key={size}
-              onClick={() => setSizeFilter(size)}
+              onClick={() => handleSizeClick(size)}
               variant="unstyled"
               size="custom"
               className={`px-2 py-1.5 rounded-md text-xs font-medium transition-all flex items-center justify-center gap-1 ${
@@ -218,7 +244,7 @@ export function QuickFilters({
                   label={item.label}
                   isActive={filter === item.id}
                   onClick={() =>
-                    setFilter(
+                    handleFilterClick(
                       item.id as "all" | "review" | "archive" | "starred"
                     )
                   }
@@ -260,7 +286,7 @@ export function QuickFilters({
                   label={item.label}
                   isActive={sizeFilter === item.id}
                   onClick={() =>
-                    setSizeFilter(item.id as "S" | "M" | "L" | "all")
+                    handleSizeClick(item.id as "S" | "M" | "L" | "all")
                   }
                   colors={item.colors}
                 />
@@ -273,47 +299,52 @@ export function QuickFilters({
   };
 
   return (
-    <div ref={containerRef} className="space-y-3">
-      <div
-        className={`transition-all duration-300 ${
-          isSpotlighted ? "relative z-50 rounded-xl" : ""
-        }`}
-      >
-        <DesktopView />
-        <MobileView />
-      </div>
-
-      {/* Explanation box - always rendered to prevent layout shift */}
-      <div
-        className={`transition-all duration-300 overflow-hidden ${
-          isSpotlighted
-            ? "max-h-40 opacity-100 relative z-50"
-            : "max-h-0 opacity-0"
-        }`}
-      >
-        <div className="p-3 bg-indigo-500/10 border border-indigo-500/30 rounded-lg backdrop-blur-sm">
-          <p className="text-xs text-indigo-300 mb-2 font-medium">
-            Press a key to filter:
-          </p>
-          <div className="grid grid-cols-3 gap-2 text-[10px] text-slate-400">
-            <div>
-              <span className="text-indigo-400 font-mono">Q/W/E/R</span> Views
-            </div>
-            <div>
-              <span className="text-indigo-400 font-mono">A/S/D/F...</span>{" "}
-              Types
-            </div>
-            <div>
-              <span className="text-indigo-400 font-mono">Z/X/C/V</span> Sizes
-            </div>
-          </div>
-          <p className="text-[10px] text-slate-500 mt-2">
-            Or press{" "}
-            <kbd className="px-1 py-0.5 bg-slate-800/50 rounded">Esc</kbd> to
-            cancel
-          </p>
+    <>
+      <div ref={containerRef}>
+        <div
+          className={`transition-all duration-300 ${
+            isSpotlighted ? "relative z-50 rounded-xl" : ""
+          }`}
+        >
+          <DesktopView />
+          <MobileView />
         </div>
       </div>
-    </div>
+
+      {/* Explanation box - Fixed popup below filters */}
+      {isSpotlighted && containerRef.current && (
+        <div
+          className="fixed z-50 max-w-5xl mx-auto left-0 right-0 px-3 sm:px-4 md:px-8"
+          style={{
+            top: `${
+              containerRef.current.getBoundingClientRect().bottom + 12
+            }px`,
+          }}
+        >
+          <div className="p-3 bg-indigo-500/10 border border-indigo-500/30 rounded-lg backdrop-blur-sm animate-in fade-in slide-in-from-top-2 duration-200">
+            <p className="text-xs text-indigo-300 mb-2 font-medium">
+              Press a key to filter:
+            </p>
+            <div className="grid grid-cols-3 gap-2 text-[10px] text-slate-400">
+              <div>
+                <span className="text-indigo-400 font-mono">Q/W/E/R</span> Views
+              </div>
+              <div>
+                <span className="text-indigo-400 font-mono">A/S/D/F...</span>{" "}
+                Types
+              </div>
+              <div>
+                <span className="text-indigo-400 font-mono">Z/X/C/V</span> Sizes
+              </div>
+            </div>
+            <p className="text-[10px] text-slate-500 mt-2">
+              Or press{" "}
+              <kbd className="px-1 py-0.5 bg-slate-800/50 rounded">Esc</kbd> to
+              cancel
+            </p>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
