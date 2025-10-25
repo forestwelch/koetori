@@ -268,8 +268,7 @@ export function useKeyboardShortcuts({
       showTextInput ||
       showRandomMemo ||
       showCommandPalette ||
-      showSettings ||
-      isSpotlightMode
+      showSettings
     ) {
       document.body.style.overflow = "hidden";
     } else {
@@ -285,6 +284,5 @@ export function useKeyboardShortcuts({
     showRandomMemo,
     showCommandPalette,
     showSettings,
-    isSpotlightMode,
   ]);
 }

@@ -98,7 +98,11 @@ export function QuickFilters({
                 <Icon className="w-3 h-3 flex-shrink-0" />
               )}
               <span className="truncate">{viewFilter.label}</span>
-              <kbd className="text-[8px] opacity-40 font-mono whitespace-nowrap">
+              <kbd
+                className={`ml-1 text-[8px] font-mono whitespace-nowrap transition-opacity ${
+                  isSpotlighted ? "opacity-40" : "opacity-0"
+                }`}
+              >
                 {keys[index]}
               </kbd>
             </Button>
@@ -144,7 +148,11 @@ export function QuickFilters({
                   ? FILTER_LABELS.CATEGORY_ALL
                   : getCategoryLabel(cat as Category)}
               </span>
-              <kbd className="text-[8px] opacity-40 font-mono whitespace-nowrap">
+              <kbd
+                className={`ml-1 text-[8px] font-mono whitespace-nowrap transition-opacity ${
+                  isSpotlighted ? "opacity-40" : "opacity-0"
+                }`}
+              >
                 {keyLabel}
               </kbd>
             </Button>
@@ -180,7 +188,11 @@ export function QuickFilters({
               }`}
             >
               <span className="truncate">{label}</span>
-              <kbd className="text-[8px] opacity-40 font-mono whitespace-nowrap">
+              <kbd
+                className={`ml-1 text-[8px] font-mono whitespace-nowrap transition-opacity ${
+                  isSpotlighted ? "opacity-40" : "opacity-0"
+                }`}
+              >
                 {keyLabel}
               </kbd>
             </Button>
@@ -308,24 +320,30 @@ export function QuickFilters({
 
   return (
     <>
-      <div ref={containerRef}>
-        <div
-          className={`transition-all duration-300 ${
-            isSpotlighted ? "relative z-50 rounded-xl" : ""
-          }`}
-        >
-          <DesktopView />
-          <MobileView />
-        </div>
+      <div
+        ref={containerRef}
+        style={
+          isSpotlighted
+            ? {
+                boxShadow:
+                  "0 0 60px 20px rgba(79, 70, 229, 0.25), 0 0 120px 40px rgba(79, 70, 229, 0.12), 0 0 180px 60px rgba(79, 70, 229, 0.06)",
+                borderRadius: "12px",
+                backgroundColor: "rgba(79, 70, 229, 0.30)",
+              }
+            : undefined
+        }
+      >
+        <DesktopView />
+        <MobileView />
       </div>
 
       {/* Explanation box - Fixed popup below filters */}
       {isSpotlighted && containerRef.current && (
         <div
-          className="fixed z-[60] max-w-5xl mx-auto left-0 right-0 px-3 sm:px-4 md:px-8"
+          className="fixed z-50 max-w-5xl mx-auto left-0 right-0 px-3 sm:px-4 md:px-8"
           style={{
             top: `${
-              containerRef.current.getBoundingClientRect().bottom + 12
+              containerRef.current.getBoundingClientRect().bottom + 24
             }px`,
           }}
         >

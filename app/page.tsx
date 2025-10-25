@@ -22,7 +22,6 @@ import { MemosList } from "./components/MemosList";
 import { ActionButtons } from "./components/ActionButtons";
 import { ModalsContainer } from "./components/ModalsContainer";
 import { QuickFilters } from "./components/QuickFilters";
-import { MobileFooter } from "./components/MobileFooter";
 import { KoetoriExplanation } from "./components/KoetoriExplanation";
 
 export default function Home() {
@@ -37,6 +36,7 @@ export default function Home() {
     isSpotlightMode,
     setIsSpotlightMode,
   } = useFilters();
+
   const {
     setShowRandomMemo,
     setRandomMemo,
@@ -44,7 +44,6 @@ export default function Home() {
     setShowTextInput,
     isProcessingText,
     setIsProcessingText,
-    setShowFeedback,
   } = useModals();
 
   // React Query for memos
@@ -277,13 +276,7 @@ export default function Home() {
         </div>
 
         {/* Filters Section */}
-        <div
-          className={`max-w-5xl mx-auto mb-8 ${
-            isSpotlightMode
-              ? "fixed top-24 left-0 right-0 z-50 px-3 sm:px-4 md:px-8"
-              : "relative z-10"
-          }`}
-        >
+        <div className="max-w-5xl mx-auto mb-8 relative z-40">
           <QuickFilters
             filter={filter}
             setFilter={setFilter}
@@ -296,42 +289,40 @@ export default function Home() {
           />
         </div>
 
-        {/* Content with subtle dimming */}
+        {/* Memos Content */}
         <div className="max-w-5xl mx-auto relative z-10">
-          <div className="opacity-60">
-            {/* Loading State */}
-            {loading && <LoadingState />}
+          {/* Loading State */}
+          {loading && <LoadingState />}
 
-            {/* Empty State */}
-            {!loading && memos.length === 0 && (
-              <EmptyState
-                onRecordClick={handleRecordClick}
-                isProcessing={isProcessing}
-              />
-            )}
+          {/* Empty State */}
+          {!loading && memos.length === 0 && (
+            <EmptyState
+              onRecordClick={handleRecordClick}
+              isProcessing={isProcessing}
+            />
+          )}
 
-            {/* Memos List */}
-            {!loading && memos.length > 0 && (
-              <MemosList
-                memos={memos}
-                newMemoId={newMemoId}
-                editingId={editingId}
-                editText={editText}
-                setEditText={setEditText}
-                startEdit={startEdit}
-                cancelEdit={cancelEdit}
-                saveEdit={saveEdit}
-                softDelete={softDelete}
-                toggleStar={toggleStar}
-                restoreMemo={restoreMemo}
-                hardDelete={hardDelete}
-                onCategoryChange={handleCategoryChange}
-                onSizeChange={handleSizeChange}
-                expandedId={expandedId}
-                setExpandedId={setExpandedId}
-              />
-            )}
-          </div>
+          {/* Memos List */}
+          {!loading && memos.length > 0 && (
+            <MemosList
+              memos={memos}
+              newMemoId={newMemoId}
+              editingId={editingId}
+              editText={editText}
+              setEditText={setEditText}
+              startEdit={startEdit}
+              cancelEdit={cancelEdit}
+              saveEdit={saveEdit}
+              softDelete={softDelete}
+              toggleStar={toggleStar}
+              restoreMemo={restoreMemo}
+              hardDelete={hardDelete}
+              onCategoryChange={handleCategoryChange}
+              onSizeChange={handleSizeChange}
+              expandedId={expandedId}
+              setExpandedId={setExpandedId}
+            />
+          )}
         </div>
       </div>
 
@@ -343,17 +334,6 @@ export default function Home() {
         onStopRecording={stopRecording}
         formatTime={formatTime}
       />
-
-      {/* Spotlight Overlay - below filters */}
-      {isSpotlightMode && (
-        <>
-          {/* Dim everything except filters */}
-          <div
-            className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm transition-all duration-300"
-            onClick={() => setIsSpotlightMode(false)}
-          />
-        </>
-      )}
 
       {/* All Modals */}
       <ModalsContainer
@@ -373,9 +353,6 @@ export default function Home() {
         onFeedbackSubmit={handleFeedbackSubmit}
         onPickRandomMemo={handlePickRandomMemo}
       />
-
-      {/* Mobile Footer */}
-      <MobileFooter setShowFeedback={setShowFeedback} />
     </div>
   );
 }
