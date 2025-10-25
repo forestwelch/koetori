@@ -97,14 +97,17 @@ export function QuickFilters({
               {viewFilter.id !== "all" && (
                 <Icon className="w-3 h-3 flex-shrink-0" />
               )}
-              <span className="truncate">{viewFilter.label}</span>
-              <kbd
-                className={`ml-1 text-[8px] font-mono whitespace-nowrap transition-opacity ${
-                  isSpotlighted ? "opacity-40" : "opacity-0"
-                }`}
-              >
-                {keys[index]}
-              </kbd>
+              <div className="relative flex items-center min-w-0">
+                <span className="truncate">{viewFilter.label}</span>
+                {/* kbd positioned relative to container */}
+                <kbd
+                  className={`absolute left-[calc(100%+6px)] top-1/2 -translate-y-1/2 text-[8px] font-mono whitespace-nowrap transition-opacity pointer-events-none ${
+                    isSpotlighted ? "opacity-40" : "opacity-0"
+                  }`}
+                >
+                  {keys[index]}
+                </kbd>
+              </div>
             </Button>
           );
         })}
@@ -143,18 +146,21 @@ export function QuickFilters({
               {IconComponent && (
                 <IconComponent className="w-3 h-3 flex-shrink-0" />
               )}
-              <span className="truncate">
-                {cat === "all"
-                  ? FILTER_LABELS.CATEGORY_ALL
-                  : getCategoryLabel(cat as Category)}
-              </span>
-              <kbd
-                className={`ml-1 text-[8px] font-mono whitespace-nowrap transition-opacity ${
-                  isSpotlighted ? "opacity-40" : "opacity-0"
-                }`}
-              >
-                {keyLabel}
-              </kbd>
+              <div className="relative flex items-center min-w-0">
+                <span className="truncate">
+                  {cat === "all"
+                    ? FILTER_LABELS.CATEGORY_ALL
+                    : getCategoryLabel(cat as Category)}
+                </span>
+                {/* kbd positioned relative to container */}
+                <kbd
+                  className={`absolute left-[calc(100%+6px)] top-1/2 -translate-y-1/2 text-[8px] font-mono whitespace-nowrap transition-opacity pointer-events-none ${
+                    isSpotlighted ? "opacity-40" : "opacity-0"
+                  }`}
+                >
+                  {keyLabel}
+                </kbd>
+              </div>
             </Button>
           );
         })}
@@ -187,14 +193,17 @@ export function QuickFilters({
                   : "bg-[#0d0e14]/30 border border-slate-700/10 text-slate-400 hover:bg-[#0d0e14]/50 hover:border-slate-600/20 hover:text-slate-300"
               }`}
             >
-              <span className="truncate">{label}</span>
-              <kbd
-                className={`ml-1 text-[8px] font-mono whitespace-nowrap transition-opacity ${
-                  isSpotlighted ? "opacity-40" : "opacity-0"
-                }`}
-              >
-                {keyLabel}
-              </kbd>
+              <div className="relative flex items-center min-w-0">
+                <span className="truncate">{label}</span>
+                {/* kbd positioned relative to container */}
+                <kbd
+                  className={`absolute left-[calc(100%+6px)] top-1/2 -translate-y-1/2 text-[8px] font-mono whitespace-nowrap transition-opacity pointer-events-none ${
+                    isSpotlighted ? "opacity-40" : "opacity-0"
+                  }`}
+                >
+                  {keyLabel}
+                </kbd>
+              </div>
             </Button>
           );
         })}
@@ -319,7 +328,7 @@ export function QuickFilters({
   };
 
   return (
-    <>
+    <div className="relative">
       <div
         ref={containerRef}
         style={
@@ -337,16 +346,9 @@ export function QuickFilters({
         <MobileView />
       </div>
 
-      {/* Explanation box - Fixed popup below filters */}
-      {isSpotlighted && containerRef.current && (
-        <div
-          className="fixed z-50 max-w-5xl mx-auto left-0 right-0 px-3 sm:px-4 md:px-8"
-          style={{
-            top: `${
-              containerRef.current.getBoundingClientRect().bottom + 24
-            }px`,
-          }}
-        >
+      {/* Explanation box - Absolute popup below filters */}
+      {isSpotlighted && (
+        <div className="absolute left-0 right-0 mt-6 z-50">
           <div className="p-3 bg-indigo-500/10 border border-indigo-500/30 rounded-lg backdrop-blur-sm animate-in fade-in slide-in-from-top-2 duration-200">
             <p className="text-xs text-indigo-300 mb-2 font-medium">
               Press a key to filter:
@@ -377,6 +379,6 @@ export function QuickFilters({
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
