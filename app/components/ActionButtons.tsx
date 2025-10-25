@@ -19,88 +19,54 @@ export function ActionButtons({
 }: ActionButtonsProps) {
   const { setShowSearch, setShowTextInput, setShowSettings } = useModals();
 
-  // Blur the clicked button to prevent Space key from re-triggering it
-  const handleSettingsClick = (e: React.MouseEvent) => {
-    (e.currentTarget as HTMLElement).blur();
-    setShowSettings(true);
-  };
-
   return (
-    <>
-      {/* Desktop Action Buttons */}
-      <div className="hidden lg:flex items-center gap-3">
-        <ActionButton
-          onClick={() => setShowSearch(true)}
-          icon={Search}
-          label="Search"
-          shortcut="⌥K"
-          variant="secondary"
-        />
-        <ActionButton
-          onClick={() => setShowTextInput(true)}
-          icon={Type}
-          label="Type"
-          shortcut="⌥T"
-          variant="secondary"
-        />
-        <ActionButton
-          onClick={() => onPickRandomMemo()}
-          icon={Shuffle}
-          label="Random"
-          shortcut="⌥J"
-          variant="secondary"
-        />
-        <button
-          onClick={handleSettingsClick}
-          className="px-3 py-2.5 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700/50 transition-all"
-          aria-label="Settings"
-        >
-          <Settings className="w-5 h-5 text-white" />
-        </button>
-        <ActionButton
-          onClick={onRecordClick}
-          icon={Mic}
-          label={isRecording ? "Recording..." : "Record"}
-          shortcut="Space"
-          disabled={isProcessing}
-          variant="primary"
-          className="shadow-lg shadow-indigo-500/20"
-        />
-      </div>
+    <div className="flex items-center gap-2 sm:gap-3">
+      {/* Search button */}
+      <ActionButton
+        onClick={() => setShowSearch(true)}
+        icon={Search}
+        label="Search"
+        shortcut="⌥K"
+        variant="secondary"
+      />
 
-      {/* Mobile Action Buttons */}
-      <div className="flex lg:hidden items-center gap-2">
-        <ActionButton
-          onClick={() => setShowSearch(true)}
-          icon={Search}
-          label="Search"
-          variant="secondary"
-          size="sm"
-        />
-        <ActionButton
-          onClick={() => setShowTextInput(true)}
-          icon={Type}
-          label="Type"
-          variant="secondary"
-          size="sm"
-        />
-        <ActionButton
-          onClick={onRecordClick}
-          icon={Mic}
-          label="Record"
-          disabled={isProcessing}
-          variant="primary"
-          size="sm"
-        />
-        {/* Settings icon-only on tablet and mobile */}
-        <button
-          onClick={handleSettingsClick}
-          className="px-2.5 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700/50 transition-all"
-          aria-label="Settings"
-        >
-          <Settings className="w-4 h-4 text-white" />
-        </button>
-      </div>
-    </>
+      {/* Type button */}
+      <ActionButton
+        onClick={() => setShowTextInput(true)}
+        icon={Type}
+        label="Type"
+        shortcut="⌥T"
+        variant="secondary"
+      />
+
+      {/* Random button */}
+      <ActionButton
+        onClick={() => onPickRandomMemo()}
+        icon={Shuffle}
+        label="Random"
+        shortcut="⌥J"
+        variant="secondary"
+      />
+
+      {/* Record button */}
+      <ActionButton
+        onClick={onRecordClick}
+        icon={Mic}
+        label={isRecording ? "Recording..." : "Record"}
+        shortcut="Space"
+        disabled={isProcessing}
+        variant="primary"
+        className="shadow-lg shadow-indigo-500/20"
+      />
+
+      {/* Settings button - icon only on desktop, icon only on all breakpoints */}
+      <ActionButton
+        onClick={() => setShowSettings(true)}
+        icon={Settings}
+        label="Settings"
+        variant="secondary"
+        iconOnly
+      />
+    </div>
   );
 }
