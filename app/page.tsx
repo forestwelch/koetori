@@ -252,7 +252,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
             <div className="flex items-center gap-4">
               <h1 className="text-4xl sm:text-5xl font-light bg-gradient-to-r from-[#818cf8] via-[#c084fc] to-[#fb7185] bg-clip-text text-transparent">
-                Koetori
+                koetori
               </h1>
               <KoetoriExplanation>
                 <div className="inline" />
