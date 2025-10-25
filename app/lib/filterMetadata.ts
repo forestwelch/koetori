@@ -16,6 +16,8 @@ import {
   Lightbulb,
   ShoppingCart,
   FileQuestion,
+  LayoutGrid,
+  Grid3x3,
 } from "lucide-react";
 import { Category } from "../types/memo";
 
@@ -31,8 +33,8 @@ export interface FilterMetadata {
 export const VIEW_FILTERS: FilterMetadata[] = [
   {
     id: "all",
-    label: "Memos",
-    icon: Folder,
+    label: "All",
+    icon: LayoutGrid,
     colors: "from-indigo-500/30 via-indigo-400/20 to-purple-500/30",
     searchTerms: ["all", "memos", "everything"],
   },
@@ -63,8 +65,8 @@ export const VIEW_FILTERS: FilterMetadata[] = [
 export const CATEGORY_FILTERS: Record<Category | "all", FilterMetadata> = {
   all: {
     id: "all",
-    label: "All Types",
-    icon: Folder,
+    label: "All",
+    icon: Grid3x3,
     colors: "from-slate-500/30 via-slate-400/20 to-slate-500/30",
     searchTerms: ["all", "types", "everything"],
   },

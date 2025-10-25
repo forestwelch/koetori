@@ -227,20 +227,14 @@ export function QuickFilters({
   }) => (
     <button
       onClick={onClick}
-      className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all min-w-[70px] ${
-        isActive
-          ? "bg-gradient-to-br backdrop-blur-xl shadow-lg scale-105"
-          : "bg-gradient-to-br backdrop-blur-xl opacity-60 hover:opacity-80"
-      } ${colors || "from-slate-500/30 via-slate-400/20 to-slate-500/30"}`}
-      style={{
-        backdropFilter: "blur(20px) saturate(180%)",
-        WebkitBackdropFilter: "blur(20px) saturate(180%)",
-      }}
+      className="flex flex-col items-center gap-1 transition-all"
     >
       <div
-        className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-          isActive ? "bg-white/20" : "bg-white/10"
-        }`}
+        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+          isActive
+            ? "bg-gradient-to-br shadow-md"
+            : "bg-gradient-to-br opacity-60 hover:opacity-80"
+        } ${colors || "from-slate-500/30 via-slate-400/20 to-slate-500/30"}`}
       >
         <Icon
           className={`w-5 h-5 ${isActive ? "text-white" : "text-white/70"}`}
@@ -263,7 +257,7 @@ export function QuickFilters({
       <div className="lg:hidden space-y-4">
         {/* View Filters Carousel */}
         <div>
-          <h3 className="text-xs text-slate-500 mb-2 px-1">Views</h3>
+          <h3 className="text-xs text-slate-500 mb-2 px-1">Memos</h3>
           <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
             <div className="flex gap-3 pb-2">
               {VIEW_FILTERS.map((item) => (
