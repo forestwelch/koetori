@@ -1,6 +1,7 @@
 "use client";
 
 import { useFilters } from "../contexts/FilterContext";
+import { Search, Inbox } from "lucide-react";
 
 interface EmptyStateProps {
   onRecordClick: () => void;
@@ -13,50 +14,54 @@ export function EmptyState({ onRecordClick, isProcessing }: EmptyStateProps) {
   const hasActiveFilters =
     filter !== "all" || categoryFilter !== "all" || sizeFilter !== "all";
 
+  if (hasActiveFilters) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center px-4">
+        <div className="mb-6">
+          <div className="relative inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-slate-800/50 border border-slate-700/50">
+            <Search className="w-10 h-10 text-slate-500" />
+          </div>
+        </div>
+        <h3 className="text-2xl font-semibold text-slate-300 mb-3">
+          No matching memos
+        </h3>
+        <p className="text-slate-400 mb-6 max-w-sm">
+          No memos match your current filters. Try adjusting your selection or{" "}
+          <button
+            onClick={resetFilters}
+            className="text-indigo-400 hover:text-indigo-300 transition-colors font-medium underline decoration-indigo-400/30 hover:decoration-indigo-300/50"
+          >
+            clear all filters
+          </button>
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center px-4">
       <div className="mb-8">
         <div className="relative inline-flex items-center justify-center">
           <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 blur-3xl rounded-full" />
-          <svg
-            className="w-32 h-32 text-[#4a5568] relative"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-            />
-          </svg>
+          <div className="relative w-24 h-24 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/50 flex items-center justify-center">
+            <Inbox className="w-12 h-12 text-slate-500" />
+          </div>
         </div>
       </div>
-      <h3 className="text-xl text-[#cbd5e1] mb-2">
-        {hasActiveFilters ? "No matching memos" : "No memos yet"}
+      <h3 className="text-2xl font-semibold text-slate-300 mb-3">
+        Start capturing your thoughts
       </h3>
-      <p className="text-[#64748b] mb-6">
-        {hasActiveFilters ? (
-          <>
-            No memos match these filters.{" "}
-            <button
-              onClick={resetFilters}
-              className="text-indigo-400 hover:text-indigo-300 underline"
-            >
-              Clear filters
-            </button>
-          </>
-        ) : (
-          <>
-            <span className="hidden sm:inline">
-              Click the record button or press Space to create your first memo
-            </span>
-            <span className="sm:hidden">
-              Click the record button to create your first memo
-            </span>
-          </>
-        )}
+      <p className="text-slate-400 mb-8 max-w-md">
+        <span className="hidden sm:inline">
+          Press{" "}
+          <kbd className="px-2 py-1 text-xs bg-slate-800 border border-slate-700 rounded">
+            Space
+          </kbd>{" "}
+          or click the record button below to create your first memo
+        </span>
+        <span className="sm:hidden">
+          Tap the record button below to create your first memo
+        </span>
       </p>
       <button
         onClick={onRecordClick}
