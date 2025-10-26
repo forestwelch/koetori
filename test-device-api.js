@@ -146,9 +146,63 @@ async function uploadAudio(audioPath) {
               `   Needs review: ${response.needs_review ? "Yes" : "No"}`,
               colors.yellow
             );
+
+            // Display enhanced response data
+            if (response.recording) {
+              log("\n📊 Recording Info:", colors.blue);
+              log(
+                `   Duration: ${response.recording.duration_seconds}s`,
+                colors.yellow
+              );
+              log(
+                `   File size: ${response.recording.file_size_kb} KB`,
+                colors.yellow
+              );
+            }
+
+            if (response.tokens) {
+              log("\n🎯 Token Usage:", colors.blue);
+              log(
+                `   Whisper: ${response.tokens.whisper_tokens}`,
+                colors.yellow
+              );
+              log(`   LLM: ${response.tokens.llm_tokens}`, colors.yellow);
+              log(`   Total: ${response.tokens.total}`, colors.yellow);
+              log(`   Model: ${response.tokens.model_used}`, colors.yellow);
+            }
+
+            if (response.quota) {
+              log("\n📈 Daily Quota:", colors.blue);
+              log(
+                `   LLM Tokens: ${response.quota.llm.used_today}/${response.quota.llm.daily_limit} (${response.quota.llm.percent_used}%)`,
+                response.quota.llm.percent_used > 90
+                  ? colors.red
+                  : colors.yellow
+              );
+              log(
+                `   Audio: ${response.quota.audio.seconds_used_today}/${response.quota.audio.daily_limit}s (${response.quota.audio.percent_used}%)`,
+                response.quota.audio.percent_used > 90
+                  ? colors.red
+                  : colors.yellow
+              );
+              log(
+                `   Reset in: ${response.quota.hours_until_reset.toFixed(1)} hours`,
+                colors.yellow
+              );
+            }
+
             resolve(response);
           } else {
             log(`\n✗ Upload failed (${res.statusCode})`, colors.red);
+            if (response.quota_type) {
+              log(`   Quota exceeded: ${response.quota_type}`, colors.red);
+              if (response.quota?.hours_until_reset) {
+                log(
+                  `   Reset in: ${response.quota.hours_until_reset.toFixed(1)} hours`,
+                  colors.yellow
+                );
+              }
+            }
             console.log(response);
             reject(new Error(response.error || "Upload failed"));
           }
