@@ -267,17 +267,64 @@ export async function POST(request: NextRequest) {
     });
 
     const categorizationPrompt = buildCategorizationPrompt(transcript);
-    const categorizationResponse = await groq.chat.completions.create({
-      messages: [
-        {
-          role: "user",
-          content: categorizationPrompt,
-        },
-      ],
-      model: selectedModel, // Use fallback model if approaching limit
-      temperature: 0.3,
-      response_format: { type: "json_object" },
-    });
+
+    // Try with selected model, fall back if rate limited
+    let categorizationResponse;
+    let actualModelUsed = selectedModel;
+
+    try {
+      categorizationResponse = await groq.chat.completions.create({
+        messages: [
+          {
+            role: "user",
+            content: categorizationPrompt,
+          },
+        ],
+        model: selectedModel, // Use fallback model if approaching limit
+        temperature: 0.3,
+        response_format: { type: "json_object" },
+      });
+    } catch (error: unknown) {
+      // If rate limited on primary model, try fallback
+      const isRateLimitError =
+        error &&
+        typeof error === "object" &&
+        "status" in error &&
+        error.status === 429;
+
+      if (isRateLimitError && selectedModel === PRIMARY_LLM_MODEL) {
+        const errorMessage =
+          error && typeof error === "object" && "message" in error
+            ? String(error.message)
+            : "Unknown error";
+
+        logRequest(
+          "warn",
+          "Primary model rate limited, switching to fallback",
+          {
+            deviceId,
+            error: errorMessage,
+            fallbackModel: FALLBACK_LLM_MODEL,
+          }
+        );
+
+        actualModelUsed = FALLBACK_LLM_MODEL;
+        categorizationResponse = await groq.chat.completions.create({
+          messages: [
+            {
+              role: "user",
+              content: categorizationPrompt,
+            },
+          ],
+          model: FALLBACK_LLM_MODEL,
+          temperature: 0.3,
+          response_format: { type: "json_object" },
+        });
+      } else {
+        // Re-throw if not a rate limit error or already using fallback
+        throw error;
+      }
+    }
 
     // Capture LLM token usage
     const llmTokens = categorizationResponse.usage?.total_tokens || 0;
@@ -374,7 +421,7 @@ export async function POST(request: NextRequest) {
       category: categorization.category,
       confidence: categorization.confidence,
       memoId: memoData?.id,
-      modelUsed: selectedModel,
+      modelUsed: actualModelUsed,
       tokensUsed: totalTokens,
       llmTokensRemaining,
       audioSecondsRemaining,
@@ -401,7 +448,7 @@ export async function POST(request: NextRequest) {
         whisper_tokens: whisperTokens,
         llm_tokens: llmTokens,
         total: totalTokens,
-        model_used: selectedModel,
+        model_used: actualModelUsed,
       },
 
       // Daily quota info
