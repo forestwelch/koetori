@@ -297,6 +297,7 @@ export async function POST(request: NextRequest) {
     const memosToInsert = splitResult.memos.map((memo) => ({
       transcript, // Each memo still gets the full transcript
       transcription_id: transcriptionId,
+      transcript_excerpt: memo.transcript_excerpt || null,
       category: memo.category,
       confidence: memo.confidence,
       needs_review: memo.confidence < 0.7,

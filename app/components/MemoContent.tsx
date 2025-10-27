@@ -8,6 +8,7 @@ interface MemoContentProps {
   setEditText: (text: string) => void;
   saveEdit: (id: string) => void;
   cancelEdit: () => void;
+  onViewFullRecording?: () => void;
 }
 
 export function MemoContent({
@@ -17,6 +18,7 @@ export function MemoContent({
   setEditText,
   saveEdit,
   cancelEdit,
+  onViewFullRecording,
 }: MemoContentProps) {
   if (isEditing) {
     return (
@@ -50,11 +52,31 @@ export function MemoContent({
     );
   }
 
+  // Determine what transcript text to show
+  const shouldShowExcerpt = memo.transcription_id && memo.transcript_excerpt;
+  const transcriptToShow = shouldShowExcerpt
+    ? memo.transcript_excerpt
+    : memo.transcript;
+
   return (
     <div className="mb-3">
-      <p className="text-[#cbd5e1] text-sm sm:text-base font-light leading-relaxed select-text">
-        {memo.transcript}
+      <p
+        className={`text-[#cbd5e1] text-sm sm:text-base font-light leading-relaxed select-text ${
+          shouldShowExcerpt ? "line-clamp-2" : ""
+        }`}
+      >
+        {transcriptToShow}
       </p>
+
+      {/* View Full Recording Button */}
+      {shouldShowExcerpt && onViewFullRecording && (
+        <button
+          onClick={onViewFullRecording}
+          className="mt-2 text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+        >
+          View full
+        </button>
+      )}
 
       {/* Extracted Data */}
       {memo.extracted &&

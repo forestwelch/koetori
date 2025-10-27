@@ -10,6 +10,7 @@ import { Button } from "./ui/Button";
 
 import { MemoActions } from "./MemoActions";
 import { SwipeIndicator } from "./SwipeIndicator";
+import { FullRecordingModal } from "./FullRecordingModal";
 
 interface MemoItemProps {
   memo: Memo;
@@ -62,6 +63,7 @@ export function MemoItem({
   const [swipeX, setSwipeX] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
   const [localExpanded, setLocalExpanded] = useState(false);
+  const [isRecordingModalOpen, setIsRecordingModalOpen] = useState(false);
   const startX = useRef(0);
 
   // Use controlled expansion if provided, otherwise use local state
@@ -390,13 +392,41 @@ export function MemoItem({
                 </div>
               ) : (
                 <>
-                  {/* Full transcript (when expanded and different from summary) */}
+                  {/* Transcript display - excerpt if from split recording, full otherwise */}
                   {memo.transcript !== summary && (
-                    <p className="text-[#cbd5e1] text-sm mb-2">
-                      {isSearchMode && searchQuery
-                        ? highlightText(memo.transcript, searchQuery)
-                        : memo.transcript}
-                    </p>
+                    <>
+                      <p
+                        className={`text-[#cbd5e1] text-sm mb-2 ${
+                          memo.transcription_id && memo.transcript_excerpt
+                            ? "line-clamp-2"
+                            : ""
+                        }`}
+                      >
+                        {isSearchMode && searchQuery
+                          ? highlightText(
+                              memo.transcription_id && memo.transcript_excerpt
+                                ? memo.transcript_excerpt
+                                : memo.transcript,
+                              searchQuery
+                            )
+                          : memo.transcription_id && memo.transcript_excerpt
+                            ? memo.transcript_excerpt
+                            : memo.transcript}
+                      </p>
+
+                      {/* View Full Recording Button */}
+                      {memo.transcription_id && memo.transcript_excerpt && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsRecordingModalOpen(true);
+                          }}
+                          className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors mt-1"
+                        >
+                          View full
+                        </button>
+                      )}
+                    </>
                   )}
                 </>
               )}
@@ -550,6 +580,15 @@ export function MemoItem({
           )}
         </div>
       </div>
+
+      {/* Full Recording Modal */}
+      {memo.transcription_id && (
+        <FullRecordingModal
+          isOpen={isRecordingModalOpen}
+          onClose={() => setIsRecordingModalOpen(false)}
+          currentMemo={memo}
+        />
+      )}
     </div>
   );
 }

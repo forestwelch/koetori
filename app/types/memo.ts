@@ -29,6 +29,7 @@ export interface Memo {
   id: string;
   transcript: string;
   transcription_id?: string; // Links to shared transcription (if split from multi-topic recording)
+  transcript_excerpt?: string; // Relevant portion of transcript (if split from multi-topic recording)
   category: Category;
   confidence: number; // 0.0 - 1.0
   needs_review: boolean; // true if confidence < 0.7
@@ -50,6 +51,7 @@ export interface CategorizationResult {
   tags: string[];
   starred?: boolean; // Auto-star if urgent/important
   size?: TaskSize; // T-shirt size for tasks
+  transcript_excerpt?: string; // Relevant portion of transcript (if split)
 }
 
 export interface TranscriptionResponse {
