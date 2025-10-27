@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import Groq from "groq-sdk";
 import { rateLimit, getClientIdentifier } from "@/app/lib/rateLimit";
 import {
-  buildCategorizationPrompt,
-  validateCategorizationResult,
+  buildSplittingPrompt,
+  validateSplitResult,
 } from "@/app/lib/categorization";
 import { supabase } from "@/app/lib/supabase";
 
@@ -240,13 +240,40 @@ export async function POST(request: NextRequest) {
       transcriptLength: transcript.length,
     });
 
-    const categorizationPrompt = buildCategorizationPrompt(transcript);
+    // Save transcription to database first
+    const { data: transcriptionData, error: transcriptionError } =
+      await supabase
+        .from("transcriptions")
+        .insert({
+          transcript,
+          username: username,
+          audio_duration_seconds:
+            inputType === "audio" ? transcript.length / 150 : null,
+          source: "app",
+        })
+        .select()
+        .single();
 
-    const categorizationResponse = await groq.chat.completions.create({
+    if (transcriptionError || !transcriptionData) {
+      logRequest("error", "Failed to save transcription", {
+        clientId,
+        error: transcriptionError?.message,
+      });
+      return NextResponse.json(
+        { error: "Failed to save transcription" },
+        { status: 500, headers }
+      );
+    }
+
+    const transcriptionId = transcriptionData.id;
+
+    const splittingPrompt = buildSplittingPrompt(transcript);
+
+    const splittingResponse = await groq.chat.completions.create({
       messages: [
         {
           role: "user",
-          content: categorizationPrompt,
+          content: splittingPrompt,
         },
       ],
       model: "llama-3.3-70b-versatile",
@@ -254,40 +281,48 @@ export async function POST(request: NextRequest) {
       response_format: { type: "json_object" },
     });
 
-    const rawCategorization = JSON.parse(
-      categorizationResponse.choices[0].message.content || "{}"
+    const rawSplitResult = JSON.parse(
+      splittingResponse.choices[0].message.content || "{}"
     );
 
-    const categorization = validateCategorizationResult(rawCategorization);
+    const splitResult = validateSplitResult(rawSplitResult);
 
-    // Determine if needs review (confidence < 0.7)
-    const needsReview = categorization.confidence < 0.7;
+    logRequest("info", "Memo splitting analysis complete", {
+      clientId,
+      shouldSplit: splitResult.should_split,
+      memoCount: splitResult.memos.length,
+    });
 
-    // Save to Supabase
-    const { data: memoData, error: supabaseError } = await supabase
+    // Create all memos with reference to transcription
+    const memosToInsert = splitResult.memos.map((memo) => ({
+      transcript, // Each memo still gets the full transcript
+      transcription_id: transcriptionId,
+      category: memo.category,
+      confidence: memo.confidence,
+      needs_review: memo.confidence < 0.7,
+      extracted: memo.extracted,
+      tags: memo.tags,
+      starred: memo.starred || false,
+      size: memo.size || null,
+      username: username,
+      source: "app",
+      input_type: inputType,
+    }));
+
+    const { data: memoDataArray, error: supabaseError } = await supabase
       .from("memos")
-      .insert({
-        transcript,
-        category: categorization.category,
-        confidence: categorization.confidence,
-        needs_review: needsReview,
-        extracted: categorization.extracted,
-        tags: categorization.tags,
-        starred: categorization.starred || false,
-        size: categorization.size || null,
-        username: username,
-        source: "app",
-        input_type: inputType,
-      })
-      .select()
-      .single();
+      .insert(memosToInsert)
+      .select();
 
-    if (supabaseError) {
-      logRequest("error", "Failed to save memo to Supabase", {
+    if (supabaseError || !memoDataArray) {
+      logRequest("error", "Failed to save memos to Supabase", {
         clientId,
-        error: supabaseError.message,
+        error: supabaseError?.message,
       });
-      // Don't fail the request, just log the error
+      return NextResponse.json(
+        { error: "Failed to save memos" },
+        { status: 500, headers }
+      );
     }
 
     const processingTime = Date.now() - startTime;
@@ -296,22 +331,26 @@ export async function POST(request: NextRequest) {
       clientId,
       processingTimeMs: processingTime,
       transcriptionLength: transcript.length,
-      category: categorization.category,
-      confidence: categorization.confidence,
-      needsReview,
+      memosCreated: memoDataArray.length,
+      memoIds: memoDataArray.map((m) => m.id),
     });
 
     return NextResponse.json(
       {
         transcript,
-        category: categorization.category,
-        confidence: categorization.confidence,
-        needs_review: needsReview,
-        extracted: categorization.extracted,
-        tags: categorization.tags,
-        starred: categorization.starred || false,
-        size: categorization.size || null,
-        memo_id: memoData?.id || null,
+        memos_created: memoDataArray.length,
+        memo_ids: memoDataArray.map((m) => m.id),
+        transcription_id: transcriptionId,
+        memos: memoDataArray.map((m) => ({
+          id: m.id,
+          category: m.category,
+          confidence: m.confidence,
+          needs_review: m.needs_review,
+          extracted: m.extracted,
+          tags: m.tags,
+          starred: m.starred,
+          size: m.size,
+        })),
         language: "en",
         duration: contentType?.includes("application/json")
           ? 0

@@ -2,6 +2,12 @@
 
 import { Category, CategorizationResult, ExtractedData } from "../types/memo";
 
+// Type for split memo analysis
+export interface SplitMemoResult {
+  should_split: boolean;
+  memos: CategorizationResult[];
+}
+
 export function buildCategorizationPrompt(transcript: string): string {
   return `You are a smart categorization assistant. Analyze this voice memo transcript and extract structured information.
 
@@ -245,6 +251,104 @@ ${transcript}
 Respond with ONLY valid JSON, no other text.`;
 }
 
+export function buildSplittingPrompt(transcript: string): string {
+  return `You are an intelligent memo splitting assistant. Analyze this voice memo transcript and determine if it contains multiple distinct topics that should be split into separate memos.
+
+SPLITTING PRINCIPLES:
+1. **Theme-based grouping**: Group related items by theme (shopping, person-focused tasks, event prep)
+2. **Split unrelated topics**: Even short items should be separate if they're truly unrelated
+3. **Events are special**: Events get their own memo, separate from prep tasks
+4. **Preserve context**: Detailed thoughts (therapy, journal) stay together
+5. **Single coherent topic**: If the whole transcript is about one thing, DON'T split it
+
+SPLITTING EXAMPLES:
+
+Example 1 - SPLIT (Multiple unrelated tasks):
+Input: "I need to text Sarah. Also need to buy milk."
+Output: 2 memos (Sarah ≠ milk, completely unrelated)
+
+Example 2 - DON'T SPLIT (Related shopping):
+Input: "I need eggs, milk, chicken, onions, and carrots. Making soup because I'm sick. Also need cold medicine."
+Output: 1 memo (all shopping-related, soup context ties it together)
+
+Example 3 - SPLIT (Multiple people with different context):
+Input: "Need to message Chico and Thomas about the party. Also call Armin - he's been really flaky, took two weeks to respond and I'm questioning the friendship."
+Output: 2 memos 
+  - Memo 1: "Message Chico and Thomas about party"
+  - Memo 2: "Call Armin" (includes detailed relationship context)
+
+Example 4 - SPLIT (Todo + Journal reflection):
+Input: "I need to make soup today. Honestly feeling really under the weather emotionally and physically. Hard to describe but I feel off. Anyway the soup will help."
+Output: 2 memos
+  - Memo 1: "Make soup" (todo)
+  - Memo 2: "Feeling under the weather emotionally" (journal)
+
+Example 5 - SPLIT (Tarot + embedded action):
+Input: "Drew 9 of Pentacles today about enjoying fruits of labor. Reminds me I should take a break this weekend. Also need to text Sarah about brunch Sunday."
+Output: 2 memos
+  - Memo 1: "9 of Pentacles reading - take a break" (tarot + related reflection)
+  - Memo 2: "Text Sarah about brunch Sunday" (distinct action)
+
+Example 6 - SPLIT (Event + prep tasks):
+Input: "Thanksgiving next week at Mom's house. Need to bring dessert, text her to confirm time, and pick up wine."
+Output: 2 memos
+  - Memo 1: "Thanksgiving at Mom's house next week" (event)
+  - Memo 2: "Thanksgiving prep: dessert, text mom, wine" (related tasks)
+
+Example 7 - DON'T SPLIT (Single person/theme):
+Input: "What was that restaurant Thomas recommended? Need to look that up. Should probably figure out if he's free next week for dinner too."
+Output: 1 memo (all Thomas-related plans)
+
+CATEGORIES:
+- media: Movie, book, TV show, podcast, music recommendations
+- event: Calendar events, meetings, social plans
+- journal: Personal reflections, daily thoughts
+- therapy: Therapy session insights, mental health notes
+- tarot: Tarot card readings and interpretations
+- todo: Tasks, action items, things to do
+- idea: Creative ideas, project concepts
+- to buy: Shopping lists, items to purchase
+- other: Anything that doesn't fit above categories
+
+RESPONSE FORMAT (valid JSON only):
+{
+  "should_split": true,
+  "memos": [
+    {
+      "category": "category_name",
+      "confidence": 0.95,
+      "extracted": {
+        "title": "main subject",
+        "who": ["person1"],
+        "when": "date/time",
+        "where": "location",
+        "what": "brief summary",
+        "actionable": true
+      },
+      "tags": ["tag1", "tag2"],
+      "starred": false,
+      "size": "M"
+    }
+  ]
+}
+
+If should_split is false, still return ONE memo in the array.
+
+Each memo should follow the same categorization rules as the single-memo prompt:
+- Choose the BEST category
+- Provide confidence (0.0-1.0)
+- Extract structured data (title, people, dates, locations, what)
+- Generate 2-5 relevant tags
+- Star if urgent/important/priority
+- Estimate size for actionable items (S/M/L)
+- Keep "what" field specific and actionable
+
+Now analyze this transcript and determine if it should be split:
+${transcript}
+
+Respond with ONLY valid JSON, no other text.`;
+}
+
 export function validateCategorizationResult(
   result: Record<string, unknown>
 ): CategorizationResult {
@@ -299,5 +403,23 @@ export function validateCategorizationResult(
     tags,
     starred,
     size,
+  };
+}
+
+export function validateSplitResult(
+  result: Record<string, unknown>
+): SplitMemoResult {
+  const should_split =
+    typeof result.should_split === "boolean" ? result.should_split : false;
+
+  const memosArray = Array.isArray(result.memos) ? result.memos : [result];
+
+  const validatedMemos = memosArray.map((memo) =>
+    validateCategorizationResult(memo as Record<string, unknown>)
+  );
+
+  return {
+    should_split,
+    memos: validatedMemos,
   };
 }

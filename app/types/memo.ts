@@ -28,6 +28,7 @@ export type MemoInputType = "audio" | "text";
 export interface Memo {
   id: string;
   transcript: string;
+  transcription_id?: string; // Links to shared transcription (if split from multi-topic recording)
   category: Category;
   confidence: number; // 0.0 - 1.0
   needs_review: boolean; // true if confidence < 0.7

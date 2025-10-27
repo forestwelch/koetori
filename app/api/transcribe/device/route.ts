@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import Groq from "groq-sdk";
 import {
-  buildCategorizationPrompt,
-  validateCategorizationResult,
+  buildSplittingPrompt,
+  validateSplitResult,
 } from "@/app/lib/categorization";
 import { supabase } from "@/app/lib/supabase";
 
@@ -260,24 +260,51 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Categorize the transcript
-    logRequest("info", "Starting categorization", {
+    // Save transcription to database
+    const { data: transcriptionData, error: transcriptionError } =
+      await supabase
+        .from("transcriptions")
+        .insert({
+          transcript,
+          username: finalUsername,
+          audio_duration_seconds: durationSeconds,
+          source: "device",
+          device_id: deviceId,
+        })
+        .select()
+        .single();
+
+    if (transcriptionError || !transcriptionData) {
+      logRequest("error", "Failed to save transcription", {
+        deviceId,
+        error: transcriptionError?.message,
+      });
+      return NextResponse.json(
+        { error: "Failed to save transcription", success: false },
+        { status: 500 }
+      );
+    }
+
+    const transcriptionId = transcriptionData.id;
+
+    // Analyze transcript for potential splitting
+    logRequest("info", "Starting memo splitting analysis", {
       deviceId,
       transcriptLength: transcript.length,
     });
 
-    const categorizationPrompt = buildCategorizationPrompt(transcript);
+    const splittingPrompt = buildSplittingPrompt(transcript);
 
     // Try with selected model, fall back if rate limited
-    let categorizationResponse;
+    let splittingResponse;
     let actualModelUsed = selectedModel;
 
     try {
-      categorizationResponse = await groq.chat.completions.create({
+      splittingResponse = await groq.chat.completions.create({
         messages: [
           {
             role: "user",
-            content: categorizationPrompt,
+            content: splittingPrompt,
           },
         ],
         model: selectedModel, // Use fallback model if approaching limit
@@ -309,11 +336,11 @@ export async function POST(request: NextRequest) {
         );
 
         actualModelUsed = FALLBACK_LLM_MODEL;
-        categorizationResponse = await groq.chat.completions.create({
+        splittingResponse = await groq.chat.completions.create({
           messages: [
             {
               role: "user",
-              content: categorizationPrompt,
+              content: splittingPrompt,
             },
           ],
           model: FALLBACK_LLM_MODEL,
@@ -327,43 +354,50 @@ export async function POST(request: NextRequest) {
     }
 
     // Capture LLM token usage
-    const llmTokens = categorizationResponse.usage?.total_tokens || 0;
+    const llmTokens = splittingResponse.usage?.total_tokens || 0;
     const totalTokens = whisperTokens + llmTokens;
 
-    const rawCategorization = JSON.parse(
-      categorizationResponse.choices[0].message.content || "{}"
+    const rawSplitResult = JSON.parse(
+      splittingResponse.choices[0].message.content || "{}"
     );
 
-    const categorization = validateCategorizationResult(rawCategorization);
-    const needsReview = categorization.confidence < 0.7;
+    const splitResult = validateSplitResult(rawSplitResult);
 
-    // Save to Supabase
-    const { data: memoData, error: supabaseError } = await supabase
+    logRequest("info", "Memo splitting analysis complete", {
+      deviceId,
+      shouldSplit: splitResult.should_split,
+      memoCount: splitResult.memos.length,
+    });
+
+    // Create all memos with reference to transcription
+    const memosToInsert = splitResult.memos.map((memo) => ({
+      transcript, // Each memo still gets the full transcript
+      transcription_id: transcriptionId,
+      category: memo.category,
+      confidence: memo.confidence,
+      needs_review: memo.confidence < 0.7,
+      extracted: memo.extracted,
+      tags: memo.tags,
+      starred: memo.starred || false,
+      size: memo.size || null,
+      username: finalUsername,
+      source: "device",
+      input_type: "audio",
+      device_id: deviceId,
+    }));
+
+    const { data: memoDataArray, error: supabaseError } = await supabase
       .from("memos")
-      .insert({
-        transcript,
-        category: categorization.category,
-        confidence: categorization.confidence,
-        needs_review: needsReview,
-        extracted: categorization.extracted,
-        tags: categorization.tags,
-        starred: categorization.starred || false,
-        size: categorization.size || null,
-        username: finalUsername,
-        source: "device",
-        input_type: "audio",
-        device_id: deviceId,
-      })
-      .select()
-      .single();
+      .insert(memosToInsert)
+      .select();
 
-    if (supabaseError) {
-      logRequest("error", "Failed to save memo to Supabase", {
+    if (supabaseError || !memoDataArray) {
+      logRequest("error", "Failed to save memos to Supabase", {
         deviceId,
-        error: supabaseError.message,
+        error: supabaseError?.message,
       });
       return NextResponse.json(
-        { error: "Failed to save memo", success: false },
+        { error: "Failed to save memos", success: false },
         { status: 500 }
       );
     }
@@ -413,14 +447,14 @@ export async function POST(request: NextRequest) {
     );
 
     const processingTime = Date.now() - startTime;
+    const memoIds = memoDataArray.map((memo) => memo.id);
 
     logRequest("info", "Device upload processed successfully", {
       deviceId,
       processingTimeMs: processingTime,
       transcriptionLength: transcript.length,
-      category: categorization.category,
-      confidence: categorization.confidence,
-      memoId: memoData?.id,
+      memosCreated: memoDataArray.length,
+      memoIds,
       modelUsed: actualModelUsed,
       tokensUsed: totalTokens,
       llmTokensRemaining,
@@ -430,10 +464,9 @@ export async function POST(request: NextRequest) {
     // Return enhanced response for device
     return NextResponse.json({
       success: true,
-      memo_id: memoData?.id,
-      category: categorization.category,
-      confidence: categorization.confidence,
-      needs_review: needsReview,
+      memos_created: memoDataArray.length,
+      memo_ids: memoIds,
+      transcription_id: transcriptionId,
       processing_time_ms: processingTime,
 
       // Recording metadata

@@ -136,14 +136,17 @@ async function uploadAudio(audioPath) {
           if (res.statusCode === 200 && response.success) {
             log("\n✓ Upload successful!", colors.green);
             log(`   Processing time: ${duration}ms`, colors.yellow);
-            log(`   Memo ID: ${response.memo_id}`, colors.yellow);
-            log(`   Category: ${response.category}`, colors.yellow);
+            log(`   Memos created: ${response.memos_created}`, colors.yellow);
+            if (response.memos_created === 1) {
+              log(`   Memo ID: ${response.memo_ids[0]}`, colors.yellow);
+            } else {
+              log(`   Memo IDs:`, colors.yellow);
+              response.memo_ids.forEach((id, idx) => {
+                log(`     ${idx + 1}. ${id}`, colors.yellow);
+              });
+            }
             log(
-              `   Confidence: ${(response.confidence * 100).toFixed(1)}%`,
-              colors.yellow
-            );
-            log(
-              `   Needs review: ${response.needs_review ? "Yes" : "No"}`,
+              `   Transcription ID: ${response.transcription_id}`,
               colors.yellow
             );
 
