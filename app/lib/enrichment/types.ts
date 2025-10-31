@@ -20,7 +20,7 @@ export interface MediaItemDraft {
   genres?: string[];
   tmdbId?: string | null;
   imdbId?: string | null;
-  mediaType?: "movie" | "tv" | "music" | "game" | "unknown";
+  mediaType?: "movie" | "tv" | "music" | "game" | "book" | "unknown";
   ratings?: Array<{ source: string; value: string }>;
   autoTitle?: string | null;
   autoReleaseYear?: number | null;

@@ -12,7 +12,7 @@ export interface MediaItem {
   genres: string[] | null;
   tmdbId: string | null;
   imdbId: string | null;
-  mediaType: "movie" | "tv" | "music" | "game" | "unknown" | null;
+  mediaType: "movie" | "tv" | "music" | "game" | "book" | "unknown" | null;
   ratings: Array<{ source: string; value: string }> | null;
   transcriptExcerpt: string | null;
   tags: string[];

@@ -74,10 +74,10 @@ export interface MediaEnrichmentPayload extends BaseEnrichmentPayload {
   probableTitle?: string | null;
   probableYear?: number | null;
   rawTextHints?: string[];
-  probableMediaType?: "movie" | "tv" | "music" | "game" | "unknown";
+  probableMediaType?: "movie" | "tv" | "music" | "game" | "book" | "unknown";
   overrideTitle?: string | null;
   overrideYear?: number | null;
-  overrideMediaType?: "movie" | "tv" | "music" | "game" | "unknown";
+  overrideMediaType?: "movie" | "tv" | "music" | "game" | "book" | "unknown";
 }
 
 export interface ReminderEnrichmentPayload extends BaseEnrichmentPayload {

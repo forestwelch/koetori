@@ -9,6 +9,7 @@ import { MediaLibrary } from "./MediaLibrary";
 import { RemindersBoard } from "./RemindersBoard";
 import { ShoppingListBoard } from "./ShoppingListBoard";
 import { useRequeueEnrichment } from "../../hooks/useRequeueEnrichment";
+import { useRemoveMediaItem } from "../../hooks/useRemoveMediaItem";
 import { useState } from "react";
 
 interface EnrichmentDashboardProps {
@@ -18,7 +19,9 @@ interface EnrichmentDashboardProps {
 export function EnrichmentDashboard({ username }: EnrichmentDashboardProps) {
   const enabled = Boolean(username);
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
   const { requeue, isRequeueing } = useRequeueEnrichment(username ?? null);
+  const { removeMediaItem, isRemoving } = useRemoveMediaItem(username ?? null);
 
   const {
     data: mediaItems = [],
@@ -57,7 +60,16 @@ export function EnrichmentDashboard({ username }: EnrichmentDashboardProps) {
             setRefreshingId(null);
           }
         }}
+        onRemove={async (memoId) => {
+          setRemovingId(memoId);
+          try {
+            await removeMediaItem(memoId);
+          } finally {
+            setRemovingId(null);
+          }
+        }}
         refreshingId={refreshingId && isRequeueing ? refreshingId : null}
+        removingId={removingId && isRemoving ? removingId : null}
       />
       <RemindersBoard
         reminders={reminders}

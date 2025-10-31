@@ -122,21 +122,23 @@ export async function handleMediaTask(
   };
 
   const results: Array<Partial<MediaItemDraft>> = [];
+  const preferIgdb = targetMediaType === "game";
+  let igdbResult: Partial<MediaItemDraft> | null = null;
 
-  const shouldPrefersIgdb = targetMediaType === "game";
-
-  if (shouldPrefersIgdb) {
-    const igdb = await fetchFromIgdb(baseTitle, payload);
-    if (igdb) {
-      results.push(igdb);
-      searchDebug["igdb"] = igdb.searchDebug ?? null;
+  if (preferIgdb) {
+    igdbResult = await fetchFromIgdb(baseTitle, payload);
+    if (igdbResult) {
+      results.push(igdbResult);
+      searchDebug["igdb"] = igdbResult.searchDebug ?? null;
     }
   }
 
-  const tmdb = await fetchFromTmdb(baseTitle, payload);
-  if (tmdb) {
-    results.push(tmdb);
-    searchDebug["tmdb"] = tmdb.searchDebug ?? null;
+  if (!preferIgdb || !igdbResult) {
+    const tmdb = await fetchFromTmdb(baseTitle, payload);
+    if (tmdb) {
+      results.push(tmdb);
+      searchDebug["tmdb"] = tmdb.searchDebug ?? null;
+    }
   }
 
   if (results.length === 0) {
@@ -150,11 +152,11 @@ export async function handleMediaTask(
     }
   }
 
-  if (results.length === 0 && !shouldPrefersIgdb) {
-    const igdb = await fetchFromIgdb(baseTitle, payload);
-    if (igdb) {
-      results.push(igdb);
-      searchDebug["igdb"] = igdb.searchDebug ?? null;
+  if (results.length === 0 && !igdbResult) {
+    igdbResult = await fetchFromIgdb(baseTitle, payload);
+    if (igdbResult) {
+      results.push(igdbResult);
+      searchDebug["igdb"] = igdbResult.searchDebug ?? null;
     }
   }
 
@@ -639,17 +641,33 @@ async function fetchFromIgdb(
         .filter((name): name is string => Boolean(name))
     : undefined;
 
+  const trailerId = Array.isArray(target.videos)
+    ? target.videos.find((video) => typeof video?.video_id === "string")
+        ?.video_id
+    : null;
+
+  const genres = Array.isArray(target.genres)
+    ? target.genres
+        .map((genre) => genre?.name)
+        .filter((name): name is string => Boolean(name))
+    : undefined;
+
+  const youtubeUrl = trailerId
+    ? `https://www.youtube.com/watch?v=${trailerId}`
+    : undefined;
+
   return {
     title: target.name ?? title,
     releaseYear,
     posterUrl: coverUrl,
     overview: target.summary ?? payload.transcriptExcerpt ?? null,
-    providers: platforms,
     platforms,
+    genres,
     mediaType: "game",
     ratings: target.rating
       ? [{ source: "IGDB", value: `${Math.round(target.rating)}/100` }]
       : undefined,
+    trailerUrl: youtubeUrl,
     autoTitle: target.name ?? title,
     autoReleaseYear: releaseYear,
     searchDebug: {

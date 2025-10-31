@@ -17,6 +17,9 @@ interface IgdbGame {
   release_dates?: Array<{ y?: number }>;
   rating?: number;
   slug?: string;
+  videos?: Array<{ video_id?: string }>;
+  websites?: Array<{ url?: string; category?: number }>;
+  genres?: Array<{ name?: string }>;
 }
 
 const IGDB_IMAGE_BASE = "https://images.igdb.com/igdb/image/upload";
@@ -67,7 +70,7 @@ export async function searchIgdbGames(
   const limit = options?.limit ?? 10;
 
   const body = `search "${query}";
-fields name,summary,cover.image_id,platforms.name,release_dates.y,rating,slug;
+fields name,summary,cover.image_id,platforms.name,release_dates.y,rating,slug,videos.video_id,websites.url,websites.category,genres.name;
 limit ${limit};`;
 
   const response = await fetch("https://api.igdb.com/v4/games", {

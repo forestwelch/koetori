@@ -6,7 +6,7 @@ interface RequeueInput {
   memoId: string;
   overrideTitle?: string;
   overrideYear?: number | null;
-  overrideMediaType?: "movie" | "tv" | "music" | "game" | "unknown";
+  overrideMediaType?: "movie" | "tv" | "music" | "game" | "book" | "unknown";
 }
 
 export function useRequeueEnrichment(username: string | null) {

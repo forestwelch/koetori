@@ -23,7 +23,15 @@ interface PlannerInput {
   transcriptionId: string;
 }
 
-const MEDIA_CATEGORIES = new Set(["media", "movie", "tv", "music"]);
+const MEDIA_CATEGORIES = new Set([
+  "media",
+  "movie",
+  "tv",
+  "music",
+  "book",
+  "reading",
+  "novel",
+]);
 const MEDIA_KEYWORDS: Array<{
   keywords: string[];
   type: MediaEnrichmentPayload["probableMediaType"];
@@ -32,6 +40,7 @@ const MEDIA_KEYWORDS: Array<{
   { keywords: ["show", "series", "tv"], type: "tv" },
   { keywords: ["album", "song", "music", "track", "podcast"], type: "music" },
   { keywords: ["game", "videogame", "play"], type: "game" },
+  { keywords: ["book", "novel", "read", "reading"], type: "book" },
 ];
 const REMINDER_CATEGORIES = new Set(["todo", "reminder", "event"]);
 const SHOPPING_CATEGORIES = new Set(["to buy", "shopping", "purchase"]);

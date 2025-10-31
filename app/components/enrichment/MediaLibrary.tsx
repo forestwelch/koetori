@@ -2,10 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { MediaItem } from "../../types/enrichment";
-import { Loader2, RefreshCw, Edit3 } from "lucide-react";
+import { Loader2, RefreshCw, Edit3, Trash2 } from "lucide-react";
 
 interface MediaLibraryProps {
   items: MediaItem[];
@@ -18,6 +18,8 @@ interface MediaLibraryProps {
     overrideMediaType?: MediaItem["mediaType"];
   }) => Promise<void>;
   refreshingId?: string | null;
+  onRemove?: (memoId: string) => Promise<void>;
+  removingId?: string | null;
 }
 
 export function MediaLibrary({
@@ -26,8 +28,13 @@ export function MediaLibrary({
   error,
   onRefresh,
   refreshingId,
+  onRemove,
+  removingId,
 }: MediaLibraryProps) {
   const [fixingId, setFixingId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<
+    "all" | "movie" | "tv" | "game" | "book" | "music"
+  >("all");
 
   const handleFixMatch = async (item: MediaItem) => {
     if (!onRefresh) return;
@@ -78,14 +85,64 @@ export function MediaLibrary({
     }
   };
 
+  const handleRemove = async (item: MediaItem) => {
+    if (!onRemove) return;
+    const confirmed = confirm(
+      `Remove “${item.title}” from the media library? This memo will no longer appear here.`
+    );
+    if (!confirmed) return;
+    try {
+      await onRemove(item.memoId);
+    } catch (error) {
+      console.error("Failed to remove media item", error);
+      alert("Unable to remove media item. Please try again.");
+    }
+  };
+
+  const filteredItems = useMemo(() => {
+    if (filter === "all") return items;
+    return items.filter((item) => item.mediaType === filter);
+  }, [items, filter]);
+
+  const providerLabel = (item: MediaItem) => {
+    if (item.mediaType === "game") {
+      return "Play on";
+    }
+    if (item.mediaType === "music") {
+      return "Listen on";
+    }
+    if (item.mediaType === "book") {
+      return "Read via";
+    }
+    return "Watch on";
+  };
+
   return (
     <section className="space-y-4">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-white">Media Library</h2>
           <p className="text-sm text-slate-400">
             Automatically enriched movies, shows, books, and more.
           </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-[11px]">
+          {(["all", "movie", "tv", "game", "book", "music"] as const).map(
+            (option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setFilter(option)}
+                className={`rounded-full px-3 py-1 transition ${
+                  filter === option
+                    ? "bg-indigo-500/30 text-white shadow"
+                    : "border border-slate-700/40 bg-slate-900/40 text-slate-300 hover:text-white"
+                }`}
+              >
+                {option === "all" ? "All" : option.toUpperCase()}
+              </button>
+            )
+          )}
         </div>
       </header>
 
@@ -98,18 +155,19 @@ export function MediaLibrary({
         <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-200">
           Failed to load media items: {error.message}
         </div>
-      ) : items.length === 0 ? (
+      ) : filteredItems.length === 0 ? (
         <div className="rounded-xl border border-slate-700/30 bg-slate-900/40 p-4 text-sm text-slate-400">
-          No media enrichments yet. Capture a memo with a film, show, or book to
-          see it here.
+          {filter === "all"
+            ? "No media enrichments yet. Capture a memo with a film, show, or book to see it here."
+            : `No ${filter.toUpperCase()} entries yet.`}
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {items.map((item) => (
+          {filteredItems.map((item) => (
             <Card
               key={item.memoId}
               variant="elevated"
-              className="relative h-full overflow-hidden bg-gradient-to-br from-[#0f111f]/80 via-[#15192d]/70 to-[#1a1f33]/80"
+              className="group relative h-full overflow-hidden bg-gradient-to-br from-[#0f111f]/80 via-[#15192d]/70 to-[#1a1f33]/80"
             >
               {item.backdropUrl && (
                 <div className="absolute inset-0 opacity-30">
@@ -175,7 +233,7 @@ export function MediaLibrary({
                     disabled={
                       refreshingId === item.memoId || fixingId === item.memoId
                     }
-                    className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full border border-slate-700/40 bg-[#101525]/70 px-2 py-1 text-[11px] text-slate-300 transition hover:border-indigo-500/40 hover:text-white disabled:opacity-60"
+                    className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full border border-slate-700/40 bg-[#101525]/70 px-2 py-1 text-[11px] text-slate-300 transition hover:border-indigo-500/40 hover:text-white disabled:opacity-60 lg:opacity-0 lg:group-hover:opacity-100"
                   >
                     {refreshingId === item.memoId ? (
                       <Loader2 className="h-3 w-3 animate-spin" />
@@ -192,7 +250,7 @@ export function MediaLibrary({
                     disabled={
                       fixingId === item.memoId || refreshingId === item.memoId
                     }
-                    className="absolute right-4 top-12 inline-flex items-center gap-1 rounded-full border border-slate-700/40 bg-[#101525]/70 px-2 py-1 text-[11px] text-indigo-200 transition hover:border-indigo-500/40 hover:text-white disabled:opacity-60"
+                    className="absolute right-4 top-12 inline-flex items-center gap-1 rounded-full border border-slate-700/40 bg-[#101525]/70 px-2 py-1 text-[11px] text-indigo-200 transition hover:border-indigo-500/40 hover:text-white disabled:opacity-60 lg:opacity-0 lg:group-hover:opacity-100"
                   >
                     {fixingId === item.memoId ? (
                       <Loader2 className="h-3 w-3 animate-spin" />
@@ -200,6 +258,21 @@ export function MediaLibrary({
                       <Edit3 className="h-3 w-3" />
                     )}
                     Fix match
+                  </button>
+                )}
+                {onRemove && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemove(item)}
+                    disabled={removingId === item.memoId}
+                    className="absolute right-4 top-20 inline-flex items-center gap-1 rounded-full border border-rose-600/40 bg-rose-600/20 px-2 py-1 text-[11px] text-rose-100 transition hover:border-rose-400/40 hover:text-white disabled:opacity-60 lg:opacity-0 lg:group-hover:opacity-100"
+                  >
+                    {removingId === item.memoId ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-3 w-3" />
+                    )}
+                    Remove
                   </button>
                 )}
                 <CardContent className="space-y-3 text-sm text-slate-300">
@@ -216,19 +289,17 @@ export function MediaLibrary({
                   )}
 
                   <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
-                    {item.providers?.length ? (
+                    {(item.providers?.length || item.platforms?.length) && (
                       <span>
-                        Watch on {item.providers.slice(0, 3).join(", ")}
-                        {item.providers.length > 3 ? "…" : ""}
+                        {providerLabel(item)}{" "}
+                        {(item.providers ?? item.platforms ?? [])
+                          .slice(0, 3)
+                          .join(", ")}
+                        {(item.providers ?? item.platforms ?? []).length > 3
+                          ? "…"
+                          : ""}
                       </span>
-                    ) : null}
-
-                    {!item.providers?.length && item.platforms?.length ? (
-                      <span>
-                        Available on {item.platforms.slice(0, 3).join(", ")}
-                        {item.platforms.length > 3 ? "…" : ""}
-                      </span>
-                    ) : null}
+                    )}
 
                     {item.ratings?.length ? (
                       <span>
@@ -257,12 +328,13 @@ export function MediaLibrary({
                   Genres: {item.genres.slice(0, 5).join(", ")}
                 </div>
               )}
-              {!item.posterUrl && !item.providers && (
-                <div className="relative border-t border-amber-500/30 bg-amber-500/10 px-4 py-3 text-[11px] text-amber-200">
-                  Metadata is still sparse. Try refreshing to fetch art and
-                  streaming sources.
-                </div>
-              )}
+              {!item.posterUrl &&
+                !(item.providers?.length || item.platforms?.length) && (
+                  <div className="relative border-t border-amber-500/30 bg-amber-500/10 px-4 py-3 text-[11px] text-amber-200">
+                    Metadata is still sparse. Try refreshing to fetch art and
+                    streaming sources.
+                  </div>
+                )}
               <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-700/30 bg-[#0a0f1c]/70 px-4 py-3 text-[11px] text-slate-400">
                 <div className="space-y-1">
                   <div>
@@ -304,9 +376,38 @@ export function MediaLibrary({
                   <summary className="cursor-pointer text-slate-400">
                     Debug info
                   </summary>
-                  <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap text-left text-[10px] text-slate-500">
-                    {JSON.stringify(item.searchDebug, null, 2)}
-                  </pre>
+                  <div className="mt-2 space-y-2">
+                    {item.transcriptExcerpt && (
+                      <div>
+                        <span className="font-semibold text-slate-300">
+                          Transcript excerpt:
+                        </span>
+                        <p className="mt-1 text-[10px] text-slate-400">
+                          {item.transcriptExcerpt}
+                        </p>
+                      </div>
+                    )}
+                    {item.tags.length > 0 && (
+                      <div>
+                        <span className="font-semibold text-slate-300">
+                          Tags:
+                        </span>
+                        <div className="mt-1 flex flex-wrap gap-1 text-[10px] text-indigo-200/80">
+                          {item.tags.map((tag) => (
+                            <span
+                              key={tag}
+                              className="rounded-full bg-indigo-500/10 px-2 py-0.5"
+                            >
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <pre className="max-h-48 overflow-auto whitespace-pre-wrap text-left text-[10px] text-slate-500">
+                      {JSON.stringify(item.searchDebug, null, 2)}
+                    </pre>
+                  </div>
                 </details>
               )}
             </Card>
