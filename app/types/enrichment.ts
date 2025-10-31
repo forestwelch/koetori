@@ -21,6 +21,9 @@ export interface MediaItem {
   autoReleaseYear: number | null;
   customReleaseYear: number | null;
   searchDebug: Record<string, unknown> | null;
+  source: "tmdb" | "igdb" | "omdb" | "manual" | null;
+  externalUrl: string | null;
+  timeToBeatMinutes: number | null;
   updatedAt: Date;
 }
 

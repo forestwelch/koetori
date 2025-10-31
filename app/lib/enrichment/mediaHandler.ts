@@ -1,6 +1,10 @@
 import { MediaEnrichmentPayload } from "../pipeline/types";
 import { EnrichmentJobResult, MediaItemDraft } from "./types";
-import { searchIgdbGames, igdbCoverUrl } from "../services/igdb";
+import {
+  searchIgdbGames,
+  igdbCoverUrl,
+  fetchIgdbTimeToBeat,
+} from "../services/igdb";
 
 const OMDB_ENDPOINT = "https://www.omdbapi.com/";
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
@@ -117,8 +121,13 @@ export async function handleMediaTask(
     overview: payload.transcriptExcerpt ?? null,
     mediaType: targetMediaType,
     autoTitle: baseTitle,
+    customTitle: payload.overrideTitle ?? null,
     autoReleaseYear: payload.overrideYear ?? payload.probableYear ?? null,
+    customReleaseYear: payload.overrideYear ?? null,
     searchDebug: searchDebug,
+    source: undefined,
+    externalUrl: null,
+    timeToBeatMinutes: null,
   };
 
   const results: Array<Partial<MediaItemDraft>> = [];
@@ -162,7 +171,8 @@ export async function handleMediaTask(
 
   for (const result of results) {
     if (!result) continue;
-    if (result.title && !payload.overrideTitle) {
+    if (result.title) {
+      draft.autoTitle = result.title;
       draft.title = result.title;
     }
     if (result.autoTitle) {
@@ -186,6 +196,16 @@ export async function handleMediaTask(
     draft.imdbId = draft.imdbId ?? result.imdbId ?? null;
     draft.mediaType = result.mediaType ?? draft.mediaType;
     draft.ratings = draft.ratings ?? result.ratings ?? undefined;
+    if (!draft.source && result.source) {
+      draft.source = result.source;
+    }
+    if (!draft.externalUrl && result.externalUrl) {
+      draft.externalUrl = result.externalUrl;
+    }
+    if (result.timeToBeatMinutes !== undefined) {
+      draft.timeToBeatMinutes =
+        result.timeToBeatMinutes ?? draft.timeToBeatMinutes;
+    }
   }
 
   draft.autoTitle = draft.autoTitle ?? draft.title;
@@ -194,11 +214,12 @@ export async function handleMediaTask(
     payload.overrideYear ??
     payload.probableYear ??
     null;
+  draft.customTitle = payload.overrideTitle ?? draft.customTitle ?? null;
+  draft.customReleaseYear =
+    payload.overrideYear ?? draft.customReleaseYear ?? null;
+  draft.title = draft.autoTitle ?? draft.title;
+  draft.releaseYear = draft.autoReleaseYear ?? draft.releaseYear ?? null;
   draft.searchDebug = searchDebug;
-
-  if (payload.overrideTitle) {
-    draft.title = payload.overrideTitle;
-  }
 
   if (!draft.posterUrl && draft.tmdbId) {
     // ensure we have at least placeholders if TMDb provided id but no poster
@@ -284,6 +305,10 @@ async function fetchFromOmdb(
         title: detail.Title ?? title,
         year: detail.Year ?? year,
       },
+      source: "omdb",
+      externalUrl: detail.imdbID
+        ? `https://www.imdb.com/title/${detail.imdbID}`
+        : null,
     } satisfies Partial<MediaItemDraft>;
   } catch (error) {
     console.warn("[enrichment:media] omdb-fallback-failed", {
@@ -382,6 +407,12 @@ async function fetchFromTmdb(
     : undefined;
 
   const ratings = buildRatings(detail);
+  const externalUrl =
+    target.media_type === "tv" || target.media_type === "movie"
+      ? `https://www.themoviedb.org/${
+          target.media_type === "tv" ? "tv" : "movie"
+        }/${target.id}`
+      : undefined;
 
   return {
     title: detail.title ?? detail.name ?? title,
@@ -392,7 +423,7 @@ async function fetchFromTmdb(
     overview: detail.overview ?? payload.transcriptExcerpt ?? null,
     trailerUrl,
     providers,
-    platforms: providers,
+    platforms: undefined,
     genres,
     ratings,
     tmdbId: detail.id ? String(detail.id) : undefined,
@@ -410,6 +441,8 @@ async function fetchFromTmdb(
       title: detail.title ?? detail.name ?? title,
       releaseYear,
     },
+    source: "tmdb",
+    externalUrl: externalUrl ?? null,
   } satisfies Partial<MediaItemDraft>;
 }
 
@@ -656,6 +689,21 @@ async function fetchFromIgdb(
     ? `https://www.youtube.com/watch?v=${trailerId}`
     : undefined;
 
+  let timeToBeatMinutes: number | null = null;
+  const timeData = await fetchIgdbTimeToBeat(target.id);
+  if (
+    timeData &&
+    typeof timeData.normally === "number" &&
+    timeData.normally > 0
+  ) {
+    const minutes = Math.round(timeData.normally / 60);
+    timeToBeatMinutes = minutes > 0 ? minutes : null;
+  }
+
+  const externalUrl = target.slug
+    ? `https://www.igdb.com/games/${target.slug}`
+    : null;
+
   return {
     title: target.name ?? title,
     releaseYear,
@@ -676,6 +724,10 @@ async function fetchFromIgdb(
       slug: target.slug,
       platforms,
       releaseYear,
+      timeToBeat: timeData ?? null,
     },
+    source: "igdb",
+    externalUrl,
+    timeToBeatMinutes,
   } satisfies Partial<MediaItemDraft>;
 }

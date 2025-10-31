@@ -23,8 +23,13 @@ export interface MediaItemDraft {
   mediaType?: "movie" | "tv" | "music" | "game" | "book" | "unknown";
   ratings?: Array<{ source: string; value: string }>;
   autoTitle?: string | null;
+  customTitle?: string | null;
   autoReleaseYear?: number | null;
+  customReleaseYear?: number | null;
   searchDebug?: Record<string, unknown> | null;
+  source?: "tmdb" | "igdb" | "omdb" | "manual";
+  externalUrl?: string | null;
+  timeToBeatMinutes?: number | null;
 }
 
 export interface ReminderDraft {

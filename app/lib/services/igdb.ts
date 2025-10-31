@@ -4,15 +4,11 @@ interface IgdbTokenResponse {
   token_type: string;
 }
 
-interface IgdbImage {
-  image_id: string;
-}
-
 interface IgdbGame {
   id: number;
   name: string;
   summary?: string;
-  cover?: IgdbImage;
+  cover?: { image_id?: string };
   platforms?: Array<{ name?: string } & { id?: number }>;
   release_dates?: Array<{ y?: number }>;
   rating?: number;
@@ -20,6 +16,13 @@ interface IgdbGame {
   videos?: Array<{ video_id?: string }>;
   websites?: Array<{ url?: string; category?: number }>;
   genres?: Array<{ name?: string }>;
+}
+
+interface IgdbTimeToBeat {
+  game: number;
+  hastily?: number;
+  normally?: number;
+  completely?: number;
 }
 
 const IGDB_IMAGE_BASE = "https://images.igdb.com/igdb/image/upload";
@@ -97,4 +100,38 @@ export function igdbCoverUrl(
   size: "cover_big" | "screenshot_big" = "cover_big"
 ) {
   return `${IGDB_IMAGE_BASE}/t_${size}/${imageId}.jpg`;
+}
+
+export async function fetchIgdbTimeToBeat(
+  gameId: number
+): Promise<IgdbTimeToBeat | null> {
+  const token = await getIgdbToken();
+  const clientId = process.env.IGDB_CLIENT_ID;
+  if (!token || !clientId) {
+    return null;
+  }
+
+  const body = `fields game,hastily,normally,completely; where game = ${gameId}; limit 1;`;
+
+  const response = await fetch("https://api.igdb.com/v4/time_to_beats", {
+    method: "POST",
+    headers: {
+      "Client-ID": clientId,
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "text/plain",
+    },
+    body,
+  });
+
+  if (!response.ok) {
+    console.warn("[igdb] time-to-beat fetch failed", await response.text());
+    return null;
+  }
+
+  const data = (await response.json()) as IgdbTimeToBeat[];
+  if (!Array.isArray(data) || data.length === 0) {
+    return null;
+  }
+
+  return data[0] ?? null;
 }
