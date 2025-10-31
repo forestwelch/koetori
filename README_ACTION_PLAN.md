@@ -52,8 +52,9 @@ Actions:
 - Persist normalized `media_items` table linked to originating memos.
 - UI: gallery of cards with quick actions (watch trailer, mark consumed, share).
 - [x] Spec enrichment worker contract (input: memo IDs + text snippets, output: `media_items`).
-- [x] Wire up first API client (OMDb) with caching + rate limit fallbacks.
+- [x] Wire up first API client (TMDb + OMDb fallback) with caching + rate limit handling.
 - [x] Design database schema for `media_items` storage + memo linkage.
+- [x] Add per-memo re-enrichment endpoint + UI refresh action.
 - [ ] Build gallery view with grouped filters (type, mood, backlog status).
 
 ### 3B. Reminders & Tasks
@@ -112,8 +113,8 @@ Actions:
 
 ## Next Up Tonight
 
-1. Backfill enrichment for existing memos (API + batching strategy).
-2. Persist enrichment outputs into UI-ready queries (media gallery, reminders inbox, shopping list).
-3. Design first-pass UI surfaces fed by new tables.
+1. Integrate richer media sources (IGDB for games, HowLongToBeat playtime) once keys are available.
+2. Add “mark done/snooze” flow for reminders and surface due dates in memo list.
+3. Build media gallery filters and watchlist actions (mark watched, add rating).
 
 _Jot here as you make overnight progress so Forest wakes up to a clear snapshot._

@@ -3,14 +3,23 @@
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { MediaItem } from "../../types/enrichment";
+import { Loader2, RefreshCw } from "lucide-react";
 
 interface MediaLibraryProps {
   items: MediaItem[];
   isLoading: boolean;
   error?: Error | null;
+  onRefresh?: (memoId: string) => Promise<void>;
+  refreshingId?: string | null;
 }
 
-export function MediaLibrary({ items, isLoading, error }: MediaLibraryProps) {
+export function MediaLibrary({
+  items,
+  isLoading,
+  error,
+  onRefresh,
+  refreshingId,
+}: MediaLibraryProps) {
   return (
     <section className="space-y-4">
       <header className="flex items-center justify-between">
@@ -81,6 +90,9 @@ export function MediaLibrary({ items, isLoading, error }: MediaLibraryProps) {
                       {item.runtimeMinutes
                         ? ` • ${item.runtimeMinutes} min`
                         : ""}
+                      {item.mediaType && item.mediaType !== "unknown"
+                        ? ` • ${item.mediaType.toUpperCase()}`
+                        : ""}
                     </p>
                     {item.tags.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1 text-[11px] text-indigo-200/80">
@@ -96,6 +108,21 @@ export function MediaLibrary({ items, isLoading, error }: MediaLibraryProps) {
                     )}
                   </div>
                 </CardHeader>
+                {onRefresh && (
+                  <button
+                    type="button"
+                    onClick={() => onRefresh(item.memoId)}
+                    disabled={refreshingId === item.memoId}
+                    className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full border border-slate-700/40 bg-[#101525]/70 px-2 py-1 text-[11px] text-slate-300 transition hover:border-indigo-500/40 hover:text-white disabled:opacity-60"
+                  >
+                    {refreshingId === item.memoId ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <RefreshCw className="h-3 w-3" />
+                    )}
+                    Refresh
+                  </button>
+                )}
                 <CardContent className="space-y-3 text-sm text-slate-300">
                   {item.overview && (
                     <p className="line-clamp-3 text-slate-300/90">
@@ -149,6 +176,12 @@ export function MediaLibrary({ items, isLoading, error }: MediaLibraryProps) {
               {item.genres && item.genres.length > 0 && (
                 <div className="relative border-t border-slate-700/30 bg-[#0f131f]/70 px-4 py-3 text-[11px] text-slate-400">
                   Genres: {item.genres.slice(0, 5).join(", ")}
+                </div>
+              )}
+              {!item.posterUrl && !item.providers && (
+                <div className="relative border-t border-amber-500/30 bg-amber-500/10 px-4 py-3 text-[11px] text-amber-200">
+                  Metadata is still sparse. Try refreshing to fetch art and
+                  streaming sources.
                 </div>
               )}
             </Card>

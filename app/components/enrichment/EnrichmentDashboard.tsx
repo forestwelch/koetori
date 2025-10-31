@@ -8,6 +8,8 @@ import {
 import { MediaLibrary } from "./MediaLibrary";
 import { RemindersBoard } from "./RemindersBoard";
 import { ShoppingListBoard } from "./ShoppingListBoard";
+import { useRequeueEnrichment } from "../../hooks/useRequeueEnrichment";
+import { useState } from "react";
 
 interface EnrichmentDashboardProps {
   username: string | null;
@@ -15,6 +17,8 @@ interface EnrichmentDashboardProps {
 
 export function EnrichmentDashboard({ username }: EnrichmentDashboardProps) {
   const enabled = Boolean(username);
+  const [refreshingId, setRefreshingId] = useState<string | null>(null);
+  const { requeue, isRequeueing } = useRequeueEnrichment(username ?? null);
 
   const {
     data: mediaItems = [],
@@ -44,6 +48,16 @@ export function EnrichmentDashboard({ username }: EnrichmentDashboardProps) {
         items={mediaItems}
         isLoading={mediaLoading}
         error={mediaError instanceof Error ? mediaError : undefined}
+        onRefresh={async (memoId) => {
+          if (!memoId) return;
+          setRefreshingId(memoId);
+          try {
+            await requeue(memoId);
+          } finally {
+            setRefreshingId(null);
+          }
+        }}
+        refreshingId={refreshingId && isRequeueing ? refreshingId : null}
       />
       <RemindersBoard
         reminders={reminders}
