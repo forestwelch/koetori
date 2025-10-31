@@ -26,6 +26,7 @@ import { SizeFilterShowcase } from "./components/SizeFilterShowcase";
 import { FiltersDrawer } from "./components/FiltersDrawer";
 import { KoetoriExplanation } from "./components/KoetoriExplanation";
 import { Filter, Star } from "lucide-react";
+import { EnrichmentDashboard } from "./components/enrichment/EnrichmentDashboard";
 
 export default function Home() {
   const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false);
@@ -343,7 +344,7 @@ export default function Home() {
         </div>
 
         {/* Memos Content */}
-        <div className="max-w-5xl mx-auto relative z-10">
+        <div className="max-w-5xl mx-auto relative z-10 space-y-12">
           {/* Loading State */}
           {loading && <LoadingState />}
 
@@ -377,6 +378,8 @@ export default function Home() {
               setExpandedId={setExpandedId}
             />
           )}
+
+          <EnrichmentDashboard username={username} />
         </div>
       </div>
 
