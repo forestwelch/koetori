@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
 import { Card, CardContent } from "../ui/Card";
 import { ShoppingListItem } from "../../types/enrichment";
@@ -96,12 +97,13 @@ export function ShoppingListBoard({
 
                   <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
                     <span>Last updated: {item.updatedAt.toLocaleString()}</span>
-                    <a
-                      href={`/#memo-${item.memoId}`}
+                    <Link
+                      href={{ pathname: "/", hash: `memo-${item.memoId}` }}
+                      prefetch={false}
                       className="rounded-full border border-slate-700/40 px-2 py-0.5 text-slate-300 transition hover:border-emerald-400/50 hover:text-white"
                     >
                       View memo
-                    </a>
+                    </Link>
                   </div>
 
                   {item.transcriptExcerpt && (

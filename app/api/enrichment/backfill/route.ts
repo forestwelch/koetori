@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
   const memoIdsWithoutTasks: string[] = [];
 
   for (const memo of memos) {
+    const transcriptionId = memo.transcription_id ?? memo.id;
     const memoTasks = planEnrichmentTasks({
       memos: [
         {
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
         username: memo.username,
         source: memo.source,
       },
-      transcriptionId: memo.transcription_id,
+      transcriptionId,
     });
 
     if (memoTasks.length === 0) {

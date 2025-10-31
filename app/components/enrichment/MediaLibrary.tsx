@@ -49,13 +49,26 @@ export function MediaLibrary({
       }
     }
 
+    const typeInput = prompt(
+      "Media type (movie, tv, music, game)",
+      item.mediaType ?? "movie"
+    );
+    const normalizedType = (typeInput ?? "").trim().toLowerCase();
+    const overrideMediaType =
+      normalizedType === "movie" ||
+      normalizedType === "tv" ||
+      normalizedType === "music" ||
+      normalizedType === "game"
+        ? normalizedType
+        : undefined;
+
     setFixingId(item.memoId);
     try {
       await onRefresh({
         memoId: item.memoId,
         overrideTitle: newTitle,
         overrideYear,
-        overrideMediaType: item.mediaType ?? undefined,
+        overrideMediaType,
       });
     } catch (error) {
       console.error("Failed to fix match", error);
@@ -279,8 +292,9 @@ export function MediaLibrary({
                   </div>
                 </div>
                 <Link
-                  href={`/#memo-${item.memoId}`}
+                  href={{ pathname: "/", hash: `memo-${item.memoId}` }}
                   className="inline-flex items-center gap-1 rounded-full border border-slate-700/40 px-3 py-1 text-slate-300 transition hover:border-indigo-500/40 hover:text-white"
+                  prefetch={false}
                 >
                   View memo
                 </Link>

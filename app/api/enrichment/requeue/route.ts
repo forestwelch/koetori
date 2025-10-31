@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
   const { data: memo, error } = await supabase
     .from("memos")
     .select(
-      "id, category, extracted, tags, transcript_excerpt, transcription_id, username, source"
+      "id, category, extracted, tags, transcript_excerpt, transcription_id, username, source, deleted_at"
     )
     .eq("id", memoId)
     .single();
@@ -64,13 +64,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: "Memo not found", details: error?.message },
       { status: 404 }
-    );
-  }
-
-  if (!memo.transcription_id) {
-    return NextResponse.json(
-      { error: "Memo is missing transcription reference" },
-      { status: 400 }
     );
   }
 
@@ -83,6 +76,8 @@ export async function POST(request: NextRequest) {
     .update({ enrichment_processed_at: null })
     .eq("id", memoId);
 
+  const transcriptionId = memo.transcription_id ?? memo.id;
+
   const tasks = planEnrichmentTasks({
     memos: [
       {
@@ -91,13 +86,14 @@ export async function POST(request: NextRequest) {
         extracted: memo.extracted as Record<string, unknown> | null,
         tags: memo.tags as string[] | null,
         transcript_excerpt: memo.transcript_excerpt ?? null,
+        deleted_at: (memo.deleted_at as string | null) ?? null,
       },
     ],
     metadata: {
       username: memo.username,
       source: memo.source,
     },
-    transcriptionId: memo.transcription_id,
+    transcriptionId,
   });
 
   const queue = createQueueDispatcher();
@@ -127,7 +123,7 @@ export async function POST(request: NextRequest) {
     tasks.push({
       type: "media",
       payload: {
-        transcriptionId: memo.transcription_id,
+        transcriptionId,
         username: memo.username,
         memoId: memo.id,
         memoCategory: memo.category,

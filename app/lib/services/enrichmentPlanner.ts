@@ -85,7 +85,12 @@ export function planEnrichmentTasks(input: PlannerInput): EnrichmentTask[] {
       transcriptExcerpt: memo.transcript_excerpt,
     };
 
-    if (MEDIA_CATEGORIES.has(normalizedCategory)) {
+    const inferredMediaType = inferMediaType(memo);
+    const looksLikeMedia =
+      MEDIA_CATEGORIES.has(normalizedCategory) ||
+      inferredMediaType !== "unknown";
+
+    if (looksLikeMedia) {
       const probableTitle = deriveMediaTitle(memo);
       if (!probableTitle) {
         continue;
@@ -103,7 +108,7 @@ export function planEnrichmentTasks(input: PlannerInput): EnrichmentTask[] {
           memo.tags,
           memo.transcript_excerpt
         ),
-        probableMediaType: inferMediaType(memo),
+        probableMediaType: inferredMediaType,
       };
 
       tasks.push({
