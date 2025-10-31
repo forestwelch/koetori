@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import Groq from "groq-sdk";
 import { rateLimit, getClientIdentifier } from "@/app/lib/rateLimit";
-import {
-  buildSplittingPrompt,
-  validateSplitResult,
-} from "@/app/lib/categorization";
-import { supabase } from "@/app/lib/supabase";
-
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+import { createDefaultPipeline } from "@/app/lib/pipeline/createPipeline";
+import { createRequestId } from "@/app/lib/pipeline/pipeline";
+import { CaptureRequest } from "@/app/lib/pipeline/types";
 
 // App Router configuration
 export const runtime = "nodejs";
@@ -92,9 +85,11 @@ export async function POST(request: NextRequest) {
 
     // Check if this is a text-only request
     const contentType = request.headers.get("content-type");
-    let transcript: string;
+    let transcript: string | undefined;
     let username: string;
     let inputType: "audio" | "text" = "audio";
+    let audioFile: Blob | undefined;
+    let originalFilename: string | undefined;
 
     if (contentType?.includes("application/json")) {
       // Handle text input
@@ -132,11 +127,11 @@ export async function POST(request: NextRequest) {
     } else {
       // Handle audio file (existing logic)
       const formData = await request.formData();
-      const audioFile = formData.get("audio");
+      const audioFileField = formData.get("audio");
       const usernameField = formData.get("username");
 
       // Validate that audio file exists
-      if (!audioFile || !(audioFile instanceof Blob)) {
+      if (!audioFileField || !(audioFileField instanceof Blob)) {
         logRequest("warn", "No audio file provided", { clientId });
 
         return NextResponse.json(
@@ -170,7 +165,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Validate file size
-      if (audioFile.size > MAX_FILE_SIZE) {
+      if (audioFileField.size > MAX_FILE_SIZE) {
         logRequest("warn", "File size exceeds limit", {
           clientId,
           fileSize: audioFile.size,
@@ -184,19 +179,19 @@ export async function POST(request: NextRequest) {
       }
 
       // Warn if file might exceed duration limit (estimate only)
-      if (audioFile.size > MAX_AUDIO_DURATION_ESTIMATE) {
+      if (audioFileField.size > MAX_AUDIO_DURATION_ESTIMATE) {
         logRequest("warn", "File may exceed duration limit", {
           clientId,
-          fileSize: audioFile.size,
-          estimatedDuration: audioFile.size / (16 * 1024),
+          fileSize: audioFileField.size,
+          estimatedDuration: audioFileField.size / (16 * 1024),
         });
       }
 
       // Validate file type
-      if (!ALLOWED_TYPES.includes(audioFile.type)) {
+      if (!ALLOWED_TYPES.includes(audioFileField.type)) {
         logRequest("warn", "Invalid file type", {
           clientId,
-          fileType: audioFile.type,
+          fileType: audioFileField.type,
         });
 
         return NextResponse.json(
@@ -209,154 +204,59 @@ export async function POST(request: NextRequest) {
 
       logRequest("info", "Processing transcription request", {
         clientId,
-        fileType: audioFile.type,
-        fileSize: audioFile.size,
+        fileType: audioFileField.type,
+        fileSize: audioFileField.size,
       });
 
-      // Create FileLike object for Groq API by wrapping the Blob
-      // Groq SDK needs an object with name, lastModified, and all Blob methods
-      const file = new Proxy(audioFile, {
-        get(target, prop) {
-          if (prop === "name") return "recording.webm";
-          if (prop === "lastModified") return Date.now();
-          return target[prop as keyof typeof target];
-        },
-      });
-
-      // Call Groq Whisper API for transcription
-      const transcription = await groq.audio.transcriptions.create({
-        file: file,
-        model: "whisper-large-v3-turbo",
-        language: "en", // Optional: specify language or let it auto-detect
-        response_format: "json",
-      });
-
-      transcript = transcription.text;
+      audioFile = audioFileField;
+      originalFilename =
+        ("name" in audioFileField &&
+          typeof (audioFileField as unknown as { name?: string }).name ===
+            "string" &&
+          (audioFileField as unknown as { name?: string }).name) ||
+        "recording.webm";
     }
 
-    // Phase 8: AI Categorization (same for both audio and text)
-    logRequest("info", "Starting categorization", {
-      clientId,
-      transcriptLength: transcript.length,
-    });
-
-    // Save transcription to database first
-    const { data: transcriptionData, error: transcriptionError } =
-      await supabase
-        .from("transcriptions")
-        .insert({
-          transcript,
-          username: username,
-          audio_duration_seconds:
-            inputType === "audio" ? transcript.length / 150 : null,
-          source: "app",
-        })
-        .select()
-        .single();
-
-    if (transcriptionError || !transcriptionData) {
-      logRequest("error", "Failed to save transcription", {
+    const pipeline = createDefaultPipeline();
+    const captureRequest: CaptureRequest = {
+      metadata: {
+        username,
+        source: "app",
+        deviceId: null,
+        inputType,
         clientId,
-        error: transcriptionError?.message,
-      });
-      return NextResponse.json(
-        { error: "Failed to save transcription" },
-        { status: 500, headers }
-      );
-    }
+        requestId: createRequestId(),
+      },
+      transcript,
+      audioFile,
+      contentType: audioFile?.type ?? contentType,
+      originalFilename,
+    };
 
-    const transcriptionId = transcriptionData.id;
-
-    const splittingPrompt = buildSplittingPrompt(transcript);
-
-    const splittingResponse = await groq.chat.completions.create({
-      messages: [
-        {
-          role: "user",
-          content: splittingPrompt,
-        },
-      ],
-      model: "llama-3.3-70b-versatile",
-      temperature: 0.3,
-      response_format: { type: "json_object" },
-    });
-
-    const rawSplitResult = JSON.parse(
-      splittingResponse.choices[0].message.content || "{}"
-    );
-
-    const splitResult = validateSplitResult(rawSplitResult);
-
-    logRequest("info", "Memo splitting analysis complete", {
-      clientId,
-      shouldSplit: splitResult.should_split,
-      memoCount: splitResult.memos.length,
-    });
-
-    // Create all memos with reference to transcription
-    const memosToInsert = splitResult.memos.map((memo) => ({
-      transcript, // Each memo still gets the full transcript
-      transcription_id: transcriptionId,
-      transcript_excerpt: memo.transcript_excerpt || null,
-      category: memo.category,
-      confidence: memo.confidence,
-      needs_review: memo.confidence < 0.7,
-      extracted: memo.extracted,
-      tags: memo.tags,
-      starred: memo.starred || false,
-      size: memo.size || null,
-      username: username,
-      source: "app",
-      input_type: inputType,
-    }));
-
-    const { data: memoDataArray, error: supabaseError } = await supabase
-      .from("memos")
-      .insert(memosToInsert)
-      .select();
-
-    if (supabaseError || !memoDataArray) {
-      logRequest("error", "Failed to save memos to Supabase", {
-        clientId,
-        error: supabaseError?.message,
-      });
-      return NextResponse.json(
-        { error: "Failed to save memos" },
-        { status: 500, headers }
-      );
-    }
+    const pipelineResult = await pipeline.run(captureRequest);
 
     const processingTime = Date.now() - startTime;
 
-    logRequest("info", "Transcription and categorization successful", {
+    logRequest("info", "Transcription pipeline completed", {
       clientId,
       processingTimeMs: processingTime,
-      transcriptionLength: transcript.length,
-      memosCreated: memoDataArray.length,
-      memoIds: memoDataArray.map((m) => m.id),
+      transcriptionId: pipelineResult.transcriptionId,
+      memoCount: pipelineResult.memos.length,
     });
 
     return NextResponse.json(
       {
-        transcript,
-        memos_created: memoDataArray.length,
-        memo_ids: memoDataArray.map((m) => m.id),
-        transcription_id: transcriptionId,
-        memos: memoDataArray.map((m) => ({
-          id: m.id,
-          category: m.category,
-          confidence: m.confidence,
-          needs_review: m.needs_review,
-          extracted: m.extracted,
-          tags: m.tags,
-          starred: m.starred,
-          size: m.size,
-        })),
-        language: "en",
-        duration: contentType?.includes("application/json")
-          ? 0
-          : transcript.length / 150, // Estimate 150 words per minute for text
-        processingTime: processingTime,
+        transcript: pipelineResult.transcript,
+        memos_created: pipelineResult.memos.length,
+        memo_ids: pipelineResult.memos.map((m) => m.id),
+        transcription_id: pipelineResult.transcriptionId,
+        memos: pipelineResult.memos,
+        language: pipelineResult.language ?? "en",
+        duration: pipelineResult.durationSeconds ?? null,
+        provider: pipelineResult.provider,
+        processingTime,
+        events: pipelineResult.events,
+        enrichmentTasks: pipelineResult.enrichmentTasks ?? [],
       },
       { headers }
     );

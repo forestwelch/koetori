@@ -36,10 +36,10 @@ Goal: treat each step as a callable service instance (think PDS client pattern).
 
 Actions:
 
-- [ ] Draft TypeScript interfaces for each service (inputs, outputs, errors).
-- [ ] Define shared DTOs: `CapturePayload`, `TranscriptionJob`, `UnderstandingResult`, `EnrichmentTask`, `MemoWriteRequest`.
-- [ ] Prototype orchestrator (`CapturePipeline.run()`) that emits structured progress events for optimistic UI updates.
-- [ ] Introduce queue abstraction (Supabase functions, Cloudflare queues, or custom worker) and route enrichment tasks through it.
+- [x] Draft TypeScript interfaces for each service (inputs, outputs, errors).
+- [x] Define shared DTOs: `CapturePayload`, `TranscriptionJob`, `UnderstandingResult`, `EnrichmentTask`, `MemoWriteRequest`.
+- [x] Prototype orchestrator (`CapturePipeline.run()`) that emits structured progress events for optimistic UI updates.
+- [x] Introduce queue abstraction (Supabase functions, Cloudflare queues, or custom worker) and route enrichment tasks through it (console + immediate dispatchers wired).
 - [ ] Refactor existing `transcribe` API routes to thin controllers that hand work to the pipeline.
 - [ ] Establish logging/metrics contract (latency, retries, failure notification hooks).
 
@@ -51,8 +51,8 @@ Actions:
 - Enrichment fetches metadata (title, year, runtime, art, ratings, streaming platforms) via public APIs (OMDb, IGDB, Google Books, etc.).
 - Persist normalized `media_items` table linked to originating memos.
 - UI: gallery of cards with quick actions (watch trailer, mark consumed, share).
-- [ ] Spec enrichment worker contract (input: memo IDs + text snippets, output: `media_items`).
-- [ ] Wire up first API client (OMDb) with caching + rate limit fallbacks.
+- [x] Spec enrichment worker contract (input: memo IDs + text snippets, output: `media_items`).
+- [x] Wire up first API client (OMDb) with caching + rate limit fallbacks.
 - [ ] Design database schema for `media_items`, `media_availability`, `media_consumptions`.
 - [ ] Build gallery view with grouped filters (type, mood, backlog status).
 
@@ -62,7 +62,7 @@ Actions:
 - Service detects phrases like “remind me”, “don’t forget”, schedule options (ASAP, defer, snooze).
 - Surface reminders in a power inbox and optional push/email/text pipeline.
 - Allow quick deferral (`Later today`, `Tomorrow`, custom date).
-- [ ] Extend understanding service to emit `ReminderIntent` payloads (title, due date, cadence, channel, urgency score).
+- [x] Extend understanding service to emit `ReminderIntent` payloads (title, due date, cadence, channel, urgency score).
 - [ ] Create `reminders` table + state machine (pending, scheduled, sent, acknowledged, dismissed).
 - [ ] Integrate notification adapters (email, SMS, push) behind a common interface.
 - [ ] Build inbox widget with keyboard shortcuts (mark done, snooze, defer) and review analytics.
@@ -71,7 +71,7 @@ Actions:
 
 - Extract purchase candidates into a `shopping_list` surface grouped by type (groceries, upgrade, treat).
 - Allow one-click completion, export to notes, or sync with external lists later.
-- [ ] Define taxonomy for shopping categories + optional price/quantity metadata.
+- [x] Define taxonomy for shopping categories + optional price/quantity metadata.
 - [ ] Enrichment rules to capture store preference, urgency, recurring cadence.
 - [ ] Create list UI with drag-to-reorder, multi-select complete, and export/share options.
 

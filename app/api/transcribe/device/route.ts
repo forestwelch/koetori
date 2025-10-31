@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import Groq from "groq-sdk";
-import {
-  buildSplittingPrompt,
-  validateSplitResult,
-} from "@/app/lib/categorization";
 import { supabase } from "@/app/lib/supabase";
-
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+import { createDefaultPipeline } from "@/app/lib/pipeline/createPipeline";
+import { createRequestId } from "@/app/lib/pipeline/pipeline";
+import { CaptureRequest } from "@/app/lib/pipeline/types";
 
 // App Router configuration
 export const runtime = "nodejs";
@@ -17,14 +11,9 @@ export const dynamic = "force-dynamic";
 // Maximum file size (10MB) - devices should compress audio
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-// Groq API Daily Limits (based on on_demand tier)
-const DAILY_LLM_TOKEN_LIMIT = 100000; // llama-3.3-70b-versatile
-const DAILY_AUDIO_SECONDS_LIMIT = 28800; // whisper-large-v3-turbo (8 hours)
-const LLM_FALLBACK_THRESHOLD = 0.9; // Switch to cheaper model at 90% usage
-
-// Model configuration
-const PRIMARY_LLM_MODEL = "llama-3.3-70b-versatile";
-const FALLBACK_LLM_MODEL = "llama-3.1-8b-instant"; // 500K tokens/day fallback
+// Usage limits (estimates until dynamic telemetry is available)
+const DAILY_LLM_TOKEN_LIMIT = 100000; // Estimated llama tokens per day
+const DAILY_AUDIO_SECONDS_LIMIT = 28800; // 8 hours of audio per day
 
 // Allowed audio MIME types from M5StickC
 const ALLOWED_TYPES = [
@@ -210,201 +199,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Determine if we should use fallback LLM model
-    const llmPercentUsed = currentLLMTokens / DAILY_LLM_TOKEN_LIMIT;
-    const useFallbackModel = llmPercentUsed >= LLM_FALLBACK_THRESHOLD;
-    const selectedModel = useFallbackModel
-      ? FALLBACK_LLM_MODEL
-      : PRIMARY_LLM_MODEL;
-
-    if (useFallbackModel) {
-      logRequest("info", "Using fallback LLM model due to high token usage", {
+    const pipeline = createDefaultPipeline();
+    const captureRequest: CaptureRequest = {
+      metadata: {
         username: finalUsername,
-        currentTokens: currentLLMTokens,
-        percentUsed: Math.round(llmPercentUsed * 100),
-        fallbackModel: FALLBACK_LLM_MODEL,
-      });
-    }
-
-    // Create FileLike object for Groq API by wrapping the Blob
-    // Groq SDK needs an object with name, lastModified, and all Blob methods
-    const file = new Proxy(audioFile, {
-      get(target, prop) {
-        if (prop === "name") return "recording.wav";
-        if (prop === "lastModified") return Date.now();
-        return target[prop as keyof typeof target];
+        source: "device",
+        deviceId,
+        inputType: "audio",
+        clientId: deviceId,
+        requestId: createRequestId(),
       },
-    });
+      audioFile,
+      contentType: audioFile.type,
+      originalFilename: "device-upload.wav",
+    };
 
-    // Transcribe audio using Groq Whisper
-    const transcription = await groq.audio.transcriptions.create({
-      file: file,
-      model: "whisper-large-v3-turbo",
-      language: "en",
-      response_format: "json",
-    });
-
-    const transcript = transcription.text;
-
-    // Capture Whisper token usage (Groq may not return this, so estimate)
-    // Note: x_groq is not in the official type but may be present at runtime
-    const whisperTokens =
-      (transcription as { x_groq?: { usage?: { total_tokens?: number } } })
-        .x_groq?.usage?.total_tokens || Math.ceil(durationSeconds * 50); // Estimate: ~50 tokens/second
-
-    if (!transcript || transcript.trim().length === 0) {
-      logRequest("warn", "Transcription returned empty result", { deviceId });
-      return NextResponse.json(
-        { error: "Could not transcribe audio", success: false },
-        { status: 400 }
-      );
-    }
-
-    // Save transcription to database
-    const { data: transcriptionData, error: transcriptionError } =
-      await supabase
-        .from("transcriptions")
-        .insert({
-          transcript,
-          username: finalUsername,
-          audio_duration_seconds: durationSeconds,
-          source: "device",
-          device_id: deviceId,
-        })
-        .select()
-        .single();
-
-    if (transcriptionError || !transcriptionData) {
-      logRequest("error", "Failed to save transcription", {
-        deviceId,
-        error: transcriptionError?.message,
-      });
-      return NextResponse.json(
-        { error: "Failed to save transcription", success: false },
-        { status: 500 }
-      );
-    }
-
-    const transcriptionId = transcriptionData.id;
-
-    // Analyze transcript for potential splitting
-    logRequest("info", "Starting memo splitting analysis", {
-      deviceId,
-      transcriptLength: transcript.length,
-    });
-
-    const splittingPrompt = buildSplittingPrompt(transcript);
-
-    // Try with selected model, fall back if rate limited
-    let splittingResponse;
-    let actualModelUsed = selectedModel;
-
-    try {
-      splittingResponse = await groq.chat.completions.create({
-        messages: [
-          {
-            role: "user",
-            content: splittingPrompt,
-          },
-        ],
-        model: selectedModel, // Use fallback model if approaching limit
-        temperature: 0.3,
-        response_format: { type: "json_object" },
-      });
-    } catch (error: unknown) {
-      // If rate limited on primary model, try fallback
-      const isRateLimitError =
-        error &&
-        typeof error === "object" &&
-        "status" in error &&
-        error.status === 429;
-
-      if (isRateLimitError && selectedModel === PRIMARY_LLM_MODEL) {
-        const errorMessage =
-          error && typeof error === "object" && "message" in error
-            ? String(error.message)
-            : "Unknown error";
-
-        logRequest(
-          "warn",
-          "Primary model rate limited, switching to fallback",
-          {
-            deviceId,
-            error: errorMessage,
-            fallbackModel: FALLBACK_LLM_MODEL,
-          }
-        );
-
-        actualModelUsed = FALLBACK_LLM_MODEL;
-        splittingResponse = await groq.chat.completions.create({
-          messages: [
-            {
-              role: "user",
-              content: splittingPrompt,
-            },
-          ],
-          model: FALLBACK_LLM_MODEL,
-          temperature: 0.3,
-          response_format: { type: "json_object" },
-        });
-      } else {
-        // Re-throw if not a rate limit error or already using fallback
-        throw error;
-      }
-    }
-
-    // Capture LLM token usage
-    const llmTokens = splittingResponse.usage?.total_tokens || 0;
-    const totalTokens = whisperTokens + llmTokens;
-
-    const rawSplitResult = JSON.parse(
-      splittingResponse.choices[0].message.content || "{}"
-    );
-
-    const splitResult = validateSplitResult(rawSplitResult);
-
-    logRequest("info", "Memo splitting analysis complete", {
-      deviceId,
-      shouldSplit: splitResult.should_split,
-      memoCount: splitResult.memos.length,
-    });
-
-    // Create all memos with reference to transcription
-    const memosToInsert = splitResult.memos.map((memo) => ({
-      transcript, // Each memo still gets the full transcript
-      transcription_id: transcriptionId,
-      transcript_excerpt: memo.transcript_excerpt || null,
-      category: memo.category,
-      confidence: memo.confidence,
-      needs_review: memo.confidence < 0.7,
-      extracted: memo.extracted,
-      tags: memo.tags,
-      starred: memo.starred || false,
-      size: memo.size || null,
-      username: finalUsername,
-      source: "device",
-      input_type: "audio",
-      device_id: deviceId,
-    }));
-
-    const { data: memoDataArray, error: supabaseError } = await supabase
-      .from("memos")
-      .insert(memosToInsert)
-      .select();
-
-    if (supabaseError || !memoDataArray) {
-      logRequest("error", "Failed to save memos to Supabase", {
-        deviceId,
-        error: supabaseError?.message,
-      });
-      return NextResponse.json(
-        { error: "Failed to save memos", success: false },
-        { status: 500 }
-      );
-    }
+    const pipelineResult = await pipeline.run(captureRequest);
 
     // Track daily usage - update the daily_usage table
-    const newLLMTokensUsed = currentLLMTokens + llmTokens;
+    const whisperTokens = Math.ceil(durationSeconds * 50);
+    const llmTokensEstimate = Math.ceil(
+      (pipelineResult.transcript.length || 0) / 4
+    );
+    const totalTokens = whisperTokens + llmTokensEstimate;
+
+    const newLLMTokensUsed = currentLLMTokens + llmTokensEstimate;
     const newAudioSecondsUsed = currentAudioSeconds + durationSeconds;
     const newRequestsCount = (usageData?.requests_count || 0) + 1;
 
@@ -448,15 +267,14 @@ export async function POST(request: NextRequest) {
     );
 
     const processingTime = Date.now() - startTime;
-    const memoIds = memoDataArray.map((memo) => memo.id);
+    const memoIds = pipelineResult.memos.map((memo) => memo.id);
 
     logRequest("info", "Device upload processed successfully", {
       deviceId,
       processingTimeMs: processingTime,
-      transcriptionLength: transcript.length,
-      memosCreated: memoDataArray.length,
+      transcriptionLength: pipelineResult.transcript.length,
+      memosCreated: pipelineResult.memos.length,
       memoIds,
-      modelUsed: actualModelUsed,
       tokensUsed: totalTokens,
       llmTokensRemaining,
       audioSecondsRemaining,
@@ -465,9 +283,9 @@ export async function POST(request: NextRequest) {
     // Return enhanced response for device
     return NextResponse.json({
       success: true,
-      memos_created: memoDataArray.length,
+      memos_created: pipelineResult.memos.length,
       memo_ids: memoIds,
-      transcription_id: transcriptionId,
+      transcription_id: pipelineResult.transcriptionId,
       processing_time_ms: processingTime,
 
       // Recording metadata
@@ -480,9 +298,9 @@ export async function POST(request: NextRequest) {
       // Token usage
       tokens: {
         whisper_tokens: whisperTokens,
-        llm_tokens: llmTokens,
+        llm_tokens: llmTokensEstimate,
         total: totalTokens,
-        model_used: actualModelUsed,
+        model_used: pipelineResult.provider,
       },
 
       // Daily quota info
