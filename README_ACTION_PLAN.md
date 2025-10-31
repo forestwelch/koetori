@@ -53,7 +53,7 @@ Actions:
 - UI: gallery of cards with quick actions (watch trailer, mark consumed, share).
 - [x] Spec enrichment worker contract (input: memo IDs + text snippets, output: `media_items`).
 - [x] Wire up first API client (OMDb) with caching + rate limit fallbacks.
-- [ ] Design database schema for `media_items`, `media_availability`, `media_consumptions`.
+- [x] Design database schema for `media_items` storage + memo linkage.
 - [ ] Build gallery view with grouped filters (type, mood, backlog status).
 
 ### 3B. Reminders & Tasks
@@ -63,7 +63,7 @@ Actions:
 - Surface reminders in a power inbox and optional push/email/text pipeline.
 - Allow quick deferral (`Later today`, `Tomorrow`, custom date).
 - [x] Extend understanding service to emit `ReminderIntent` payloads (title, due date, cadence, channel, urgency score).
-- [ ] Create `reminders` table + state machine (pending, scheduled, sent, acknowledged, dismissed).
+- [x] Create `reminders` table scaffold (status machine pending implementation).
 - [ ] Integrate notification adapters (email, SMS, push) behind a common interface.
 - [ ] Build inbox widget with keyboard shortcuts (mark done, snooze, defer) and review analytics.
 
@@ -72,7 +72,7 @@ Actions:
 - Extract purchase candidates into a `shopping_list` surface grouped by type (groceries, upgrade, treat).
 - Allow one-click completion, export to notes, or sync with external lists later.
 - [x] Define taxonomy for shopping categories + optional price/quantity metadata.
-- [ ] Enrichment rules to capture store preference, urgency, recurring cadence.
+- [x] Add persistence table for shopping list items with urgency scoring.
 - [ ] Create list UI with drag-to-reorder, multi-select complete, and export/share options.
 
 ## Phase 4 — Personal Knowledge Modes
@@ -112,8 +112,8 @@ Actions:
 
 ## Next Up Tonight
 
-1. Finish QA on updated iconography & size selector.
-2. Sketch service interfaces + DTOs for Phase 2.
-3. Start enrichment schema drafts (media + reminders + shopping).
+1. Backfill enrichment for existing memos (API + batching strategy).
+2. Persist enrichment outputs into UI-ready queries (media gallery, reminders inbox, shopping list).
+3. Design first-pass UI surfaces fed by new tables.
 
 _Jot here as you make overnight progress so Forest wakes up to a clear snapshot._

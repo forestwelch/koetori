@@ -37,7 +37,7 @@ export function planEnrichmentTasks(input: PlannerInput): EnrichmentTask[] {
       tags: memo.tags,
       extracted: memo.extracted,
       transcriptExcerpt: memo.transcript_excerpt,
-    } satisfies MediaEnrichmentPayload;
+    };
 
     if (MEDIA_CATEGORIES.has(normalizedCategory)) {
       const mediaPayload: MediaEnrichmentPayload = {

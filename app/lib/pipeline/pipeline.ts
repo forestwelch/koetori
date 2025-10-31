@@ -8,6 +8,7 @@ import {
 } from "./types";
 import { PipelineServices } from "./interfaces";
 import { planEnrichmentTasks } from "../services/enrichmentPlanner";
+import { markMemosProcessed } from "../enrichment/persistence";
 
 function event(
   stage: PipelineStage,
@@ -100,6 +101,8 @@ export class CapturePipeline {
             types: enrichmentTasks.map((task) => task.type),
           })
         );
+      } else {
+        await markMemosProcessed(memoWriteResult.memos.map((memo) => memo.id));
       }
 
       const result: CapturePipelineResult = {
