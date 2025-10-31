@@ -59,9 +59,20 @@ export function MediaCard({
   const typeMeta = TYPE_META[item.mediaType ?? "unknown"] ?? TYPE_META.unknown;
   const TypeIcon = typeMeta.icon;
 
-  const handleViewMemo = () => {
-    setMemoModalId(item.memoId);
-    setShowMemoModal(true);
+  const handleViewMemo = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("🔍 View memo clicked", {
+      memoId: item.memoId,
+      hasModals: !!setShowMemoModal && !!setMemoModalId,
+    });
+    try {
+      setMemoModalId(item.memoId);
+      setShowMemoModal(true);
+      console.log("✅ Modal state set", { memoId: item.memoId });
+    } catch (error) {
+      console.error("❌ Error opening modal:", error);
+    }
   };
 
   const providerEntries = item.providers ?? item.platforms ?? [];

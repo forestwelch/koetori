@@ -106,15 +106,19 @@ export function ModalsContainer({
 
   // Debug logging
   useEffect(() => {
-    if (showMemoModal) {
-      console.log("Memo modal state:", {
+    if (showMemoModal || memoModalId) {
+      console.log("📋 Memo modal state:", {
         showMemoModal,
         memoModalId,
+        username,
         isLoadingMemo,
         hasData: !!memoModalData,
+        memoData: memoModalData
+          ? { id: memoModalData.id, title: memoModalData.extracted?.title }
+          : null,
       });
     }
-  }, [showMemoModal, memoModalId, isLoadingMemo, memoModalData]);
+  }, [showMemoModal, memoModalId, username, isLoadingMemo, memoModalData]);
 
   const { setCategoryFilter, setStarredOnly } = useFilters();
 

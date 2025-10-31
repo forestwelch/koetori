@@ -5,9 +5,44 @@ import { EnrichmentDashboard } from "../components/enrichment/EnrichmentDashboar
 import { useUser } from "../contexts/UserContext";
 import { LoadingState } from "../components/LoadingState";
 import { UsernameInput } from "../components/UsernameInput";
+import { ModalsContainer } from "../components/ModalsContainer";
+import { useMemoOperations } from "../hooks/useMemoOperations";
+import { useState } from "react";
+import { FeedbackService } from "../lib/feedback";
+import { FeedbackSubmission } from "../types/feedback";
 
 export default function DashboardPage() {
   const { username, isLoading } = useUser();
+  const [isArchivedModalOpen, setIsArchivedModalOpen] = useState(false);
+
+  // Minimal memo operations for viewing memos in modal
+  const {
+    editingId,
+    editText,
+    setEditText,
+    startEdit,
+    cancelEdit,
+    saveEdit,
+    softDelete,
+    toggleStar,
+    restoreMemo,
+    hardDelete,
+    handleCategoryChange,
+    handleSizeChange,
+    dismissReview,
+  } = useMemoOperations(username || "", async () => {});
+
+  const handleTextSubmit = async (text: string) => {
+    // No-op for dashboard
+  };
+
+  const handleFeedbackSubmit = async (feedback: FeedbackSubmission) => {
+    await FeedbackService.submitFeedback(feedback);
+  };
+
+  const handlePickRandomMemo = () => {
+    // No-op for dashboard
+  };
 
   if (isLoading) {
     return (
@@ -54,6 +89,30 @@ export default function DashboardPage() {
 
         <EnrichmentDashboard username={username} />
       </div>
+
+      {/* Modals Container for MemoModal */}
+      <ModalsContainer
+        editingId={editingId}
+        editText={editText}
+        setEditText={setEditText}
+        startEdit={startEdit}
+        cancelEdit={cancelEdit}
+        saveEdit={saveEdit}
+        softDelete={softDelete}
+        toggleStar={toggleStar}
+        restoreMemo={restoreMemo}
+        hardDelete={hardDelete}
+        onCategoryChange={handleCategoryChange}
+        onSizeChange={handleSizeChange}
+        dismissReview={dismissReview}
+        onTextSubmit={handleTextSubmit}
+        onFeedbackSubmit={handleFeedbackSubmit}
+        onPickRandomMemo={handlePickRandomMemo}
+        username={username}
+        isArchivedModalOpen={isArchivedModalOpen}
+        onOpenArchivedModal={() => setIsArchivedModalOpen(true)}
+        onCloseArchivedModal={() => setIsArchivedModalOpen(false)}
+      />
     </div>
   );
 }

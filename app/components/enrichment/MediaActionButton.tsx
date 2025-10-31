@@ -6,7 +6,7 @@ import Link from "next/link";
 interface MediaActionButtonProps {
   icon: LucideIcon;
   label: string;
-  onClick?: () => void;
+  onClick?: (e?: React.MouseEvent) => void;
   href?: string;
   disabled?: boolean;
   isLoading?: boolean;
@@ -66,7 +66,11 @@ export function MediaActionButton({
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onClick?.(e);
+      }}
       disabled={disabled || isLoading}
       aria-label={label}
       className={`${className} cursor-pointer`}
