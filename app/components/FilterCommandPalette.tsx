@@ -1,14 +1,9 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { X, Command } from "lucide-react";
+import { X, Command, Star, Sparkles } from "lucide-react";
 import { Category } from "../types/memo";
-import {
-  VIEW_FILTERS,
-  CATEGORY_FILTERS,
-  SIZE_FILTERS,
-  CATEGORY_ORDER,
-} from "../lib/filterMetadata";
+import { CATEGORY_FILTERS, CATEGORY_ORDER } from "../lib/filterMetadata";
 
 interface FilterOption {
   id: string;
@@ -17,23 +12,21 @@ interface FilterOption {
   icon: React.ComponentType<{ className?: string }>;
   colors: string;
   action: () => void;
-  type: "view" | "category" | "size";
+  type: "category" | "starred";
 }
 
 interface FilterCommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
-  setFilter: (filter: "all" | "review" | "archive" | "starred") => void;
   setCategoryFilter: (category: Category | "all") => void;
-  setSizeFilter: (size: "S" | "M" | "L" | "all") => void;
+  setStarredOnly: (value: boolean) => void;
 }
 
 export function FilterCommandPalette({
   isOpen,
   onClose,
-  setFilter,
   setCategoryFilter,
-  setSizeFilter,
+  setStarredOnly,
 }: FilterCommandPaletteProps) {
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -41,17 +34,6 @@ export function FilterCommandPalette({
 
   // Build filter options using the metadata
   const filterOptions: FilterOption[] = [
-    // View filters
-    ...VIEW_FILTERS.map((filter) => ({
-      id: `view-${filter.id}`,
-      label: filter.label,
-      searchTerms: filter.searchTerms,
-      icon: filter.icon,
-      colors: filter.colors,
-      type: "view" as const,
-      action: () =>
-        setFilter(filter.id as "all" | "review" | "archive" | "starred"),
-    })),
     // Category filters
     ...CATEGORY_ORDER.map((cat) => {
       const metadata = CATEGORY_FILTERS[cat];
@@ -65,16 +47,25 @@ export function FilterCommandPalette({
         action: () => setCategoryFilter(cat as Category | "all"),
       };
     }),
-    // Size filters
-    ...SIZE_FILTERS.map((filter) => ({
-      id: `size-${filter.id}`,
-      label: filter.label,
-      searchTerms: filter.searchTerms,
-      icon: filter.icon,
-      colors: filter.colors,
-      type: "size" as const,
-      action: () => setSizeFilter(filter.id as "S" | "M" | "L" | "all"),
-    })),
+    // Starred toggle options
+    {
+      id: "starred-only",
+      label: "Show starred only",
+      searchTerms: ["star", "favorite", "important"],
+      icon: Star,
+      colors: "from-amber-500/20 via-amber-400/20 to-amber-500/20",
+      type: "starred" as const,
+      action: () => setStarredOnly(true),
+    },
+    {
+      id: "starred-all",
+      label: "Show all memos",
+      searchTerms: ["all", "everything", "reset"],
+      icon: Sparkles,
+      colors: "from-indigo-500/20 via-purple-500/20 to-pink-500/20",
+      type: "starred" as const,
+      action: () => setStarredOnly(false),
+    },
   ];
 
   // Filter options based on query - partial matching

@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { Memo, Category } from "../types/memo";
 import { MemoItem } from "./MemoItem";
-import { useFilters } from "../contexts/FilterContext";
 
 interface MemosListProps {
   memos: Memo[];
@@ -24,6 +23,7 @@ interface MemosListProps {
     oldCategory: Category
   ) => void;
   onSizeChange: (memoId: string, newSize: "S" | "M" | "L" | null) => void;
+  dismissReview: (memoId: string) => void;
   expandedId: string | null;
   setExpandedId: (id: string | null) => void;
 }
@@ -43,11 +43,10 @@ export function MemosList({
   hardDelete,
   onCategoryChange,
   onSizeChange,
+  dismissReview,
   expandedId,
   setExpandedId,
 }: MemosListProps) {
-  const { filter } = useFilters();
-
   // Auto-expand when exactly 1 memo matches filters
   useEffect(() => {
     if (memos.length === 1) {
@@ -67,7 +66,6 @@ export function MemosList({
             key={memo.id}
             memo={memo}
             isNew={isNew}
-            filter={filter}
             editingId={editingId}
             editText={editText}
             setEditText={setEditText}
@@ -80,6 +78,7 @@ export function MemosList({
             hardDelete={hardDelete}
             onCategoryChange={onCategoryChange}
             onSizeChange={onSizeChange}
+            dismissReview={dismissReview}
             isExpanded={expandedId === memo.id}
             onToggleExpand={() =>
               setExpandedId(expandedId === memo.id ? null : memo.id)

@@ -30,7 +30,7 @@ export default function MemoFilters({
   setOpenDropdown,
 }: MemoFiltersProps) {
   return (
-    <div className="flex gap-2 flex-wrap items-center justify-start">
+    <div className="hidden md:flex gap-2 flex-wrap items-center justify-start">
       {/* Main View Filter */}
       <div className="relative group">
         <Button

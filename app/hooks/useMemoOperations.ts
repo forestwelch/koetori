@@ -27,11 +27,25 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
         return;
       }
 
+      // Get current memo to check if it needs review
+      const { data: memo } = await supabase
+        .from("memos")
+        .select("needs_review")
+        .eq("id", id)
+        .single();
+
+      const updateData: { transcript: string; needs_review?: boolean } = {
+        transcript: editText,
+      };
+
+      // Auto-dismiss review when memo is edited
+      if (memo?.needs_review) {
+        updateData.needs_review = false;
+      }
+
       const { error } = await supabase
         .from("memos")
-        .update({
-          transcript: editText,
-        })
+        .update(updateData)
         .eq("id", id)
         .eq("username", username);
 
@@ -133,11 +147,25 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
     async (memoId: string, newCategory: Category, oldCategory: Category) => {
       if (newCategory === oldCategory) return;
 
+      // Get current memo to check if it needs review
+      const { data: memo } = await supabase
+        .from("memos")
+        .select("needs_review")
+        .eq("id", memoId)
+        .single();
+
+      const updateData: { category: Category; needs_review?: boolean } = {
+        category: newCategory,
+      };
+
+      // Auto-dismiss review when category is changed
+      if (memo?.needs_review) {
+        updateData.needs_review = false;
+      }
+
       const { error } = await supabase
         .from("memos")
-        .update({
-          category: newCategory,
-        })
+        .update(updateData)
         .eq("id", memoId)
         .eq("username", username);
 
@@ -171,6 +199,26 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
     [username, refetchMemos]
   );
 
+  const dismissReview = useCallback(
+    async (memoId: string) => {
+      const { error } = await supabase
+        .from("memos")
+        .update({
+          needs_review: false,
+        })
+        .eq("id", memoId)
+        .eq("username", username);
+
+      if (error) {
+        console.error("Error dismissing review:", error);
+        alert("Failed to dismiss review");
+      } else {
+        refetchMemos();
+      }
+    },
+    [username, refetchMemos]
+  );
+
   return {
     editingId,
     editText,
@@ -188,5 +236,6 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
     hardDelete,
     handleCategoryChange,
     handleSizeChange,
+    dismissReview,
   };
 }

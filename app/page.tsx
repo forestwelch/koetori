@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { supabase } from "./lib/supabase";
 import { Memo } from "./types/memo";
 import { useVoiceRecorder } from "./hooks/useVoiceRecorder";
@@ -22,17 +22,20 @@ import { MemosList } from "./components/MemosList";
 import { ActionButtons } from "./components/ActionButtons";
 import { ModalsContainer } from "./components/ModalsContainer";
 import { QuickFilters } from "./components/QuickFilters";
+import { FiltersDrawer } from "./components/FiltersDrawer";
 import { KoetoriExplanation } from "./components/KoetoriExplanation";
+import { Filter, Star } from "lucide-react";
 
 export default function Home() {
+  const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false);
+  const [isArchivedModalOpen, setIsArchivedModalOpen] = useState(false);
+
   const { username, isLoading: userLoading } = useUser();
   const {
-    filter,
     categoryFilter,
-    sizeFilter,
-    setFilter,
+    starredOnly,
     setCategoryFilter,
-    setSizeFilter,
+    setStarredOnly,
     isSpotlightMode,
     setIsSpotlightMode,
   } = useFilters();
@@ -53,9 +56,8 @@ export default function Home() {
     refetch: refetchMemos,
   } = useMemosQuery({
     username: username || "",
-    filter,
     categoryFilter,
-    sizeFilter,
+    starredOnly,
   });
 
   // Memo operations
@@ -76,6 +78,7 @@ export default function Home() {
     hardDelete,
     handleCategoryChange,
     handleSizeChange,
+    dismissReview,
   } = useMemoOperations(username || "", refetchMemos);
 
   // Voice recording
@@ -277,16 +280,55 @@ export default function Home() {
 
         {/* Filters Section */}
         <div className="max-w-5xl mx-auto mb-8 relative z-40">
-          <QuickFilters
-            filter={filter}
-            setFilter={setFilter}
-            categoryFilter={categoryFilter}
-            setCategoryFilter={setCategoryFilter}
-            sizeFilter={sizeFilter}
-            setSizeFilter={setSizeFilter}
-            isSpotlighted={isSpotlightMode}
-            onFilterClick={() => setIsSpotlightMode(false)}
-          />
+          <div className="flex items-center gap-4">
+            {/* Star Toggle */}
+            <button
+              onClick={() => setStarredOnly(!starredOnly)}
+              className={`p-2 rounded-xl transition-all ${
+                starredOnly
+                  ? "bg-amber-500/20 border border-amber-500/40 text-amber-400"
+                  : "bg-[#0d0e14]/40 border border-slate-700/20 text-slate-400 hover:bg-slate-700/30"
+              }`}
+              aria-label={starredOnly ? "Show all memos" : "Show starred only"}
+            >
+              <Star className="w-5 h-5" />
+            </button>
+
+            {/* Drawer Trigger (mobile + tablet) */}
+            <button
+              onClick={() => setIsFiltersDrawerOpen(true)}
+              className="lg:hidden flex-1 px-4 py-3 bg-[#0a0b0f]/70 backdrop-blur-xl border border-slate-700/40 rounded-2xl text-[#cbd5e1] hover:bg-[#0a0b0f]/90 transition-all flex items-center gap-3 group"
+              aria-label="Open filters"
+            >
+              <div className="relative flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500/20 via-fuchsia-500/10 to-purple-500/20 border border-indigo-500/30">
+                <Filter className="w-4 h-4 text-indigo-300" />
+                {categoryFilter !== "all" && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-4 px-1 rounded-full bg-emerald-500/90 text-[10px] font-semibold text-white flex items-center justify-center shadow-lg">
+                    1
+                  </span>
+                )}
+              </div>
+              <div className="flex-1 text-left">
+                <div className="text-sm font-medium">Filters</div>
+                <div className="text-xs text-[#94a3b8] truncate">
+                  {categoryFilter === "all"
+                    ? "All categories"
+                    : `Category: ${categoryFilter}`}
+                </div>
+              </div>
+              <span className="text-xs text-[#94a3b8] opacity-0 group-hover:opacity-100 transition-opacity">
+                Tap to change
+              </span>
+            </button>
+
+            {/* Desktop Filters - Categories Only */}
+            <QuickFilters
+              categoryFilter={categoryFilter}
+              setCategoryFilter={setCategoryFilter}
+              isSpotlighted={isSpotlightMode}
+              onFilterClick={() => setIsSpotlightMode(false)}
+            />
+          </div>
         </div>
 
         {/* Memos Content */}
@@ -319,6 +361,7 @@ export default function Home() {
               hardDelete={hardDelete}
               onCategoryChange={handleCategoryChange}
               onSizeChange={handleSizeChange}
+              dismissReview={dismissReview}
               expandedId={expandedId}
               setExpandedId={setExpandedId}
             />
@@ -352,6 +395,18 @@ export default function Home() {
         onTextSubmit={handleTextSubmit}
         onFeedbackSubmit={handleFeedbackSubmit}
         onPickRandomMemo={handlePickRandomMemo}
+        username={username || ""}
+        isArchivedModalOpen={isArchivedModalOpen}
+        onOpenArchivedModal={() => setIsArchivedModalOpen(true)}
+        onCloseArchivedModal={() => setIsArchivedModalOpen(false)}
+      />
+
+      {/* Mobile/Tablet Filters Drawer */}
+      <FiltersDrawer
+        isOpen={isFiltersDrawerOpen}
+        onClose={() => setIsFiltersDrawerOpen(false)}
+        categoryFilter={categoryFilter}
+        setCategoryFilter={setCategoryFilter}
       />
     </div>
   );

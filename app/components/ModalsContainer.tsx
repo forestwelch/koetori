@@ -5,6 +5,7 @@ import { TextInputModal } from "./TextInputModal";
 import { RandomMemoModal } from "./RandomMemoModal";
 import { FeedbackModal } from "./FeedbackModal";
 import { SettingsModal } from "./SettingsModal";
+import { ArchivedMemosModal } from "./ArchivedMemosModal";
 import { FilterCommandPalette } from "./FilterCommandPalette";
 import { useModals } from "../contexts/ModalContext";
 import { useFilters } from "../contexts/FilterContext";
@@ -38,6 +39,10 @@ interface ModalsContainerProps {
 
   // Random memo
   onPickRandomMemo: () => void;
+  username: string;
+  isArchivedModalOpen: boolean;
+  onOpenArchivedModal: () => void;
+  onCloseArchivedModal: () => void;
 }
 
 export function ModalsContainer({
@@ -56,6 +61,10 @@ export function ModalsContainer({
   onTextSubmit,
   onFeedbackSubmit,
   onPickRandomMemo,
+  username,
+  isArchivedModalOpen,
+  onOpenArchivedModal,
+  onCloseArchivedModal,
 }: ModalsContainerProps) {
   const {
     showSearch,
@@ -81,7 +90,7 @@ export function ModalsContainer({
     setShowCommandPalette,
   } = useModals();
 
-  const { setFilter, setCategoryFilter, setSizeFilter } = useFilters();
+  const { setCategoryFilter, setStarredOnly } = useFilters();
 
   return (
     <>
@@ -146,15 +155,24 @@ export function ModalsContainer({
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
         setShowFeedback={setShowFeedback}
+        onOpenArchive={onOpenArchivedModal}
       />
 
       {/* Filter Command Palette */}
       <FilterCommandPalette
         isOpen={showCommandPalette}
         onClose={() => setShowCommandPalette(false)}
-        setFilter={setFilter}
         setCategoryFilter={setCategoryFilter}
-        setSizeFilter={setSizeFilter}
+        setStarredOnly={setStarredOnly}
+      />
+
+      {/* Archived Memos */}
+      <ArchivedMemosModal
+        isOpen={isArchivedModalOpen}
+        onClose={onCloseArchivedModal}
+        username={username}
+        restoreMemo={restoreMemo}
+        hardDelete={hardDelete}
       />
     </>
   );

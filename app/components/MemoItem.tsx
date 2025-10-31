@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { Memo, Category } from "../types/memo";
 
 import { CategoryBadge } from "./CategoryBadge";
-import { Archive, Star, Edit2 } from "lucide-react";
+import { Archive, Star, Edit2, AlertCircle, X } from "lucide-react";
 import { CategorySelector } from "./CategorySelector";
 import { Button } from "./ui/Button";
 
@@ -15,7 +15,6 @@ import { FullRecordingModal } from "./FullRecordingModal";
 interface MemoItemProps {
   memo: Memo;
   isNew: boolean;
-  filter: "all" | "review" | "archive" | "starred";
   editingId: string | null;
   editText: string;
   setEditText: (text: string) => void;
@@ -32,6 +31,7 @@ interface MemoItemProps {
     oldCategory: Category
   ) => void;
   onSizeChange?: (memoId: string, newSize: "S" | "M" | "L" | null) => void;
+  dismissReview: (memoId: string) => void;
   // Search props
   searchQuery?: string;
   isSearchMode?: boolean;
@@ -43,7 +43,6 @@ interface MemoItemProps {
 export function MemoItem({
   memo,
   isNew,
-  filter,
   editingId,
   editText,
   setEditText,
@@ -55,6 +54,8 @@ export function MemoItem({
   restoreMemo,
   hardDelete,
   onCategoryChange,
+  onSizeChange,
+  dismissReview,
   searchQuery,
   isSearchMode = false,
   isExpanded: controlledExpanded,
@@ -73,13 +74,12 @@ export function MemoItem({
     onToggleExpand || (() => setLocalExpanded(!localExpanded));
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (filter === "archive") return;
     startX.current = e.touches[0].clientX;
     setIsSwiping(true);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isSwiping || filter === "archive") return;
+    if (!isSwiping) return;
     const currentX = e.touches[0].clientX;
     const diff = currentX - startX.current;
 
@@ -92,7 +92,6 @@ export function MemoItem({
   };
 
   const handleTouchEnd = () => {
-    if (filter === "archive") return;
     if (Math.abs(swipeX) > 100) {
       if (swipeX < 0) {
         toggleStar(memo.id, memo.starred || false);
@@ -204,7 +203,7 @@ export function MemoItem({
           <div className="flex items-center gap-3">
             {/* Category - clickable badge that opens selector when expanded, static badge when collapsed */}
             <div onClick={(e) => e.stopPropagation()}>
-              {isExpanded && filter !== "archive" ? (
+              {isExpanded ? (
                 <CategorySelector
                   currentCategory={memo.category}
                   memoId={memo.id}
@@ -214,6 +213,32 @@ export function MemoItem({
                 <CategoryBadge category={memo.category} />
               )}
             </div>
+
+            {/* Review Indicator - Show prominently if needs review */}
+            {memo.needs_review && (
+              <div
+                className="flex items-center gap-2 px-2.5 py-1 bg-fuchsia-500/20 border border-fuchsia-500/40 rounded-lg backdrop-blur-sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  dismissReview(memo.id);
+                }}
+              >
+                <AlertCircle className="w-3.5 h-3.5 text-fuchsia-400" />
+                <span className="text-[10px] font-medium text-fuchsia-300">
+                  Review
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    dismissReview(memo.id);
+                  }}
+                  className="ml-1 p-0.5 hover:bg-fuchsia-500/30 rounded transition-colors"
+                  aria-label="Dismiss review"
+                >
+                  <X className="w-3 h-3 text-fuchsia-400" />
+                </button>
+              </div>
+            )}
 
             {/* Summary */}
             <div className="flex-1 min-w-0">
@@ -304,55 +329,53 @@ export function MemoItem({
             </div>
 
             {/* Actions - Star always visible, Edit and Archive on desktop hover only */}
-            <div
-              className="flex items-center gap-1 flex-shrink-0"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {filter !== "archive" ? (
-                <>
-                  {!isEditing && (
-                    <Button
-                      onClick={() => {
-                        if (!isExpanded) {
-                          if (!isExpanded && onToggleExpand) {
-                            onToggleExpand();
-                          } else if (!isExpanded) {
-                            setLocalExpanded(true);
-                          }
-                        }
-                        startEdit(memo);
-                      }}
-                      variant="unstyled"
-                      size="custom"
-                      aria-label="Edit"
-                      className="hidden sm:block p-1.5 hover:bg-slate-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-                    >
-                      <Edit2 className="w-4 h-4 text-slate-400" />
-                    </Button>
-                  )}
+            {!memo.needs_review && (
+              <div
+                className="flex items-center gap-1 flex-shrink-0"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {!isEditing && (
                   <Button
-                    onClick={() => softDelete(memo.id)}
+                    onClick={() => {
+                      if (!isExpanded) {
+                        if (!isExpanded && onToggleExpand) {
+                          onToggleExpand();
+                        } else if (!isExpanded) {
+                          setLocalExpanded(true);
+                        }
+                      }
+                      startEdit(memo);
+                    }}
                     variant="unstyled"
                     size="custom"
-                    aria-label="Archive"
+                    aria-label="Edit"
                     className="hidden sm:block p-1.5 hover:bg-slate-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                   >
-                    <Archive className="w-4 h-4 text-slate-400" />
+                    <Edit2 className="w-4 h-4 text-slate-400" />
                   </Button>
-                  <Button
-                    onClick={() => toggleStar(memo.id, memo.starred || false)}
-                    variant="unstyled"
-                    size="custom"
-                    aria-label={memo.starred ? "Unstar" : "Star"}
-                    className="p-1.5 hover:bg-amber-500/10 rounded-lg transition-colors"
-                  >
-                    <Star
-                      className={`w-4 h-4 ${memo.starred ? "text-amber-400 fill-amber-400" : "text-slate-400"}`}
-                    />
-                  </Button>
-                </>
-              ) : null}
-            </div>
+                )}
+                <Button
+                  onClick={() => softDelete(memo.id)}
+                  variant="unstyled"
+                  size="custom"
+                  aria-label="Archive"
+                  className="hidden sm:block p-1.5 hover:bg-slate-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                >
+                  <Archive className="w-4 h-4 text-slate-400" />
+                </Button>
+                <Button
+                  onClick={() => toggleStar(memo.id, memo.starred || false)}
+                  variant="unstyled"
+                  size="custom"
+                  aria-label={memo.starred ? "Unstar" : "Star"}
+                  className="p-1.5 hover:bg-amber-500/10 rounded-lg transition-colors"
+                >
+                  <Star
+                    className={`w-4 h-4 ${memo.starred ? "text-amber-400 fill-amber-400" : "text-slate-400"}`}
+                  />
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Expanded details */}
@@ -561,20 +584,6 @@ export function MemoItem({
                     </span>
                   ))}
                 </div>
-              )}
-
-              {/* Archive actions (only in archive view) */}
-              {filter === "archive" && (
-                <MemoActions
-                  memo={memo}
-                  filter={filter}
-                  isEditing={isEditing}
-                  startEdit={startEdit}
-                  toggleStar={toggleStar}
-                  handleArchive={softDelete}
-                  handleRestore={restoreMemo}
-                  handleDeleteForever={hardDelete}
-                />
               )}
             </div>
           )}

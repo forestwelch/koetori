@@ -6,9 +6,8 @@ import { Memo, Category } from "../types/memo";
 
 interface MemoFilters {
   username: string;
-  filter: "all" | "review" | "archive" | "starred";
   categoryFilter: Category | "all";
-  sizeFilter: "S" | "M" | "L" | "all";
+  starredOnly: boolean;
 }
 
 async function fetchMemos(filters: MemoFilters): Promise<Memo[]> {
@@ -16,29 +15,30 @@ async function fetchMemos(filters: MemoFilters): Promise<Memo[]> {
     .from("memos")
     .select("*")
     .eq("username", filters.username)
-    .order("timestamp", { ascending: false });
+    .is("deleted_at", null); // Only show non-deleted memos
 
-  // Apply filters
-  if (filters.filter === "archive") {
-    query = query.not("deleted_at", "is", null);
-  } else if (filters.filter === "starred") {
-    query = query.eq("starred", true).is("deleted_at", null);
-  } else if (filters.filter === "review") {
-    query = query.eq("needs_review", true).is("deleted_at", null);
-  } else {
-    // "all" - only show non-deleted memos
-    query = query.is("deleted_at", null);
+  // Apply starred filter
+  if (filters.starredOnly) {
+    query = query.eq("starred", true);
   }
 
+  // Apply category filter
   if (filters.categoryFilter !== "all") {
     query = query.eq("category", filters.categoryFilter);
   }
 
-  if (filters.sizeFilter !== "all") {
-    query = query.eq("size", filters.sizeFilter);
-  }
-
   const { data, error } = await query;
+
+  // Sort: review items first, then by timestamp
+  if (data) {
+    data.sort((a, b) => {
+      // Review items always come first
+      if (a.needs_review && !b.needs_review) return -1;
+      if (!a.needs_review && b.needs_review) return 1;
+      // Then by timestamp (newest first)
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+    });
+  }
 
   if (error) {
     throw new Error(`Failed to fetch memos: ${error.message}`);

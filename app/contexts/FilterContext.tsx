@@ -13,12 +13,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Category } from "../types/memo";
 
 interface FilterContextType {
-  filter: "all" | "review" | "archive" | "starred";
   categoryFilter: Category | "all";
-  sizeFilter: "S" | "M" | "L" | "all";
-  setFilter: (filter: "all" | "review" | "archive" | "starred") => void;
+  starredOnly: boolean;
   setCategoryFilter: (category: Category | "all") => void;
-  setSizeFilter: (size: "S" | "M" | "L" | "all") => void;
+  setStarredOnly: (starred: boolean) => void;
   resetFilters: () => void;
   isSpotlightMode: boolean;
   setIsSpotlightMode: (mode: boolean) => void;
@@ -31,27 +29,20 @@ function FilterProviderInner({ children }: { children: ReactNode }) {
   const searchParams = useSearchParams();
 
   // Initialize filters from URL params
-  const [filter, setFilterState] = useState<
-    "all" | "review" | "archive" | "starred"
-  >(
-    (searchParams.get("view") as "all" | "review" | "archive" | "starred") ||
-      "all"
-  );
   const [categoryFilter, setCategoryFilterState] = useState<Category | "all">(
-    (searchParams.get("type") as Category | "all") || "all"
+    (searchParams.get("category") as Category | "all") || "all"
   );
-  const [sizeFilter, setSizeFilterState] = useState<"S" | "M" | "L" | "all">(
-    (searchParams.get("size") as "S" | "M" | "L" | "all") || "all"
+  const [starredOnly, setStarredOnlyState] = useState<boolean>(
+    searchParams.get("starred") === "true"
   );
   const [isSpotlightMode, setIsSpotlightMode] = useState(false);
 
   // Update URL when filters change
   const updateURL = useCallback(
-    (view: string, type: string, size: string) => {
+    (category: string, starred: boolean) => {
       const params = new URLSearchParams();
-      if (view !== "all") params.set("view", view);
-      if (type !== "all") params.set("type", type);
-      if (size !== "all") params.set("size", size);
+      if (category !== "all") params.set("category", category);
+      if (starred) params.set("starred", "true");
 
       const query = params.toString();
       router.push(query ? `?${query}` : "/", { scroll: false });
@@ -60,57 +51,44 @@ function FilterProviderInner({ children }: { children: ReactNode }) {
   );
 
   // Wrapper functions that update both state and URL
-  const setFilter = useCallback(
-    (newFilter: "all" | "review" | "archive" | "starred") => {
-      setFilterState(newFilter);
-      updateURL(newFilter, categoryFilter, sizeFilter);
-    },
-    [categoryFilter, sizeFilter, updateURL]
-  );
-
   const setCategoryFilter = useCallback(
     (newCategory: Category | "all") => {
       setCategoryFilterState(newCategory);
-      updateURL(filter, newCategory, sizeFilter);
+      updateURL(newCategory, starredOnly);
     },
-    [filter, sizeFilter, updateURL]
+    [starredOnly, updateURL]
   );
 
-  const setSizeFilter = useCallback(
-    (newSize: "S" | "M" | "L" | "all") => {
-      setSizeFilterState(newSize);
-      updateURL(filter, categoryFilter, newSize);
+  const setStarredOnly = useCallback(
+    (starred: boolean) => {
+      setStarredOnlyState(starred);
+      updateURL(categoryFilter, starred);
     },
-    [filter, categoryFilter, updateURL]
+    [categoryFilter, updateURL]
   );
 
   const resetFilters = useCallback(() => {
-    setFilterState("all");
     setCategoryFilterState("all");
-    setSizeFilterState("all");
-    updateURL("all", "all", "all");
+    setStarredOnlyState(false);
+    updateURL("all", false);
   }, [updateURL]);
 
   // Sync with URL changes (e.g., browser back/forward)
   useEffect(() => {
-    const view = searchParams.get("view") || "all";
-    const type = searchParams.get("type") || "all";
-    const size = searchParams.get("size") || "all";
+    const category = searchParams.get("category") || "all";
+    const starred = searchParams.get("starred") === "true";
 
-    setFilterState(view as "all" | "review" | "archive" | "starred");
-    setCategoryFilterState(type as Category | "all");
-    setSizeFilterState(size as "S" | "M" | "L" | "all");
+    setCategoryFilterState(category as Category | "all");
+    setStarredOnlyState(starred);
   }, [searchParams]);
 
   return (
     <FilterContext.Provider
       value={{
-        filter,
         categoryFilter,
-        sizeFilter,
-        setFilter,
+        starredOnly,
         setCategoryFilter,
-        setSizeFilter,
+        setStarredOnly,
         resetFilters,
         isSpotlightMode,
         setIsSpotlightMode,

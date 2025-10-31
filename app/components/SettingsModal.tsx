@@ -1,18 +1,20 @@
 "use client";
 
-import { Bug, LogOut, Github, X } from "lucide-react";
+import { Bug, LogOut, Github, X, Archive } from "lucide-react";
 import { Button } from "./ui/Button";
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   setShowFeedback: (show: boolean) => void;
+  onOpenArchive: () => void;
 }
 
 export function SettingsModal({
   isOpen,
   onClose,
   setShowFeedback,
+  onOpenArchive,
 }: SettingsModalProps) {
   const handleLogout = () => {
     localStorage.removeItem("koetori_username");
@@ -57,6 +59,21 @@ export function SettingsModal({
 
         {/* Content */}
         <div className="p-6 space-y-3">
+          {/* Archived Memos */}
+          <Button
+            onClick={() => {
+              onClose();
+              onOpenArchive();
+            }}
+            variant="unstyled"
+            size="custom"
+            aria-label="View archived memos"
+            className="w-full flex items-center gap-3 text-slate-300 hover:text-white transition-all p-4 rounded-xl bg-slate-800/30 hover:bg-slate-700/50 backdrop-blur-sm group border border-slate-700/30"
+          >
+            <Archive className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
+            <span className="text-sm font-medium">Archived memos</span>
+          </Button>
+
           {/* Bug Report Button */}
           <Button
             onClick={handleBugReport}
