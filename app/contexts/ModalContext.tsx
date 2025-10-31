@@ -40,6 +40,12 @@ interface ModalContextType {
   showCommandPalette: boolean;
   setShowCommandPalette: (show: boolean) => void;
 
+  // Memo Modal
+  showMemoModal: boolean;
+  setShowMemoModal: (show: boolean) => void;
+  memoModalId: string | null;
+  setMemoModalId: (id: string | null) => void;
+
   // Helper to close all modals
   closeAllModals: () => void;
 }
@@ -71,6 +77,10 @@ export function ModalProvider({ children }: { children: ReactNode }) {
   // Command Palette
   const [showCommandPalette, setShowCommandPalette] = useState(false);
 
+  // Memo Modal
+  const [showMemoModal, setShowMemoModal] = useState(false);
+  const [memoModalId, setMemoModalId] = useState<string | null>(null);
+
   const closeAllModals = () => {
     setShowSearch(false);
     setShowTextInput(false);
@@ -78,6 +88,8 @@ export function ModalProvider({ children }: { children: ReactNode }) {
     setShowFeedback(false);
     setShowSettings(false);
     setShowCommandPalette(false);
+    setShowMemoModal(false);
+    setMemoModalId(null);
   };
 
   return (
@@ -107,6 +119,10 @@ export function ModalProvider({ children }: { children: ReactNode }) {
         setShowSettings,
         showCommandPalette,
         setShowCommandPalette,
+        showMemoModal,
+        setShowMemoModal,
+        memoModalId,
+        setMemoModalId,
         closeAllModals,
       }}
     >

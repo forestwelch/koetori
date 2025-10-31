@@ -102,6 +102,28 @@ export default function Home() {
   // Search functionality
   useSearch(username || "");
 
+  // Hash navigation - handle memo links like /#memo-123
+  const { setShowMemoModal, setMemoModalId } = useModals();
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      if (hash && hash.startsWith("#memo-")) {
+        const memoId = hash.replace("#memo-", "");
+        if (memoId) {
+          setMemoModalId(memoId);
+          setShowMemoModal(true);
+        }
+      }
+    };
+
+    // Check on mount
+    handleHashChange();
+
+    // Listen for hash changes
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, [setShowMemoModal, setMemoModalId]);
+
   // Reload memos when processing completes (new memo saved)
   useEffect(() => {
     if (!isProcessing && !isRecording && !voiceError && voiceMemoId) {

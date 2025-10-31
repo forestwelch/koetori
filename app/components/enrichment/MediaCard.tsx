@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { MediaActionButton } from "./MediaActionButton";
+import { useModals } from "../../contexts/ModalContext";
 
 const TYPE_META: Record<string, { icon: LucideIcon; label: string }> = {
   movie: { icon: Film, label: "Movie" },
@@ -54,8 +55,14 @@ export function MediaCard({
   isRemoving = false,
   refreshingId,
 }: MediaCardProps) {
+  const { setShowMemoModal, setMemoModalId } = useModals();
   const typeMeta = TYPE_META[item.mediaType ?? "unknown"] ?? TYPE_META.unknown;
   const TypeIcon = typeMeta.icon;
+
+  const handleViewMemo = () => {
+    setMemoModalId(item.memoId);
+    setShowMemoModal(true);
+  };
 
   const providerEntries = item.providers ?? item.platforms ?? [];
   const hasProviders = providerEntries.length > 0;
@@ -173,7 +180,7 @@ export function MediaCard({
           <MediaActionButton
             icon={Eye}
             label="View source memo"
-            href={{ pathname: "/", hash: `memo-${item.memoId}` }}
+            onClick={handleViewMemo}
             variant="default"
           />
           {item.externalUrl && (

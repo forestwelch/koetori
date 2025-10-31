@@ -7,10 +7,14 @@ import { FeedbackModal } from "./FeedbackModal";
 import { SettingsModal } from "./SettingsModal";
 import { ArchivedMemosModal } from "./ArchivedMemosModal";
 import { FilterCommandPalette } from "./FilterCommandPalette";
+import { MemoModal } from "./MemoModal";
+import { Modal } from "./ui/Modal";
 import { useModals } from "../contexts/ModalContext";
 import { useFilters } from "../contexts/FilterContext";
+import { useMemoById } from "../hooks/useMemoById";
 import { Memo, Category } from "../types/memo";
 import { FeedbackSubmission } from "../types/feedback";
+import { useEffect } from "react";
 
 interface ModalsContainerProps {
   // Search modal props
@@ -90,7 +94,27 @@ export function ModalsContainer({
     setShowSettings,
     showCommandPalette,
     setShowCommandPalette,
+    showMemoModal,
+    setShowMemoModal,
+    memoModalId,
   } = useModals();
+
+  const { data: memoModalData, isLoading: isLoadingMemo } = useMemoById(
+    memoModalId,
+    username
+  );
+
+  // Debug logging
+  useEffect(() => {
+    if (showMemoModal) {
+      console.log("Memo modal state:", {
+        showMemoModal,
+        memoModalId,
+        isLoadingMemo,
+        hasData: !!memoModalData,
+      });
+    }
+  }, [showMemoModal, memoModalId, isLoadingMemo, memoModalData]);
 
   const { setCategoryFilter, setStarredOnly } = useFilters();
 
@@ -177,6 +201,46 @@ export function ModalsContainer({
         restoreMemo={restoreMemo}
         hardDelete={hardDelete}
       />
+
+      {/* Memo Modal */}
+      {showMemoModal && (
+        <>
+          {isLoadingMemo ? (
+            <Modal
+              isOpen={true}
+              onClose={() => {
+                setShowMemoModal(false);
+                setMemoModalId(null);
+              }}
+              title="Loading..."
+            >
+              <div className="text-center py-8">Loading memo...</div>
+            </Modal>
+          ) : (
+            <MemoModal
+              isOpen={!!memoModalData}
+              onClose={() => {
+                setShowMemoModal(false);
+                setMemoModalId(null);
+              }}
+              memo={memoModalData ?? null}
+              editingId={editingId}
+              editText={editText}
+              setEditText={setEditText}
+              startEdit={startEdit}
+              cancelEdit={cancelEdit}
+              saveEdit={saveEdit}
+              softDelete={softDelete}
+              toggleStar={toggleStar}
+              restoreMemo={restoreMemo}
+              hardDelete={hardDelete}
+              onCategoryChange={onCategoryChange}
+              onSizeChange={onSizeChange}
+              dismissReview={dismissReview}
+            />
+          )}
+        </>
+      )}
     </>
   );
 }
