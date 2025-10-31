@@ -53,41 +53,57 @@ async function upsertMediaItem(
 ) {
   const draft = result.draft;
   const payload = result.payload;
-  const { error } = await supabase.from("media_items").upsert(
-    {
-      memo_id: payload.memoId,
-      title: draft.autoTitle ?? draft.title,
-      auto_title: draft.autoTitle ?? draft.title,
-      custom_title: draft.customTitle ?? payload.overrideTitle ?? null,
-      release_year: draft.releaseYear ?? null,
-      auto_release_year: draft.autoReleaseYear ?? draft.releaseYear ?? null,
-      custom_release_year:
-        draft.customReleaseYear ?? payload.overrideYear ?? null,
-      runtime_minutes: draft.runtimeMinutes ?? null,
-      poster_url: draft.posterUrl ?? null,
-      backdrop_url: draft.backdropUrl ?? null,
-      overview: draft.overview ?? null,
-      trailer_url: draft.trailerUrl ?? null,
-      platforms: draft.platforms ?? null,
-      providers: draft.providers ?? null,
-      genres: draft.genres ?? null,
-      tmdb_id: draft.tmdbId ?? null,
-      imdb_id: draft.imdbId ?? null,
-      media_type: draft.mediaType ?? null,
-      ratings: draft.ratings ?? null,
-      search_debug: draft.searchDebug ?? null,
-      source: draft.source ?? null,
-      external_url: draft.externalUrl ?? null,
-      time_to_beat_minutes: draft.timeToBeatMinutes ?? null,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "memo_id" }
-  );
+  const mediaData = {
+    memo_id: payload.memoId,
+    title: draft.autoTitle ?? draft.title,
+    auto_title: draft.autoTitle ?? draft.title,
+    custom_title: draft.customTitle ?? payload.overrideTitle ?? null,
+    release_year: draft.releaseYear ?? null,
+    auto_release_year: draft.autoReleaseYear ?? draft.releaseYear ?? null,
+    custom_release_year:
+      draft.customReleaseYear ?? payload.overrideYear ?? null,
+    runtime_minutes: draft.runtimeMinutes ?? null,
+    poster_url: draft.posterUrl ?? null,
+    backdrop_url: draft.backdropUrl ?? null,
+    overview: draft.overview ?? null,
+    trailer_url: draft.trailerUrl ?? null,
+    platforms: draft.platforms ?? null,
+    providers: draft.providers ?? null,
+    genres: draft.genres ?? null,
+    tmdb_id: draft.tmdbId ?? null,
+    imdb_id: draft.imdbId ?? null,
+    media_type: draft.mediaType ?? null,
+    ratings: draft.ratings ?? null,
+    search_debug: draft.searchDebug ?? null,
+    source: draft.source ?? null,
+    external_url: draft.externalUrl ?? null,
+    time_to_beat_minutes: draft.timeToBeatMinutes ?? null,
+    updated_at: new Date().toISOString(),
+  };
+
+  // Debug logging for overview persistence
+  console.debug("[persistence] saving media item overview", {
+    memoId: payload.memoId,
+    title: mediaData.title,
+    overviewLength: mediaData.overview?.length ?? 0,
+    overviewPreview: mediaData.overview?.slice(0, 100) ?? null,
+    hasOverview: !!mediaData.overview,
+  });
+
+  const { error } = await supabase.from("media_items").upsert(mediaData, {
+    onConflict: "memo_id",
+  });
 
   if (error) {
     console.error("[enrichment] failed to upsert media item", {
       memoId: payload.memoId,
       error: error.message,
+    });
+  } else {
+    console.debug("[persistence] media item saved successfully", {
+      memoId: payload.memoId,
+      title: mediaData.title,
+      overviewLength: mediaData.overview?.length ?? 0,
     });
   }
 }

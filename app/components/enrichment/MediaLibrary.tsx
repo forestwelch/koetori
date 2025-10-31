@@ -1,24 +1,24 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { MediaItem } from "../../types/enrichment";
-import {
-  Loader2,
-  Wand2,
-  Trash2,
-  Sparkles,
-  Film,
-  Tv,
-  Gamepad2,
-  BookOpen,
-  Music4,
-  ExternalLink,
-  Eye,
-} from "lucide-react";
+import { Sparkles, Film, Tv, Gamepad2, BookOpen, Music4 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { MediaCard } from "./MediaCard";
+import { FixMatchModal } from "./FixMatchModal";
+
+function formatTimeToBeat(minutes: number | null): string | null {
+  if (!minutes || minutes <= 0) return null;
+  if (minutes >= 60) {
+    const hours = Math.floor(minutes / 60);
+    const remaining = minutes % 60;
+    if (remaining === 0) {
+      return `${hours}h`;
+    }
+    return `${hours}h ${remaining}m`;
+  }
+  return `${minutes}m`;
+}
 
 interface MediaLibraryProps {
   items: MediaItem[];
@@ -37,8 +37,6 @@ interface MediaLibraryProps {
 
 type MediaFilter = "all" | "movie" | "tv" | "game" | "book" | "music";
 
-type MediaKind = "movie" | "tv" | "music" | "game" | "book" | "unknown";
-
 const FILTER_OPTIONS: Array<{
   key: MediaFilter;
   icon: LucideIcon;
@@ -52,28 +50,6 @@ const FILTER_OPTIONS: Array<{
   { key: "music", icon: Music4, label: "Music" },
 ];
 
-const TYPE_META: Record<MediaKind, { icon: LucideIcon; label: string }> = {
-  movie: { icon: Film, label: "Movie" },
-  tv: { icon: Tv, label: "TV" },
-  game: { icon: Gamepad2, label: "Game" },
-  book: { icon: BookOpen, label: "Book" },
-  music: { icon: Music4, label: "Music" },
-  unknown: { icon: Sparkles, label: "Media" },
-};
-
-function formatTimeToBeat(minutes: number | null): string | null {
-  if (!minutes || minutes <= 0) return null;
-  if (minutes >= 60) {
-    const hours = Math.floor(minutes / 60);
-    const remaining = minutes % 60;
-    if (remaining === 0) {
-      return `${hours}h`;
-    }
-    return `${hours}h ${remaining}m`;
-  }
-  return `${minutes}m`;
-}
-
 export function MediaLibrary({
   items,
   isLoading,
@@ -84,6 +60,7 @@ export function MediaLibrary({
   removingId,
 }: MediaLibraryProps) {
   const [fixingId, setFixingId] = useState<string | null>(null);
+  const [fixMatchItem, setFixMatchItem] = useState<MediaItem | null>(null);
   const [filter, setFilter] = useState<MediaFilter>("all");
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(
     new Set()
@@ -92,46 +69,22 @@ export function MediaLibrary({
     new Set()
   );
 
-  const handleFixMatch = async (item: MediaItem) => {
-    if (!onRefresh) return;
-    const defaultTitle = item.customTitle ?? item.autoTitle ?? item.title;
-    const newTitle = prompt("Update title", defaultTitle ?? item.title);
-    if (!newTitle) return;
-
-    const yearInput = prompt(
-      "Release year (optional)",
-      (item.customReleaseYear ?? item.autoReleaseYear ?? item.releaseYear ?? "")
-        .toString()
-        .replace("null", "")
-    );
-    let overrideYear: number | null = null;
-    if (yearInput) {
-      const parsed = Number.parseInt(yearInput, 10);
-      if (!Number.isNaN(parsed)) {
-        overrideYear = parsed;
-      }
+  const handleFixMatchSubmit = async (
+    item: MediaItem,
+    data: {
+      title: string;
+      year: number | null;
+      mediaType: MediaItem["mediaType"] | undefined;
     }
-
-    const typeInput = prompt(
-      "Media type (movie, tv, music, game)",
-      item.mediaType ?? "movie"
-    );
-    const normalizedType = (typeInput ?? "").trim().toLowerCase();
-    const overrideMediaType =
-      normalizedType === "movie" ||
-      normalizedType === "tv" ||
-      normalizedType === "music" ||
-      normalizedType === "game"
-        ? normalizedType
-        : undefined;
-
+  ) => {
+    if (!onRefresh) return;
     setFixingId(item.memoId);
     try {
       await onRefresh({
         memoId: item.memoId,
-        overrideTitle: newTitle,
-        overrideYear,
-        overrideMediaType,
+        overrideTitle: data.title,
+        overrideYear: data.year,
+        overrideMediaType: data.mediaType,
       });
     } catch (error) {
       console.error("Failed to fix match", error);
@@ -159,19 +112,6 @@ export function MediaLibrary({
     if (filter === "all") return items;
     return items.filter((item) => item.mediaType === filter);
   }, [items, filter]);
-
-  const providerLabel = (item: MediaItem) => {
-    if (item.mediaType === "game") {
-      return "Play on";
-    }
-    if (item.mediaType === "music") {
-      return "Listen on";
-    }
-    if (item.mediaType === "book") {
-      return "Read via";
-    }
-    return "Watch on";
-  };
 
   return (
     <section className="space-y-4">
@@ -224,326 +164,59 @@ export function MediaLibrary({
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {filteredItems.map((item) => {
-            const typeMeta =
-              TYPE_META[(item.mediaType ?? "unknown") as MediaKind];
             const formattedTimeToBeat = formatTimeToBeat(
               item.timeToBeatMinutes
             );
-            const TypeIcon = typeMeta.icon;
-            const providerEntries = item.providers ?? item.platforms ?? [];
-            const hasProviders = providerEntries.length > 0;
-            const isProvidersExpanded = expandedProviders.has(item.memoId);
-            const displayedProviders = isProvidersExpanded
-              ? providerEntries
-              : providerEntries.slice(0, 3);
-            const providerNames = displayedProviders.join(", ");
-            const hasMoreProviders = providerEntries.length > 3;
-            const ratingsSummary = item.ratings
-              ?.slice(0, 2)
-              .map((rating) => `${rating.source}: ${rating.value}`)
-              .join(" • ");
             const isDescriptionExpanded = expandedDescriptions.has(item.memoId);
+            const isProvidersExpanded = expandedProviders.has(item.memoId);
 
             return (
-              <Card
+              <MediaCard
                 key={item.memoId}
-                variant="elevated"
-                className="group relative h-full overflow-hidden bg-gradient-to-br from-[#0f111f]/80 via-[#15192d]/70 to-[#1a1f33]/80"
-              >
-                {item.backdropUrl && (
-                  <div className="absolute inset-0 opacity-30">
-                    <Image
-                      src={item.backdropUrl}
-                      alt=""
-                      fill
-                      sizes="600px"
-                      className="object-cover blur-sm"
-                    />
-                  </div>
-                )}
-                <div className="relative">
-                  <CardHeader className="flex flex-row items-start gap-4 pb-3">
-                    {item.posterUrl ? (
-                      <div className="relative h-20 w-14 overflow-hidden rounded-md border border-slate-700/30">
-                        <Image
-                          src={item.posterUrl}
-                          alt={item.title}
-                          fill
-                          sizes="56px"
-                          className="object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex h-20 w-14 items-center justify-center rounded-md border border-slate-700/30 bg-slate-900/60 text-[10px] text-slate-500">
-                        No art
-                      </div>
-                    )}
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="text-base font-semibold text-white">
-                          {item.title}
-                        </CardTitle>
-                        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-700/40 bg-slate-900/60 text-slate-200">
-                          <TypeIcon
-                            className="h-3.5 w-3.5"
-                            aria-hidden="true"
-                          />
-                          <span className="sr-only">{typeMeta.label}</span>
-                        </span>
-                      </div>
-                      <p className="text-sm text-slate-400">
-                        {item.releaseYear ?? "Year unknown"}
-                        {item.mediaType === "game" && formattedTimeToBeat
-                          ? ` • ${formattedTimeToBeat}`
-                          : item.runtimeMinutes
-                            ? ` • ${item.runtimeMinutes} min`
-                            : ""}
-                        {item.source && (
-                          <span className="ml-2 uppercase tracking-wide text-[10px] text-slate-500">
-                            {item.source}
-                          </span>
-                        )}
-                      </p>
-                      {item.genres && item.genres.length > 0 && (
-                        <div className="flex flex-wrap gap-2 text-[11px] text-slate-300">
-                          {item.genres.slice(0, 3).map((genre) => (
-                            <span
-                              key={genre}
-                              className="rounded-full border border-slate-700/40 bg-slate-900/40 px-2 py-0.5"
-                            >
-                              {genre}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <div className="absolute right-4 top-4 flex flex-col gap-2 opacity-0 transition-opacity lg:group-hover:opacity-100">
-                    {onRefresh && (
-                      <button
-                        type="button"
-                        onClick={() => handleFixMatch(item)}
-                        disabled={
-                          fixingId === item.memoId ||
-                          refreshingId === item.memoId
-                        }
-                        aria-label="Fix match"
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-700/40 bg-[#101525]/70 text-indigo-200 transition hover:border-indigo-500/40 hover:text-white disabled:opacity-60"
-                      >
-                        {fixingId === item.memoId ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Wand2 className="h-4 w-4" />
-                        )}
-                      </button>
-                    )}
-                    {onRemove && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemove(item)}
-                        disabled={removingId === item.memoId}
-                        aria-label="Remove from media library"
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-rose-600/40 bg-rose-600/20 text-rose-100 transition hover:border-rose-400/40 hover:text-white disabled:opacity-60"
-                      >
-                        {removingId === item.memoId ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-4 w-4" />
-                        )}
-                      </button>
-                    )}
-                    <Link
-                      href={{ pathname: "/", hash: `memo-${item.memoId}` }}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-700/40 bg-[#101525]/70 text-slate-300 transition hover:border-indigo-500/40 hover:text-white"
-                      prefetch={false}
-                      aria-label="View source memo"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Link>
-                    {item.externalUrl && (
-                      <a
-                        href={item.externalUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-700/40 bg-[#101525]/70 text-slate-300 transition hover:border-indigo-500/40 hover:text-white"
-                        aria-label="Open external entry"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    )}
-                  </div>
-                  <CardContent className="space-y-3 text-sm text-slate-300">
-                    {item.overview && (
-                      <div>
-                        <p
-                          className={`text-slate-300/90 ${
-                            isDescriptionExpanded ? "" : "line-clamp-3"
-                          }`}
-                        >
-                          {item.overview}
-                        </p>
-                        {item.overview.length > 150 && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newExpanded = new Set(expandedDescriptions);
-                              if (isDescriptionExpanded) {
-                                newExpanded.delete(item.memoId);
-                              } else {
-                                newExpanded.add(item.memoId);
-                              }
-                              setExpandedDescriptions(newExpanded);
-                            }}
-                            className="mt-1 text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
-                          >
-                            {isDescriptionExpanded ? "Show less" : "Show more"}
-                          </button>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400">
-                      {hasProviders && (
-                        <span className="inline-flex flex-wrap items-center gap-1">
-                          <TypeIcon className="h-3 w-3" aria-hidden="true" />
-                          {providerLabel(item)} {providerNames}
-                          {hasMoreProviders && !isProvidersExpanded && "…"}
-                          {hasMoreProviders && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const newExpanded = new Set(expandedProviders);
-                                if (isProvidersExpanded) {
-                                  newExpanded.delete(item.memoId);
-                                } else {
-                                  newExpanded.add(item.memoId);
-                                }
-                                setExpandedProviders(newExpanded);
-                              }}
-                              className="text-indigo-400 hover:text-indigo-300 transition-colors"
-                            >
-                              {isProvidersExpanded ? "Show less" : "Show more"}
-                            </button>
-                          )}
-                        </span>
-                      )}
-
-                      {ratingsSummary ? <span>{ratingsSummary}</span> : null}
-
-                      {item.trailerUrl && (
-                        <a
-                          href={item.trailerUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-indigo-300 transition hover:text-indigo-200"
-                        >
-                          Trailer <ExternalLink className="h-3 w-3" />
-                        </a>
-                      )}
-                    </div>
-                  </CardContent>
-                </div>
-                {!item.posterUrl &&
-                  !(item.providers?.length || item.platforms?.length) && (
-                    <div className="relative border-t border-amber-500/30 bg-amber-500/10 px-4 py-3 text-[11px] text-amber-200">
-                      Metadata is still sparse. Try using Fix Match to fetch art
-                      and platform details.
-                    </div>
-                  )}
-                <div className="border-t border-slate-700/30 bg-[#0a0f1c]/70 px-4 py-3" />
-                {item.searchDebug && (
-                  <details className="border-t border-slate-700/20 bg-[#090d16]/60 px-4 py-2 text-[11px] text-slate-500">
-                    <summary className="cursor-pointer text-slate-400">
-                      Debug info
-                    </summary>
-                    <div className="mt-2 space-y-2">
-                      {item.transcriptExcerpt && (
-                        <div>
-                          <span className="font-semibold text-slate-300">
-                            Transcript excerpt:
-                          </span>
-                          <p className="mt-1 text-[10px] text-slate-400">
-                            {item.transcriptExcerpt}
-                          </p>
-                        </div>
-                      )}
-                      {item.tags.length > 0 && (
-                        <div>
-                          <span className="font-semibold text-slate-300">
-                            Tags:
-                          </span>
-                          <div className="mt-1 flex flex-wrap gap-1 text-[10px] text-indigo-200/80">
-                            {item.tags.map((tag) => (
-                              <span
-                                key={tag}
-                                className="rounded-full bg-indigo-500/10 px-2 py-0.5"
-                              >
-                                #{tag}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      <div className="grid gap-1 text-[10px] text-slate-400">
-                        <div>
-                          <span className="font-semibold text-slate-300">
-                            Auto title:
-                          </span>
-                          <span className="text-slate-200">
-                            {item.autoTitle ?? "—"}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="font-semibold text-slate-300">
-                            Custom title:
-                          </span>
-                          <span className="text-indigo-200">
-                            {item.customTitle ?? "—"}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="font-semibold text-slate-300">
-                            Auto year:
-                          </span>
-                          <span className="text-slate-200">
-                            {item.autoReleaseYear ?? "—"}
-                          </span>
-                          <span className="ml-2 font-semibold text-slate-300">
-                            Custom year:
-                          </span>
-                          <span className="text-indigo-200">
-                            {item.customReleaseYear ?? "—"}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="font-semibold text-slate-300">
-                            Source:
-                          </span>
-                          <span className="uppercase text-slate-200">
-                            {item.source ?? "—"}
-                          </span>
-                        </div>
-                        {formattedTimeToBeat && (
-                          <div>
-                            <span className="font-semibold text-slate-300">
-                              Time to beat:
-                            </span>
-                            <span className="text-slate-200">
-                              {formattedTimeToBeat}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      <pre className="max-h-48 overflow-auto whitespace-pre-wrap text-left text-[10px] text-slate-500">
-                        {JSON.stringify(item.searchDebug, null, 2)}
-                      </pre>
-                    </div>
-                  </details>
-                )}
-              </Card>
+                item={item}
+                formattedTimeToBeat={formattedTimeToBeat}
+                isDescriptionExpanded={isDescriptionExpanded}
+                isProvidersExpanded={isProvidersExpanded}
+                onToggleDescription={() => {
+                  const newExpanded = new Set(expandedDescriptions);
+                  if (isDescriptionExpanded) {
+                    newExpanded.delete(item.memoId);
+                  } else {
+                    newExpanded.add(item.memoId);
+                  }
+                  setExpandedDescriptions(newExpanded);
+                }}
+                onToggleProviders={() => {
+                  const newExpanded = new Set(expandedProviders);
+                  if (isProvidersExpanded) {
+                    newExpanded.delete(item.memoId);
+                  } else {
+                    newExpanded.add(item.memoId);
+                  }
+                  setExpandedProviders(newExpanded);
+                }}
+                onFixMatch={onRefresh ? () => setFixMatchItem(item) : undefined}
+                onRemove={onRemove ? () => handleRemove(item) : undefined}
+                isFixing={fixingId === item.memoId}
+                isRemoving={removingId === item.memoId}
+                refreshingId={refreshingId}
+              />
             );
           })}
         </div>
+      )}
+
+      {fixMatchItem && (
+        <FixMatchModal
+          isOpen={!!fixMatchItem}
+          onClose={() => setFixMatchItem(null)}
+          item={fixMatchItem}
+          onSubmit={async (data) => {
+            await handleFixMatchSubmit(fixMatchItem, data);
+            setFixMatchItem(null);
+          }}
+          isProcessing={fixingId === fixMatchItem.memoId}
+        />
       )}
     </section>
   );

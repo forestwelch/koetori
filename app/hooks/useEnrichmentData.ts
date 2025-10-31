@@ -57,6 +57,18 @@ async function fetchMediaItems(username: string): Promise<MediaItem[]> {
         ? (mediaTypeValue as MediaItem["mediaType"])
         : null;
 
+    const overview = row.overview ?? null;
+
+    // Debug logging for overview retrieval
+    if (overview && normalizedMediaType === "game") {
+      console.debug("[useEnrichmentData] loaded game overview from DB", {
+        memoId: row.memo_id,
+        title,
+        overviewLength: overview.length,
+        overviewPreview: overview.slice(0, 100),
+      });
+    }
+
     return {
       memoId: row.memo_id,
       title,
@@ -64,7 +76,7 @@ async function fetchMediaItems(username: string): Promise<MediaItem[]> {
       runtimeMinutes: row.runtime_minutes,
       posterUrl,
       backdropUrl,
-      overview: row.overview ?? null,
+      overview,
       trailerUrl,
       platforms: normalizedPlatforms.length > 0 ? normalizedPlatforms : null,
       providers: normalizedProviders.length > 0 ? normalizedProviders : null,

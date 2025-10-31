@@ -5,6 +5,7 @@ import {
   igdbCoverUrl,
   fetchIgdbTimeToBeat,
 } from "../services/igdb";
+import { normalizePlatformNames } from "./platformMapping";
 
 const OMDB_ENDPOINT = "https://www.omdbapi.com/";
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
@@ -187,7 +188,8 @@ export async function handleMediaTask(
       draft.runtimeMinutes ?? result.runtimeMinutes ?? null;
     draft.posterUrl = draft.posterUrl ?? result.posterUrl ?? null;
     draft.backdropUrl = draft.backdropUrl ?? result.backdropUrl ?? null;
-    draft.overview = draft.overview ?? result.overview ?? null;
+    // Prefer API overview (summary) over transcript excerpt
+    draft.overview = result.overview ?? draft.overview ?? null;
     draft.trailerUrl = draft.trailerUrl ?? result.trailerUrl ?? null;
     draft.platforms = draft.platforms ?? result.platforms ?? undefined;
     draft.providers = draft.providers ?? result.providers ?? undefined;
@@ -661,6 +663,17 @@ async function fetchFromIgdb(
   const target = ranked[0]?.game ?? games[0];
   if (!target) return null;
 
+  // Debug logging for summary/overview
+  console.debug("[mediaHandler] IGDB game selected", {
+    title: target.name,
+    hasSummary: !!target.summary,
+    summaryLength: target.summary?.length ?? 0,
+    summaryPreview: target.summary?.slice(0, 100) ?? null,
+    transcriptExcerpt: payload.transcriptExcerpt
+      ? payload.transcriptExcerpt.slice(0, 50)
+      : null,
+  });
+
   const releaseYear =
     target.release_dates?.find((r) => r.y)?.y ?? preferredYear ?? null;
 
@@ -669,9 +682,11 @@ async function fetchFromIgdb(
     : null;
 
   const platforms = Array.isArray(target.platforms)
-    ? target.platforms
-        .map((platform) => platform?.name)
-        .filter((name): name is string => Boolean(name))
+    ? normalizePlatformNames(
+        target.platforms
+          .map((platform) => platform?.name)
+          .filter((name): name is string => Boolean(name))
+      )
     : undefined;
 
   const trailerId = Array.isArray(target.videos)
@@ -704,11 +719,21 @@ async function fetchFromIgdb(
     ? `https://www.igdb.com/games/${target.slug}`
     : null;
 
+  const overview = target.summary ?? null;
+
+  // Debug logging for final overview value
+  console.debug("[mediaHandler] IGDB final overview", {
+    title: target.name ?? title,
+    overviewSource: target.summary ? "igdb_summary" : "null",
+    overviewLength: overview?.length ?? 0,
+    overviewPreview: overview?.slice(0, 100) ?? null,
+  });
+
   return {
     title: target.name ?? title,
     releaseYear,
     posterUrl: coverUrl,
-    overview: target.summary ?? payload.transcriptExcerpt ?? null,
+    overview,
     platforms,
     genres,
     mediaType: "game",

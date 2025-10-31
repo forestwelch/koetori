@@ -92,7 +92,23 @@ limit ${limit};`;
   }
 
   const data = (await response.json()) as IgdbGame[];
-  return Array.isArray(data) ? data : [];
+  const results = Array.isArray(data) ? data : [];
+
+  // Debug logging for summary field
+  if (results.length > 0) {
+    console.debug("[igdb] search results", {
+      query,
+      count: results.length,
+      firstGame: {
+        name: results[0]?.name,
+        hasSummary: !!results[0]?.summary,
+        summaryLength: results[0]?.summary?.length ?? 0,
+        summaryPreview: results[0]?.summary?.slice(0, 100) ?? null,
+      },
+    });
+  }
+
+  return results;
 }
 
 export function igdbCoverUrl(
