@@ -74,6 +74,7 @@ export interface MediaEnrichmentPayload extends BaseEnrichmentPayload {
   probableTitle?: string | null;
   probableYear?: number | null;
   rawTextHints?: string[];
+  probableMediaType?: "movie" | "tv" | "music" | "game" | "unknown";
 }
 
 export interface ReminderEnrichmentPayload extends BaseEnrichmentPayload {
@@ -81,6 +82,7 @@ export interface ReminderEnrichmentPayload extends BaseEnrichmentPayload {
   dueDateText?: string | null;
   recurrenceText?: string | null;
   priorityScore?: number | null;
+  recurrenceHint?: boolean;
 }
 
 export interface ShoppingEnrichmentPayload extends BaseEnrichmentPayload {

@@ -25,8 +25,8 @@ import { QuickFilters } from "./components/QuickFilters";
 import { SizeFilterShowcase } from "./components/SizeFilterShowcase";
 import { FiltersDrawer } from "./components/FiltersDrawer";
 import { KoetoriExplanation } from "./components/KoetoriExplanation";
-import { Filter, Star } from "lucide-react";
-import { EnrichmentDashboard } from "./components/enrichment/EnrichmentDashboard";
+import { Filter, Star, LayoutDashboard } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
   const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false);
@@ -379,7 +379,22 @@ export default function Home() {
             />
           )}
 
-          <EnrichmentDashboard username={username} />
+          <div className="rounded-2xl border border-slate-700/30 bg-[#0b0f1a]/70 p-6 text-center">
+            <h2 className="text-lg font-semibold text-white flex items-center justify-center gap-2">
+              <LayoutDashboard className="h-5 w-5 text-indigo-300" />
+              Explore Your Enrichment Dashboard
+            </h2>
+            <p className="mt-2 text-sm text-slate-400">
+              See all media enrichments, reminder drafts, and shopping
+              suggestions together.
+            </p>
+            <Link
+              href="/dashboard"
+              className="mt-4 inline-flex items-center justify-center rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-4 py-2 text-sm font-medium text-indigo-200 transition-colors hover:border-indigo-500/50 hover:bg-indigo-500/20"
+            >
+              Open Dashboard →
+            </Link>
+          </div>
         </div>
       </div>
 

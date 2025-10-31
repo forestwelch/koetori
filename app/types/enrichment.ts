@@ -4,9 +4,15 @@ export interface MediaItem {
   releaseYear: number | null;
   runtimeMinutes: number | null;
   posterUrl: string | null;
+  backdropUrl: string | null;
   overview: string | null;
   trailerUrl: string | null;
   platforms: string[] | null;
+  providers: string[] | null;
+  genres: string[] | null;
+  tmdbId: string | null;
+  imdbId: string | null;
+  mediaType: "movie" | "tv" | "music" | "game" | "unknown" | null;
   ratings: Array<{ source: string; value: string }> | null;
   transcriptExcerpt: string | null;
   tags: string[];
@@ -20,6 +26,9 @@ export interface ReminderItem {
   recurrenceText: string | null;
   priorityScore: number | null;
   status: string;
+  isRecurring: boolean;
+  dueAt: string | null;
+  recurrenceRule: string | null;
   transcriptExcerpt: string | null;
   updatedAt: Date;
 }

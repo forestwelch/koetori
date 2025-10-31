@@ -1,13 +1,15 @@
 "use client";
 
-import { BellRing } from "lucide-react";
+import { BellRing, Clock, Repeat } from "lucide-react";
 import { Card, CardContent } from "../ui/Card";
 import { ReminderItem } from "../../types/enrichment";
+import { useReminderActions } from "../../hooks/useReminderActions";
 
 interface RemindersBoardProps {
   reminders: ReminderItem[];
   isLoading: boolean;
   error?: Error | null;
+  username: string | null;
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -22,7 +24,49 @@ export function RemindersBoard({
   reminders,
   isLoading,
   error,
+  username,
 }: RemindersBoardProps) {
+  const { updateReminder, isUpdating } = useReminderActions({ username });
+
+  const scheduleInDays = async (reminder: ReminderItem, days: number) => {
+    const dueAt = new Date();
+    dueAt.setDate(dueAt.getDate() + days);
+    await updateReminder({
+      memoId: reminder.memoId,
+      dueAt: dueAt.toISOString(),
+      dueDateText: dueAt.toLocaleString(),
+    });
+  };
+
+  const setCustomSchedule = async (reminder: ReminderItem) => {
+    const defaultValue = reminder.dueAt
+      ? new Date(reminder.dueAt).toISOString().slice(0, 16)
+      : "";
+    const input = prompt(
+      "Set a due date/time (YYYY-MM-DD HH:MM)",
+      defaultValue
+    );
+    if (!input) return;
+
+    const parsed = new Date(input);
+    if (Number.isNaN(parsed.getTime())) {
+      alert("Could not parse that date/time");
+      return;
+    }
+
+    await updateReminder({
+      memoId: reminder.memoId,
+      dueAt: parsed.toISOString(),
+      dueDateText: parsed.toLocaleString(),
+    });
+  };
+
+  const toggleRecurring = async (reminder: ReminderItem) => {
+    await updateReminder({
+      memoId: reminder.memoId,
+      isRecurring: !reminder.isRecurring,
+    });
+  };
   return (
     <section className="space-y-4">
       <header className="flex items-center justify-between">
@@ -62,7 +106,7 @@ export function RemindersBoard({
                   <BellRing className="h-4 w-4" />
                 </span>
 
-                <div className="flex-1 space-y-2">
+                <div className="flex-1 space-y-3">
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="text-sm font-medium text-white">
                       {reminder.title}
@@ -75,21 +119,40 @@ export function RemindersBoard({
                         Priority {reminder.priorityScore.toFixed(1)}
                       </span>
                     )}
+                    {reminder.isRecurring && (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 text-[11px] text-sky-200">
+                        <Repeat className="h-3 w-3" /> Recurring
+                      </span>
+                    )}
                   </div>
 
                   <dl className="grid gap-1 text-xs text-slate-400 md:grid-cols-2">
-                    {reminder.dueDateText && (
-                      <div>
+                    {(reminder.dueDateText || reminder.dueAt) && (
+                      <div className="flex items-center gap-1">
                         <dt className="font-medium text-slate-300">When</dt>
-                        <dd>{reminder.dueDateText}</dd>
+                        <dd className="flex items-center gap-1 text-slate-300">
+                          <Clock className="h-3 w-3" />
+                          {reminder.dueDateText ??
+                            (reminder.dueAt
+                              ? new Date(reminder.dueAt).toLocaleString()
+                              : "Unscheduled")}
+                        </dd>
                       </div>
                     )}
                     {reminder.recurrenceText && (
                       <div>
                         <dt className="font-medium text-slate-300">
-                          Recurrence
+                          Recurrence hint
                         </dt>
                         <dd>{reminder.recurrenceText}</dd>
+                      </div>
+                    )}
+                    {reminder.recurrenceRule && (
+                      <div>
+                        <dt className="font-medium text-slate-300">
+                          Recurrence rule
+                        </dt>
+                        <dd>{reminder.recurrenceRule}</dd>
                       </div>
                     )}
                     <div>
@@ -105,6 +168,43 @@ export function RemindersBoard({
                       “{reminder.transcriptExcerpt}”
                     </blockquote>
                   )}
+
+                  <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+                    <button
+                      type="button"
+                      className="rounded-lg border border-fuchsia-500/30 bg-fuchsia-500/10 px-2 py-1 text-fuchsia-200 transition hover:border-fuchsia-400/50 hover:text-fuchsia-100 disabled:opacity-50"
+                      disabled={isUpdating}
+                      onClick={() => scheduleInDays(reminder, 1)}
+                    >
+                      Tomorrow
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded-lg border border-fuchsia-500/30 bg-fuchsia-500/10 px-2 py-1 text-fuchsia-200 transition hover:border-fuchsia-400/50 hover:text-fuchsia-100 disabled:opacity-50"
+                      disabled={isUpdating}
+                      onClick={() => scheduleInDays(reminder, 7)}
+                    >
+                      Next Week
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded-lg border border-slate-700/40 bg-slate-800/60 px-2 py-1 text-slate-200 transition hover:border-slate-600/50 hover:text-white disabled:opacity-50"
+                      disabled={isUpdating}
+                      onClick={() => setCustomSchedule(reminder)}
+                    >
+                      Set custom…
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded-lg border border-sky-500/30 bg-sky-500/10 px-2 py-1 text-sky-200 transition hover:border-sky-400/50 hover:text-sky-100 disabled:opacity-50"
+                      disabled={isUpdating}
+                      onClick={() => toggleRecurring(reminder)}
+                    >
+                      {reminder.isRecurring
+                        ? "Disable recurring"
+                        : "Mark recurring"}
+                    </button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

@@ -11,6 +11,7 @@ export async function handleReminderTask(
     dueDateText: payload.dueDateText ?? null,
     recurrenceText: payload.recurrenceText ?? null,
     priorityScore: payload.priorityScore ?? null,
+    recurrenceHint: payload.recurrenceHint ?? false,
   };
 
   return {

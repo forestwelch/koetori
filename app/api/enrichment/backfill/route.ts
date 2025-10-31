@@ -49,9 +49,11 @@ export async function POST(request: NextRequest) {
   const { data: memos, error } = await supabase
     .from("memos")
     .select(
-      "id, category, extracted, tags, transcription_id, username, source, transcript_excerpt"
+      "id, category, extracted, tags, transcription_id, username, source, transcript_excerpt, is_archived, archived, deleted_at"
     )
     .is("enrichment_processed_at", null)
+    .eq("is_archived", false)
+    .is("deleted_at", null)
     .limit(limit);
 
   if (error) {
@@ -78,6 +80,8 @@ export async function POST(request: NextRequest) {
           extracted: (memo.extracted as Record<string, unknown>) ?? null,
           tags: (memo.tags as string[] | null) ?? null,
           transcript_excerpt: memo.transcript_excerpt ?? null,
+          is_archived: memo.is_archived ?? memo.archived ?? false,
+          deleted_at: memo.deleted_at ?? null,
         },
       ],
       metadata: {

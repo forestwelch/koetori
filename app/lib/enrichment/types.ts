@@ -12,9 +12,15 @@ export interface MediaItemDraft {
   releaseYear?: number | null;
   runtimeMinutes?: number | null;
   posterUrl?: string | null;
+  backdropUrl?: string | null;
   overview?: string | null;
   trailerUrl?: string | null;
   platforms?: string[];
+  providers?: string[];
+  genres?: string[];
+  tmdbId?: string | null;
+  imdbId?: string | null;
+  mediaType?: "movie" | "tv" | "music" | "game" | "unknown";
   ratings?: Array<{ source: string; value: string }>;
 }
 
@@ -23,6 +29,7 @@ export interface ReminderDraft {
   dueDateText?: string | null;
   recurrenceText?: string | null;
   priorityScore?: number | null;
+  recurrenceHint?: boolean;
 }
 
 export interface ShoppingListItemDraft {

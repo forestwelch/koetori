@@ -49,6 +49,7 @@ export function EnrichmentDashboard({ username }: EnrichmentDashboardProps) {
         reminders={reminders}
         isLoading={remindersLoading}
         error={remindersError instanceof Error ? remindersError : undefined}
+        username={username}
       />
       <ShoppingListBoard
         items={shoppingItems}
