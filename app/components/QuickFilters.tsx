@@ -43,18 +43,18 @@ export function QuickFilters({
             onClick={() => handleCategoryClick(cat as Category | "all")}
             variant="unstyled"
             size="custom"
-            className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all backdrop-blur-xl whitespace-nowrap flex items-center gap-2 ${
+            className={`group relative flex items-center gap-2 overflow-hidden rounded-full border px-2 py-1 text-xs font-medium transition-all duration-300 ${
               isActive
                 ? cat === "all"
-                  ? "bg-slate-500/30 text-white border border-slate-500/50"
-                  : `${getCategoryColor(cat as Category).split(" ")[0]} text-white border border-current`
-                : "bg-[#0d0e14]/40 border border-slate-700/20 text-[#cbd5e1] hover:bg-[#0d0e14]/60"
+                  ? "border-slate-300/70 bg-slate-500/20 text-white shadow-[0_0_20px_rgba(148,163,184,0.4)]"
+                  : `${getCategoryColor(cat as Category).split(" ")[0]} text-white shadow-[0_0_22px_rgba(94,234,212,0.35)]`
+                : "border-slate-700/50 bg-[#0d0e14]/50 text-slate-300 hover:border-slate-500/60 hover:bg-[#131622]/70"
             }`}
           >
             {IconComponent && (
-              <IconComponent className="w-3.5 h-3.5 flex-shrink-0" />
+              <IconComponent className="h-4 w-4 flex-shrink-0" />
             )}
-            <span>
+            <span className="max-w-0 overflow-hidden whitespace-nowrap pl-1 text-[11px] transition-all duration-300 group-hover:max-w-[120px] group-hover:pl-2">
               {cat === "all"
                 ? FILTER_LABELS.CATEGORY_ALL
                 : getCategoryLabel(cat as Category)}

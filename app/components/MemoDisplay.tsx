@@ -1,5 +1,6 @@
 "use client";
 
+import { AlertCircle } from "lucide-react";
 import { Category, ExtractedData } from "../types/memo";
 import { formatConfidence } from "../lib/ui-utils";
 import { CategoryBadge } from "./CategoryBadge";
@@ -48,8 +49,12 @@ export function MemoDisplay({
 
         {/* Review Flag */}
         {needsReview && (
-          <span className="px-2 py-1 bg-fuchsia-500/20 text-fuchsia-500 border border-fuchsia-500/30 rounded text-xs font-medium">
-            ⚠️ Needs Review
+          <span
+            className="inline-flex h-6 w-6 items-center justify-center text-purple-400"
+            title="Needs review"
+          >
+            <AlertCircle className="h-4 w-4" aria-hidden="true" />
+            <span className="sr-only">Needs review</span>
           </span>
         )}
       </div>

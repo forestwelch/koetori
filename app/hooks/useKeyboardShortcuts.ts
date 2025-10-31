@@ -23,12 +23,12 @@ export function useKeyboardShortcuts({
   cancelEdit,
 }: UseKeyboardShortcutsProps) {
   const {
-    filter,
-    setFilter,
     categoryFilter,
     setCategoryFilter,
     sizeFilter,
     setSizeFilter,
+    starredOnly,
+    setStarredOnly,
     resetFilters,
     isSpotlightMode,
     setIsSpotlightMode,
@@ -152,18 +152,13 @@ export function useKeyboardShortcuts({
           setIsSpotlightMode(false);
         };
 
-        // View filters
-        const viewFilters: Record<
-          string,
-          "all" | "starred" | "review" | "archive"
-        > = {
-          q: "all",
-          w: "starred",
-          e: "review",
-          r: "archive",
+        // Star toggle
+        const starMappings: Record<string, boolean> = {
+          q: false, // all memos
+          w: true, // starred only
         };
-        if (e.key in viewFilters) {
-          closeSpotlight(() => setFilter(viewFilters[e.key]));
+        if (e.key in starMappings) {
+          closeSpotlight(() => setStarredOnly(starMappings[e.key]));
           return;
         }
 
@@ -186,14 +181,14 @@ export function useKeyboardShortcuts({
         }
 
         // Size filters
-        const sizeFilters: Record<string, "all" | "S" | "M" | "L"> = {
+        const sizeFiltersMap: Record<string, "all" | "S" | "M" | "L"> = {
           z: "all",
           x: "S",
           c: "M",
           v: "L",
         };
-        if (e.key in sizeFilters) {
-          closeSpotlight(() => setSizeFilter(sizeFilters[e.key]));
+        if (e.key in sizeFiltersMap) {
+          closeSpotlight(() => setSizeFilter(sizeFiltersMap[e.key]));
           return;
         }
       }
@@ -236,15 +231,15 @@ export function useKeyboardShortcuts({
     showCommandPalette,
     isSpotlightMode,
     showSettings,
-    filter,
     categoryFilter,
     sizeFilter,
+    starredOnly,
     searchQuery,
     searchResults,
     textInput,
-    setFilter,
     setCategoryFilter,
     setSizeFilter,
+    setStarredOnly,
     setIsSpotlightMode,
     setShowSearch,
     setShowTextInput,

@@ -1,5 +1,6 @@
+import { AlertCircle } from "lucide-react";
 import { Memo, Category } from "../types/memo";
-import { getCategoryGradient, formatConfidence } from "../lib/ui-utils";
+import { formatConfidence } from "../lib/ui-utils";
 import { CategorySelector } from "./CategorySelector";
 import { CategoryBadge } from "./CategoryBadge";
 
@@ -28,16 +29,7 @@ export function MemoHeader({
           onCategoryChange={onCategoryChange}
         />
       ) : (
-        <div className="relative">
-          <div
-            className={`absolute inset-0 rounded-full bg-gradient-to-r ${getCategoryGradient(memo.category)} opacity-50 blur-sm`}
-          />
-          <CategoryBadge
-            category={memo.category}
-            mode="expanded"
-            className="relative backdrop-blur-xl"
-          />
-        </div>
+        <CategoryBadge category={memo.category} mode="expanded" />
       )}
 
       {/* Confidence Bar */}
@@ -61,8 +53,12 @@ export function MemoHeader({
 
       {/* Review Flag */}
       {memo.needs_review && (
-        <span className="px-3 py-1 bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/40 rounded-full text-xs font-medium backdrop-blur-xl">
-          ⚠️ Review
+        <span
+          className="inline-flex h-6 w-6 items-center justify-center text-purple-400"
+          title="Needs review"
+        >
+          <AlertCircle className="h-4 w-4" aria-hidden="true" />
+          <span className="sr-only">Needs review</span>
         </span>
       )}
 

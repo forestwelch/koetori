@@ -15,7 +15,7 @@ interface MemosListProps {
   saveEdit: (id: string) => void;
   softDelete: (id: string) => void;
   toggleStar: (id: string, current: boolean) => void;
-  restoreMemo: (id: string) => void;
+  restoreMemo: (id: string, memoData?: Memo) => void;
   hardDelete: (id: string) => void;
   onCategoryChange: (
     memoId: string,

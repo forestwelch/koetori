@@ -1,7 +1,11 @@
 "use client";
 
 import { Category } from "../types/memo";
-import { getCategoryIcon, getCategoryBadgeCompact } from "../lib/ui-utils";
+import {
+  getCategoryIcon,
+  getCategoryBadgeCompact,
+  getCategoryLabel,
+} from "../lib/ui-utils";
 
 interface CategoryBadgeProps {
   category: Category;
@@ -19,8 +23,9 @@ export function CategoryBadge({ category, className }: CategoryBadgeProps) {
     : badgeClasses;
 
   return (
-    <div className={combinedClasses}>
-      <IconComponent className="w-3 h-3 flex-shrink-0" />
-    </div>
+    <span className={combinedClasses} title={getCategoryLabel(category)}>
+      <IconComponent className="h-4 w-4" aria-hidden="true" />
+      <span className="sr-only">{getCategoryLabel(category)}</span>
+    </span>
   );
 }

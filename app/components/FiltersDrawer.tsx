@@ -1,6 +1,6 @@
 "use client";
 
-import { X } from "lucide-react";
+import { X, Circle } from "lucide-react";
 import {
   getCategoryColor,
   getCategoryIcon,
@@ -15,6 +15,8 @@ interface FiltersDrawerProps {
   onClose: () => void;
   categoryFilter: Category | "all";
   setCategoryFilter: (category: Category | "all") => void;
+  sizeFilter: "all" | "S" | "M" | "L";
+  setSizeFilter: (size: "all" | "S" | "M" | "L") => void;
 }
 
 export function FiltersDrawer({
@@ -22,6 +24,8 @@ export function FiltersDrawer({
   onClose,
   categoryFilter,
   setCategoryFilter,
+  sizeFilter,
+  setSizeFilter,
 }: FiltersDrawerProps) {
   return (
     <>
@@ -52,7 +56,7 @@ export function FiltersDrawer({
           </div>
 
           {/* Category Filter Section */}
-          <div>
+          <div className="mb-6">
             <h4 className="text-xs uppercase tracking-wider text-[#64748b] font-medium mb-3">
               Category
             </h4>
@@ -89,6 +93,57 @@ export function FiltersDrawer({
                   )}
                 </Button>
               ))}
+            </div>
+          </div>
+
+          {/* Size Filter */}
+          <div>
+            <h4 className="text-xs uppercase tracking-wider text-[#64748b] font-medium mb-3">
+              Size
+            </h4>
+            <div className="grid grid-cols-2 gap-2">
+              {(["all", "S", "M", "L"] as const).map((option) => {
+                const label =
+                  option === "all"
+                    ? FILTER_LABELS.SIZE_ALL
+                    : option === "S"
+                      ? FILTER_LABELS.SIZE_S
+                      : option === "M"
+                        ? FILTER_LABELS.SIZE_M
+                        : FILTER_LABELS.SIZE_L;
+                const active = sizeFilter === option;
+                return (
+                  <Button
+                    key={option}
+                    onClick={() => {
+                      setSizeFilter(option);
+                      onClose();
+                    }}
+                    variant="unstyled"
+                    size="custom"
+                    className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm transition-all backdrop-blur-xl ${
+                      active
+                        ? "border-indigo-400/80 bg-indigo-500/30 text-white shadow-[0_0_18px_rgba(99,102,241,0.4)]"
+                        : "border-slate-700/30 bg-[#0d0e14]/50 text-slate-300 hover:border-slate-500/50 hover:bg-[#131620]/70"
+                    }`}
+                  >
+                    <span
+                      className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${
+                        active
+                          ? "bg-indigo-500/60 text-white"
+                          : "bg-slate-800/70 text-slate-400"
+                      }`}
+                    >
+                      {option === "all" ? (
+                        <Circle className="h-3.5 w-3.5" />
+                      ) : (
+                        option
+                      )}
+                    </span>
+                    {label}
+                  </Button>
+                );
+              })}
             </div>
           </div>
         </div>

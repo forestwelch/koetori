@@ -188,7 +188,7 @@ export function FilterCommandPalette({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Type a few letters... (e.g., 'star', 'med', 'long')"
+            placeholder="Type a few letters... (e.g., 'star', 'idea', 'journal')"
             className="w-full bg-transparent text-white text-lg placeholder:text-slate-500 focus:outline-none"
             aria-label="Filter search"
             autoComplete="off"

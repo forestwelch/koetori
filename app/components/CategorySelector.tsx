@@ -1,7 +1,7 @@
 "use client";
 
 import { Category } from "../types/memo";
-import { getCategoryIcon } from "../lib/ui-utils";
+import { getCategoryIcon, getCategoryIconColor } from "../lib/ui-utils";
 import { CategoryBadge } from "./CategoryBadge";
 import {
   Button,
@@ -73,7 +73,12 @@ export function CategorySelector({
             >
               {(() => {
                 const IconComponent = getCategoryIcon(cat.value);
-                return <IconComponent className="w-4 h-4" />;
+                return (
+                  <IconComponent
+                    className={`h-4 w-4 ${getCategoryIconColor(cat.value)}`}
+                    aria-hidden="true"
+                  />
+                );
               })()}
               <span className="text-sm font-medium">{cat.label}</span>
             </ListBoxItem>

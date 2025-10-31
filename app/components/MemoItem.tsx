@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { Memo, Category } from "../types/memo";
 
 import { CategoryBadge } from "./CategoryBadge";
-import { Archive, Star, Edit2, AlertCircle, X } from "lucide-react";
+import { Archive, Star, Edit2, AlertCircle } from "lucide-react";
 import { CategorySelector } from "./CategorySelector";
 import { Button } from "./ui/Button";
 
@@ -23,7 +23,7 @@ interface MemoItemProps {
   saveEdit: (id: string) => void;
   softDelete: (id: string) => void;
   toggleStar: (id: string, current: boolean) => void;
-  restoreMemo: (id: string) => void;
+  restoreMemo: (id: string, memoData?: Memo) => void;
   hardDelete: (id: string) => void;
   onCategoryChange: (
     memoId: string,
@@ -214,32 +214,6 @@ export function MemoItem({
               )}
             </div>
 
-            {/* Review Indicator - Show prominently if needs review */}
-            {memo.needs_review && (
-              <div
-                className="flex items-center gap-2 px-2.5 py-1 bg-fuchsia-500/20 border border-fuchsia-500/40 rounded-lg backdrop-blur-sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  dismissReview(memo.id);
-                }}
-              >
-                <AlertCircle className="w-3.5 h-3.5 text-fuchsia-400" />
-                <span className="text-[10px] font-medium text-fuchsia-300">
-                  Review
-                </span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    dismissReview(memo.id);
-                  }}
-                  className="ml-1 p-0.5 hover:bg-fuchsia-500/30 rounded transition-colors"
-                  aria-label="Dismiss review"
-                >
-                  <X className="w-3 h-3 text-fuchsia-400" />
-                </button>
-              </div>
-            )}
-
             {/* Summary */}
             <div className="flex-1 min-w-0">
               <p className="text-[#cbd5e1] text-xs sm:text-sm line-clamp-1 mb-1">
@@ -328,41 +302,51 @@ export function MemoItem({
               )}
             </div>
 
-            {/* Actions - Star always visible, Edit and Archive on desktop hover only */}
-            {!memo.needs_review && (
-              <div
-                className="flex items-center gap-1 flex-shrink-0"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {!isEditing && (
-                  <Button
-                    onClick={() => {
-                      if (!isExpanded) {
-                        if (!isExpanded && onToggleExpand) {
-                          onToggleExpand();
-                        } else if (!isExpanded) {
-                          setLocalExpanded(true);
-                        }
-                      }
-                      startEdit(memo);
-                    }}
-                    variant="unstyled"
-                    size="custom"
-                    aria-label="Edit"
-                    className="hidden sm:block p-1.5 hover:bg-slate-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-                  >
-                    <Edit2 className="w-4 h-4 text-slate-400" />
-                  </Button>
-                )}
+            {/* Actions - Star or review icon, plus edit/archive */}
+            <div
+              className="flex items-center gap-1 flex-shrink-0"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {!isEditing && (
                 <Button
-                  onClick={() => softDelete(memo.id)}
+                  onClick={() => {
+                    if (!isExpanded) {
+                      if (!isExpanded && onToggleExpand) {
+                        onToggleExpand();
+                      } else if (!isExpanded) {
+                        setLocalExpanded(true);
+                      }
+                    }
+                    startEdit(memo);
+                  }}
                   variant="unstyled"
                   size="custom"
-                  aria-label="Archive"
+                  aria-label="Edit"
                   className="hidden sm:block p-1.5 hover:bg-slate-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                 >
-                  <Archive className="w-4 h-4 text-slate-400" />
+                  <Edit2 className="w-4 h-4 text-slate-400" />
                 </Button>
+              )}
+              <Button
+                onClick={() => softDelete(memo.id)}
+                variant="unstyled"
+                size="custom"
+                aria-label="Archive"
+                className="hidden sm:block p-1.5 hover:bg-slate-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+              >
+                <Archive className="w-4 h-4 text-slate-400" />
+              </Button>
+              {memo.needs_review ? (
+                <Button
+                  onClick={() => dismissReview(memo.id)}
+                  variant="unstyled"
+                  size="custom"
+                  aria-label="Mark as reviewed"
+                  className="p-1.5 rounded-lg text-purple-400 hover:text-purple-300 transition-colors"
+                >
+                  <AlertCircle className="h-4 w-4" />
+                </Button>
+              ) : (
                 <Button
                   onClick={() => toggleStar(memo.id, memo.starred || false)}
                   variant="unstyled"
@@ -374,8 +358,8 @@ export function MemoItem({
                     className={`w-4 h-4 ${memo.starred ? "text-amber-400 fill-amber-400" : "text-slate-400"}`}
                   />
                 </Button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Expanded details */}
@@ -477,8 +461,12 @@ export function MemoItem({
 
                 {/* Review flag */}
                 {memo.needs_review && (
-                  <span className="px-1.5 py-0.5 bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/40 rounded text-xs">
-                    ⚠️ Review
+                  <span
+                    className="inline-flex h-5 w-5 items-center justify-center text-purple-400"
+                    title="Needs review"
+                  >
+                    <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span className="sr-only">Needs review</span>
                   </span>
                 )}
 

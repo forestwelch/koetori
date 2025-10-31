@@ -21,12 +21,13 @@ const mockMemo: Memo = {
   size: "M",
   timestamp: new Date("2024-01-01"),
   deleted_at: null,
+  source: "app",
+  input_type: "audio",
 };
 
 const defaultProps = {
   memo: mockMemo,
   isNew: false,
-  filter: "all" as const,
   editingId: null,
   editText: "",
   setEditText: jest.fn(),
@@ -38,6 +39,7 @@ const defaultProps = {
   restoreMemo: jest.fn(),
   hardDelete: jest.fn(),
   onCategoryChange: jest.fn(),
+  dismissReview: jest.fn(),
 };
 
 describe("MemoItem", () => {

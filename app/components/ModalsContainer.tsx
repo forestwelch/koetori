@@ -22,14 +22,15 @@ interface ModalsContainerProps {
   saveEdit: (id: string) => void;
   softDelete: (id: string) => void;
   toggleStar: (id: string, current: boolean) => void;
-  restoreMemo: (id: string) => void;
-  hardDelete: (id: string) => void;
+  restoreMemo: (id: string, memoData?: Memo) => Promise<void>;
+  hardDelete: (id: string) => Promise<void>;
   onCategoryChange: (
     memoId: string,
     newCategory: Category,
     oldCategory: Category
   ) => void;
   onSizeChange: (memoId: string, newSize: "S" | "M" | "L" | null) => void;
+  dismissReview: (memoId: string) => void;
 
   // Text input processing
   onTextSubmit: (text: string) => Promise<void>;
@@ -58,6 +59,7 @@ export function ModalsContainer({
   hardDelete,
   onCategoryChange,
   onSizeChange,
+  dismissReview,
   onTextSubmit,
   onFeedbackSubmit,
   onPickRandomMemo,
@@ -118,6 +120,7 @@ export function ModalsContainer({
         hardDelete={hardDelete}
         onCategoryChange={onCategoryChange}
         onSizeChange={onSizeChange}
+        dismissReview={dismissReview}
       />
 
       {/* Text Input Modal */}

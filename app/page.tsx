@@ -22,6 +22,7 @@ import { MemosList } from "./components/MemosList";
 import { ActionButtons } from "./components/ActionButtons";
 import { ModalsContainer } from "./components/ModalsContainer";
 import { QuickFilters } from "./components/QuickFilters";
+import { SizeFilterShowcase } from "./components/SizeFilterShowcase";
 import { FiltersDrawer } from "./components/FiltersDrawer";
 import { KoetoriExplanation } from "./components/KoetoriExplanation";
 import { Filter, Star } from "lucide-react";
@@ -33,8 +34,10 @@ export default function Home() {
   const { username, isLoading: userLoading } = useUser();
   const {
     categoryFilter,
+    sizeFilter,
     starredOnly,
     setCategoryFilter,
+    setSizeFilter,
     setStarredOnly,
     isSpotlightMode,
     setIsSpotlightMode,
@@ -57,6 +60,7 @@ export default function Home() {
   } = useMemosQuery({
     username: username || "",
     categoryFilter,
+    sizeFilter,
     starredOnly,
   });
 
@@ -329,6 +333,13 @@ export default function Home() {
               onFilterClick={() => setIsSpotlightMode(false)}
             />
           </div>
+
+          <div className="mt-4">
+            <SizeFilterShowcase
+              sizeFilter={sizeFilter}
+              setSizeFilter={setSizeFilter}
+            />
+          </div>
         </div>
 
         {/* Memos Content */}
@@ -392,6 +403,7 @@ export default function Home() {
         hardDelete={hardDelete}
         onCategoryChange={handleCategoryChange}
         onSizeChange={handleSizeChange}
+        dismissReview={dismissReview}
         onTextSubmit={handleTextSubmit}
         onFeedbackSubmit={handleFeedbackSubmit}
         onPickRandomMemo={handlePickRandomMemo}
@@ -407,6 +419,8 @@ export default function Home() {
         onClose={() => setIsFiltersDrawerOpen(false)}
         categoryFilter={categoryFilter}
         setCategoryFilter={setCategoryFilter}
+        sizeFilter={sizeFilter}
+        setSizeFilter={setSizeFilter}
       />
     </div>
   );

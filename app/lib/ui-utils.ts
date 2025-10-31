@@ -39,27 +39,27 @@ export function getCategoryIcon(category: Category) {
 }
 
 // Category badge styling
-export function getCategoryBadgeCompact(category: Category) {
-  const badgeMap: Record<Category, string> = {
-    journal:
-      "inline-flex items-center justify-center w-8 h-8 rounded-xl border bg-green-500/10 text-green-300 border-green-500/40",
-    media:
-      "inline-flex items-center justify-center w-8 h-8 rounded-xl border bg-blue-500/10 text-blue-300 border-blue-500/40",
-    event:
-      "inline-flex items-center justify-center w-8 h-8 rounded-xl border bg-orange-500/10 text-orange-300 border-orange-500/40",
-    therapy:
-      "inline-flex items-center justify-center w-8 h-8 rounded-xl border bg-pink-500/10 text-pink-300 border-pink-500/40",
-    tarot:
-      "inline-flex items-center justify-center w-8 h-8 rounded-xl border bg-purple-500/10 text-purple-300 border-purple-500/40",
-    todo: "inline-flex items-center justify-center w-8 h-8 rounded-xl border bg-yellow-500/10 text-yellow-300 border-yellow-500/40",
-    idea: "inline-flex items-center justify-center w-8 h-8 rounded-xl border bg-violet-500/10 text-violet-300 border-violet-500/40",
-    "to buy":
-      "inline-flex items-center justify-center w-8 h-8 rounded-xl border bg-cyan-500/10 text-cyan-300 border-cyan-500/40",
-    other:
-      "inline-flex items-center justify-center w-8 h-8 rounded-xl border bg-gray-500/10 text-gray-300 border-gray-500/40",
-  };
+const categoryIconColorMap: Record<Category, string> = {
+  journal: "text-emerald-300",
+  media: "text-sky-300",
+  event: "text-amber-300",
+  therapy: "text-rose-300",
+  tarot: "text-purple-300",
+  todo: "text-yellow-300",
+  idea: "text-violet-300",
+  "to buy": "text-cyan-300",
+  other: "text-slate-300",
+};
 
-  return badgeMap[category] || badgeMap.other;
+export function getCategoryIconColor(category: Category) {
+  return categoryIconColorMap[category] || categoryIconColorMap.other;
+}
+
+export function getCategoryBadgeCompact(category: Category) {
+  return cn(
+    "inline-flex h-5 w-5 items-center justify-center text-slate-300",
+    getCategoryIconColor(category)
+  );
 }
 
 // Category color classes for dropdowns

@@ -24,7 +24,7 @@ interface SearchModalProps {
   saveEdit: (memoId: string) => void;
   softDelete: (memoId: string) => void;
   toggleStar: (memoId: string, currentStarred: boolean) => void;
-  restoreMemo: (memoId: string) => void;
+  restoreMemo: (memoId: string, memoData?: Memo) => void;
   hardDelete: (memoId: string) => void;
   onCategoryChange: (
     memoId: string,
@@ -32,6 +32,7 @@ interface SearchModalProps {
     oldCategory: Category
   ) => void;
   onSizeChange: (memoId: string, newSize: "S" | "M" | "L" | null) => void;
+  dismissReview: (memoId: string) => void;
 }
 
 export function SearchModal({
@@ -53,6 +54,7 @@ export function SearchModal({
   hardDelete,
   onCategoryChange,
   onSizeChange,
+  dismissReview,
 }: SearchModalProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { setSearchResults } = useModals();
@@ -78,6 +80,15 @@ export function SearchModal({
     softDelete(id);
     // Remove from search results immediately
     setSearchResults(searchResults.filter((memo) => memo.id !== id));
+  };
+
+  const handleDismissReview = (id: string) => {
+    dismissReview(id);
+    setSearchResults(
+      searchResults.map((memo) =>
+        memo.id === id ? { ...memo, needs_review: false } : memo
+      )
+    );
   };
 
   const handleSaveEdit = (id: string) => {
@@ -180,7 +191,6 @@ export function SearchModal({
                     key={memo.id}
                     memo={memo}
                     isNew={false}
-                    filter="all"
                     editingId={editingId}
                     editText={editText}
                     setEditText={setEditText}
@@ -193,6 +203,7 @@ export function SearchModal({
                     hardDelete={hardDelete}
                     onCategoryChange={handleCategoryChange}
                     onSizeChange={handleSizeChange}
+                    dismissReview={handleDismissReview}
                     searchQuery={searchQuery}
                     isSearchMode={true}
                   />

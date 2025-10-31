@@ -1,5 +1,6 @@
 "use client";
 
+import { AlertCircle } from "lucide-react";
 import { Memo } from "../types/memo";
 import { Modal } from "./ui/Modal";
 import { Button } from "./ui/Button";
@@ -30,8 +31,12 @@ export function RandomMemoModal({
           {formatConfidence(memo.confidence)} confidence
         </div>
         {memo.needs_review && (
-          <span className="text-xs px-2 py-0.5 bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/40 rounded-full backdrop-blur-xl">
-            Needs Review
+          <span
+            className="inline-flex h-6 w-6 items-center justify-center text-purple-400"
+            title="Needs review"
+          >
+            <AlertCircle className="h-4 w-4" aria-hidden="true" />
+            <span className="sr-only">Needs review</span>
           </span>
         )}
       </div>
