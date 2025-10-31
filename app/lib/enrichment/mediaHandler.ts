@@ -327,6 +327,21 @@ async function fetchFromOmdb(
   }
 }
 
+/**
+ * Extracts a 4-digit year from a title string (e.g., "Ghost in the Shell 1996" -> 1996)
+ */
+function extractYearFromTitle(title: string): number | null {
+  // Match 4-digit years between 1900-2099
+  const yearMatch = title.match(/\b(19|20)\d{2}\b/);
+  if (yearMatch) {
+    const year = Number.parseInt(yearMatch[0], 10);
+    if (year >= 1900 && year <= 2099) {
+      return year;
+    }
+  }
+  return null;
+}
+
 async function fetchFromTmdb(
   title: string,
   payload: MediaEnrichmentPayload
@@ -344,11 +359,29 @@ async function fetchFromTmdb(
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const searchUrl = buildTmdbUrl("/search/multi", apiKey, {
-    query: title,
+  // Extract year from title if present (e.g., "Ghost in the Shell 1996")
+  const yearFromTitle = extractYearFromTitle(title);
+  const searchYear = payload.probableYear ?? yearFromTitle;
+
+  // Clean title: remove year if it's at the end to avoid duplicate year in search
+  let cleanTitle = title;
+  if (yearFromTitle) {
+    cleanTitle = title.replace(/\s*\b(19|20)\d{2}\b\s*$/, "").trim();
+  }
+
+  // Include year in search if available - TMDb API supports year parameter for better filtering
+  const searchParams: Record<string, string | number | undefined> = {
+    query: cleanTitle,
     include_adult: "false",
     language: "en-US",
-  });
+  };
+
+  // Add year parameter if we have a year (helps TMDb filter results)
+  if (searchYear) {
+    searchParams.year = searchYear;
+  }
+
+  const searchUrl = buildTmdbUrl("/search/multi", apiKey, searchParams);
 
   const searchResp = await fetch(searchUrl, { headers });
   if (!searchResp.ok) {
@@ -365,9 +398,10 @@ async function fetchFromTmdb(
   }
 
   const preferredType = payload.probableMediaType;
+  // searchYear is already declared above
   const sorted = results.sort((a, b) => {
-    const scoreA = scoreSearchResult(a, preferredType, payload.probableYear);
-    const scoreB = scoreSearchResult(b, preferredType, payload.probableYear);
+    const scoreA = scoreSearchResult(a, preferredType, searchYear, cleanTitle);
+    const scoreB = scoreSearchResult(b, preferredType, searchYear, cleanTitle);
     return scoreB - scoreA;
   });
 
@@ -476,9 +510,12 @@ function scoreSearchResult(
     popularity?: number;
     release_date?: string;
     first_air_date?: string;
+    title?: string;
+    name?: string;
   },
   preferredType: MediaEnrichmentPayload["probableMediaType"],
-  probableYear?: number | null
+  probableYear?: number | null,
+  searchTitle?: string
 ): number {
   let score = result.popularity ?? 0;
   const normalizedPreferred =
@@ -488,9 +525,49 @@ function scoreSearchResult(
   if (normalizedPreferred && result.media_type === normalizedPreferred) {
     score += 50;
   }
+
+  // Boost score for title similarity
+  if (searchTitle) {
+    const resultTitle = (result.title ?? result.name ?? "").toLowerCase();
+    const normalizedSearchTitle = searchTitle.toLowerCase();
+
+    // Exact match (after normalization)
+    if (resultTitle === normalizedSearchTitle) {
+      score += 200; // Very strong boost for exact matches
+    } else if (
+      resultTitle.includes(normalizedSearchTitle) ||
+      normalizedSearchTitle.includes(resultTitle)
+    ) {
+      score += 100; // Strong boost for partial matches
+    } else {
+      // Calculate similarity (simple word overlap)
+      const searchWords = new Set(normalizedSearchTitle.split(/\s+/));
+      const resultWords = new Set(resultTitle.split(/\s+/));
+      const commonWords = [...searchWords].filter(
+        (w) => resultWords.has(w) && w.length > 2
+      );
+      if (commonWords.length > 0) {
+        score += commonWords.length * 20; // Boost for each matching word
+      }
+    }
+  }
   const release = result.release_date ?? result.first_air_date ?? "";
-  if (probableYear && release.startsWith(String(probableYear))) {
-    score += 25;
+  if (probableYear && release) {
+    const releaseYear = Number.parseInt(release.slice(0, 4), 10);
+    if (!Number.isNaN(releaseYear)) {
+      // Strongly prioritize exact year matches
+      if (releaseYear === probableYear) {
+        score += 100; // Strong bonus for exact year match
+      } else {
+        // Penalty for mismatched years - the closer to target, the smaller the penalty
+        const yearDiff = Math.abs(releaseYear - probableYear);
+        if (yearDiff <= 2) {
+          score += 50 - yearDiff * 10; // Small bonus for close years
+        } else {
+          score -= yearDiff * 5; // Penalty for far-off years
+        }
+      }
+    }
   }
 
   // Prefer earlier/original releases when year is not specified
@@ -499,14 +576,15 @@ function scoreSearchResult(
     const releaseYear = Number.parseInt(release.slice(0, 4), 10);
     if (!Number.isNaN(releaseYear)) {
       // Prefer releases from 1970-2010 (era of many classic originals)
-      // Give a small bonus to earlier releases
-      if (releaseYear >= 1970 && releaseYear <= 2010) {
-        score += 10;
+      // Give a bonus to earlier releases, stronger for classics (1990s-early 2000s)
+      if (releaseYear >= 1990 && releaseYear <= 2005) {
+        score += 15; // Strong bonus for classic era
+      } else if (releaseYear >= 1970 && releaseYear <= 2010) {
+        score += 10; // Moderate bonus for other originals
       }
-      // Small penalty for very recent remakes/sequels (2015+) when we're looking for originals
-      // But only apply if popularity is similar (within 2 points)
-      if (releaseYear >= 2015 && result.popularity && result.popularity < 10) {
-        score -= 5;
+      // Penalty for very recent remakes/sequels when we're looking for originals
+      if (releaseYear >= 2015 && result.popularity && result.popularity < 15) {
+        score -= 10; // Stronger penalty for recent remakes with low popularity
       }
     }
   }
