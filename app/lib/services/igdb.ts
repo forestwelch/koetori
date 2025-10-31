@@ -111,9 +111,9 @@ export async function fetchIgdbTimeToBeat(
     return null;
   }
 
-  const body = `fields game,hastily,normally,completely; where game = ${gameId}; limit 1;`;
+  const body = `fields game_id,hastily,normally,completely,count,updated_at; where game_id = ${gameId}; limit 1;`;
 
-  const response = await fetch("https://api.igdb.com/v4/time_to_beats", {
+  const response = await fetch("https://api.igdb.com/v4/game_time_to_beats", {
     method: "POST",
     headers: {
       "Client-ID": clientId,
@@ -130,8 +130,10 @@ export async function fetchIgdbTimeToBeat(
 
   const data = (await response.json()) as IgdbTimeToBeat[];
   if (!Array.isArray(data) || data.length === 0) {
+    console.debug("[igdb] time-to-beat empty", { gameId, data });
     return null;
   }
 
+  console.debug("[igdb] time-to-beat", { gameId, record: data[0] });
   return data[0] ?? null;
 }
