@@ -1,6 +1,7 @@
 "use client";
 
-import { BellRing, Clock, Repeat } from "lucide-react";
+import { useMemo, useState } from "react";
+import { BellRing, Clock, Repeat, Slash } from "lucide-react";
 import { Card, CardContent } from "../ui/Card";
 import { ReminderItem } from "../../types/enrichment";
 import { useReminderActions } from "../../hooks/useReminderActions";
@@ -27,6 +28,24 @@ export function RemindersBoard({
   username,
 }: RemindersBoardProps) {
   const { updateReminder, isUpdating } = useReminderActions({ username });
+  const [activeTab, setActiveTab] = useState<
+    "inbox" | "scheduled" | "dismissed"
+  >("inbox");
+
+  const filteredReminders = useMemo(() => {
+    switch (activeTab) {
+      case "scheduled":
+        return reminders.filter((reminder) => reminder.dueAt !== null);
+      case "dismissed":
+        return reminders.filter((reminder) => reminder.status === "dismissed");
+      case "inbox":
+      default:
+        return reminders.filter(
+          (reminder) =>
+            reminder.dueAt === null && reminder.status !== "dismissed"
+        );
+    }
+  }, [activeTab, reminders]);
 
   const scheduleInDays = async (reminder: ReminderItem, days: number) => {
     const dueAt = new Date();
@@ -35,6 +54,7 @@ export function RemindersBoard({
       memoId: reminder.memoId,
       dueAt: dueAt.toISOString(),
       dueDateText: dueAt.toLocaleString(),
+      status: "scheduled",
     });
   };
 
@@ -58,6 +78,7 @@ export function RemindersBoard({
       memoId: reminder.memoId,
       dueAt: parsed.toISOString(),
       dueDateText: parsed.toLocaleString(),
+      status: "scheduled",
     });
   };
 
@@ -76,6 +97,26 @@ export function RemindersBoard({
             Draft reminders parsed from your captured memos.
           </p>
         </div>
+        <div className="inline-flex items-center gap-2 rounded-full border border-slate-700/40 bg-[#131728]/70 p-1 text-[11px] text-slate-300">
+          {[
+            { key: "inbox" as const, label: "Inbox" },
+            { key: "scheduled" as const, label: "Scheduled" },
+            { key: "dismissed" as const, label: "Dismissed" },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={`rounded-full px-3 py-1 transition ${
+                activeTab === tab.key
+                  ? "bg-fuchsia-500/30 text-white shadow"
+                  : "hover:text-white"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </header>
 
       {isLoading ? (
@@ -87,14 +128,17 @@ export function RemindersBoard({
         <div className="text-sm text-rose-400">
           Failed to load reminders: {error.message}
         </div>
-      ) : reminders.length === 0 ? (
+      ) : filteredReminders.length === 0 ? (
         <div className="text-sm text-slate-500">
-          No reminders yet. Add intentions like “remind me to …” and they’ll
-          appear here.
+          {activeTab === "inbox"
+            ? "Inbox is clear. Capture new reminders to see them here."
+            : activeTab === "scheduled"
+              ? "No scheduled reminders yet."
+              : "No dismissed reminders."}
         </div>
       ) : (
         <div className="space-y-3">
-          {reminders.map((reminder) => (
+          {filteredReminders.map((reminder) => (
             <Card
               key={reminder.memoId}
               variant="default"
@@ -169,6 +213,15 @@ export function RemindersBoard({
                     </blockquote>
                   )}
 
+                  <div className="flex items-center justify-between text-[11px] text-slate-400">
+                    <a
+                      href={`/#memo-${reminder.memoId}`}
+                      className="rounded-full border border-slate-700/40 px-2 py-0.5 transition hover:border-fuchsia-400/40 hover:text-white"
+                    >
+                      View memo
+                    </a>
+                  </div>
+
                   <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
                     <button
                       type="button"
@@ -201,8 +254,21 @@ export function RemindersBoard({
                       onClick={() => toggleRecurring(reminder)}
                     >
                       {reminder.isRecurring
-                        ? "Disable recurring"
-                        : "Mark recurring"}
+                        ? "Stop recurring"
+                        : "Make recurring"}
+                    </button>
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1 rounded-lg border border-slate-700/40 bg-slate-900/50 px-2 py-1 text-slate-300 transition hover:border-rose-400/40 hover:text-rose-200 disabled:opacity-50"
+                      disabled={isUpdating}
+                      onClick={() =>
+                        updateReminder({
+                          memoId: reminder.memoId,
+                          status: "dismissed",
+                        })
+                      }
+                    >
+                      <Slash className="h-3 w-3" /> Dismiss
                     </button>
                   </div>
                 </div>

@@ -42,6 +42,29 @@ const MEDIA_TITLE_BLOCKLIST = new Set([
   "link",
   "watch",
 ]);
+const SHOPPING_STOPWORDS = new Set([
+  "some",
+  "a",
+  "an",
+  "the",
+  "of",
+  "and",
+  "need",
+  "buy",
+  "get",
+  "to",
+  "go",
+  "grocery",
+  "shopping",
+  "store",
+  "from",
+  "at",
+  "for",
+  "just",
+  "kind",
+  "thing",
+  "stuff",
+]);
 
 export function planEnrichmentTasks(input: PlannerInput): EnrichmentTask[] {
   const tasks: EnrichmentTask[] = [];
@@ -123,6 +146,8 @@ export function planEnrichmentTasks(input: PlannerInput): EnrichmentTask[] {
     }
 
     if (SHOPPING_CATEGORIES.has(normalizedCategory)) {
+      const extractedItems = extractShoppingItems(memo);
+
       const shoppingPayload: ShoppingEnrichmentPayload = {
         ...basePayload,
         itemNameGuess: inferStringField(memo.extracted, [
@@ -146,7 +171,16 @@ export function planEnrichmentTasks(input: PlannerInput): EnrichmentTask[] {
           ["urgency", "priority", "soon"],
           0
         ),
+        items: extractedItems,
       };
+
+      if (
+        !shoppingPayload.itemNameGuess &&
+        extractedItems &&
+        extractedItems.length > 0
+      ) {
+        shoppingPayload.itemNameGuess = extractedItems[0];
+      }
 
       tasks.push({
         type: "shopping",
@@ -321,6 +355,106 @@ function detectRecurringIntent(memo: PlannerInput["memos"][number]): boolean {
   return sources.some((text) =>
     recurrenceKeywords.some((keyword) => text.includes(keyword))
   );
+}
+
+function extractShoppingItems(
+  memo: PlannerInput["memos"][number]
+): string[] | null {
+  const collected = new Set<string>();
+
+  const addItem = (value: string | null | undefined) => {
+    if (!value) return;
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    const words = trimmed
+      .split(/\s+/)
+      .filter((word) => !SHOPPING_STOPWORDS.has(word.toLowerCase()));
+    const normalized = words.join(" ").trim();
+    if (normalized.length === 0) return;
+    collected.add(capitalize(normalized));
+  };
+
+  const extracted = memo.extracted;
+  if (extracted) {
+    if (Array.isArray((extracted as { items?: unknown }).items)) {
+      for (const item of (extracted as { items?: unknown }).items as string[]) {
+        addItem(item);
+      }
+    }
+    if (typeof extracted.what === "string") {
+      parseFromText(extracted.what, addItem);
+    }
+    if (typeof extracted.title === "string") {
+      parseFromText(extracted.title, addItem);
+    }
+  }
+
+  if (memo.transcript_excerpt) {
+    parseFromText(memo.transcript_excerpt, addItem);
+  }
+
+  if (memo.tags) {
+    for (const tag of memo.tags) {
+      if (tag.length > 1) {
+        addItem(tag);
+      }
+    }
+  }
+
+  const items = Array.from(collected).filter(Boolean);
+  return items.length > 0 ? items : null;
+}
+
+function parseFromText(text: string, addItem: (value: string) => void) {
+  const lowered = text.toLowerCase();
+  const shoppingTriggers = [
+    "buy",
+    "purchase",
+    "grab",
+    "pick up",
+    "need",
+    "get",
+  ];
+  let working = lowered;
+  for (const trigger of shoppingTriggers) {
+    const idx = working.indexOf(trigger);
+    if (idx !== -1) {
+      working = working.slice(idx + trigger.length);
+      break;
+    }
+  }
+
+  working = working.replace(
+    /\b(i\s+)?(need|wanna|want|have\s+to|gotta)\b/g,
+    ""
+  );
+
+  const segments = working
+    .split(/,|\band\b|\bor\b|\./)
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+
+  for (const segment of segments) {
+    const cleaned = segment
+      .replace(/^(to\s+)?get\s+/g, "")
+      .replace(/^(to\s+)?buy\s+/g, "")
+      .replace(/^(some\s+)?/g, "")
+      .trim();
+    if (!cleaned) continue;
+
+    const words = cleaned.split(/\s+/);
+    const filtered = words.filter(
+      (word) => !SHOPPING_STOPWORDS.has(word.toLowerCase())
+    );
+    const phrase = filtered.join(" ").trim();
+    if (phrase) {
+      addItem(phrase);
+    }
+  }
+}
+
+function capitalize(value: string) {
+  return value.replace(/\b([a-z])/g, (match) => match.toUpperCase());
 }
 
 function sanitizeMediaTitle(title: string | null | undefined): string | null {

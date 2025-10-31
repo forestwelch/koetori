@@ -22,6 +22,9 @@ export interface MediaItemDraft {
   imdbId?: string | null;
   mediaType?: "movie" | "tv" | "music" | "game" | "unknown";
   ratings?: Array<{ source: string; value: string }>;
+  autoTitle?: string | null;
+  autoReleaseYear?: number | null;
+  searchDebug?: Record<string, unknown> | null;
 }
 
 export interface ReminderDraft {
@@ -37,6 +40,7 @@ export interface ShoppingListItemDraft {
   quantity?: string | null;
   category?: string | null;
   urgencyScore?: number | null;
+  items?: string[] | null;
 }
 
 export interface EnrichmentJobContext {

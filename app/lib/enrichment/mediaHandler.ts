@@ -1,5 +1,6 @@
 import { MediaEnrichmentPayload } from "../pipeline/types";
 import { EnrichmentJobResult, MediaItemDraft } from "./types";
+import { searchIgdbGames, igdbCoverUrl } from "../services/igdb";
 
 const OMDB_ENDPOINT = "https://www.omdbapi.com/";
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
@@ -84,9 +85,12 @@ interface TmdbDetailResponse {
 export async function handleMediaTask(
   payload: MediaEnrichmentPayload
 ): Promise<EnrichmentJobResult> {
-  const title = payload.probableTitle ?? deriveTitleFromHints(payload);
+  const baseTitle =
+    payload.overrideTitle ??
+    payload.probableTitle ??
+    deriveTitleFromHints(payload);
 
-  if (!title) {
+  if (!baseTitle) {
     return {
       status: "skipped",
       type: "media",
@@ -94,31 +98,109 @@ export async function handleMediaTask(
     };
   }
 
-  const draft: MediaItemDraft = {
-    title,
-    releaseYear: payload.probableYear ?? null,
-    overview: payload.transcriptExcerpt ?? null,
-    mediaType: payload.probableMediaType ?? "unknown",
+  const targetMediaType =
+    payload.overrideMediaType ?? payload.probableMediaType ?? "unknown";
+
+  const searchDebug: Record<string, unknown> = {
+    probableTitle: payload.probableTitle,
+    overrideTitle: payload.overrideTitle,
+    probableYear: payload.probableYear,
+    overrideYear: payload.overrideYear,
+    probableMediaType: payload.probableMediaType,
+    overrideMediaType: payload.overrideMediaType,
+    rawTextHints: payload.rawTextHints,
   };
 
-  const tmdbResult = await fetchFromTmdb(title, payload);
-  if (tmdbResult) {
-    return {
-      status: "completed",
-      type: "media",
-      draft: { ...draft, ...tmdbResult },
-      payload,
-    };
+  const draft: MediaItemDraft = {
+    title: baseTitle,
+    releaseYear: payload.overrideYear ?? payload.probableYear ?? null,
+    overview: payload.transcriptExcerpt ?? null,
+    mediaType: targetMediaType,
+    autoTitle: baseTitle,
+    autoReleaseYear: payload.overrideYear ?? payload.probableYear ?? null,
+    searchDebug: searchDebug,
+  };
+
+  const results: Array<Partial<MediaItemDraft>> = [];
+
+  const shouldPrefersIgdb = targetMediaType === "game";
+
+  if (shouldPrefersIgdb) {
+    const igdb = await fetchFromIgdb(baseTitle, payload);
+    if (igdb) {
+      results.push(igdb);
+      searchDebug["igdb"] = igdb.searchDebug ?? null;
+    }
   }
 
-  const omdbResult = await fetchFromOmdb(title, payload.probableYear);
-  if (omdbResult) {
-    return {
-      status: "completed",
-      type: "media",
-      draft: { ...draft, ...omdbResult },
-      payload,
-    };
+  const tmdb = await fetchFromTmdb(baseTitle, payload);
+  if (tmdb) {
+    results.push(tmdb);
+    searchDebug["tmdb"] = tmdb.searchDebug ?? null;
+  }
+
+  if (results.length === 0) {
+    const omdb = await fetchFromOmdb(
+      baseTitle,
+      payload.overrideYear ?? payload.probableYear ?? null
+    );
+    if (omdb) {
+      results.push(omdb);
+      searchDebug["omdb"] = omdb.searchDebug ?? null;
+    }
+  }
+
+  if (results.length === 0 && !shouldPrefersIgdb) {
+    const igdb = await fetchFromIgdb(baseTitle, payload);
+    if (igdb) {
+      results.push(igdb);
+      searchDebug["igdb"] = igdb.searchDebug ?? null;
+    }
+  }
+
+  for (const result of results) {
+    if (!result) continue;
+    if (result.title && !payload.overrideTitle) {
+      draft.title = result.title;
+    }
+    if (result.autoTitle) {
+      draft.autoTitle = result.autoTitle;
+    }
+    if (result.autoReleaseYear !== undefined) {
+      draft.autoReleaseYear = result.autoReleaseYear ?? null;
+    }
+    draft.releaseYear =
+      payload.overrideYear ?? result.releaseYear ?? draft.releaseYear;
+    draft.runtimeMinutes =
+      draft.runtimeMinutes ?? result.runtimeMinutes ?? null;
+    draft.posterUrl = draft.posterUrl ?? result.posterUrl ?? null;
+    draft.backdropUrl = draft.backdropUrl ?? result.backdropUrl ?? null;
+    draft.overview = draft.overview ?? result.overview ?? null;
+    draft.trailerUrl = draft.trailerUrl ?? result.trailerUrl ?? null;
+    draft.platforms = draft.platforms ?? result.platforms ?? undefined;
+    draft.providers = draft.providers ?? result.providers ?? undefined;
+    draft.genres = draft.genres ?? result.genres ?? undefined;
+    draft.tmdbId = draft.tmdbId ?? result.tmdbId ?? null;
+    draft.imdbId = draft.imdbId ?? result.imdbId ?? null;
+    draft.mediaType = result.mediaType ?? draft.mediaType;
+    draft.ratings = draft.ratings ?? result.ratings ?? undefined;
+  }
+
+  draft.autoTitle = draft.autoTitle ?? draft.title;
+  draft.autoReleaseYear =
+    draft.autoReleaseYear ??
+    payload.overrideYear ??
+    payload.probableYear ??
+    null;
+  draft.searchDebug = searchDebug;
+
+  if (payload.overrideTitle) {
+    draft.title = payload.overrideTitle;
+  }
+
+  if (!draft.posterUrl && draft.tmdbId) {
+    // ensure we have at least placeholders if TMDb provided id but no poster
+    draft.posterUrl = null;
   }
 
   return {
@@ -195,6 +277,11 @@ async function fetchFromOmdb(
       platforms: undefined,
       providers: undefined,
       imdbId: detail.imdbID ?? null,
+      searchDebug: {
+        source: "omdb",
+        title: detail.Title ?? title,
+        year: detail.Year ?? year,
+      },
     } satisfies Partial<MediaItemDraft>;
   } catch (error) {
     console.warn("[enrichment:media] omdb-fallback-failed", {
@@ -312,6 +399,15 @@ async function fetchFromTmdb(
       target.media_type === "movie" || target.media_type === "tv"
         ? target.media_type
         : (payload.probableMediaType ?? "unknown"),
+    autoTitle: detail.title ?? detail.name ?? title,
+    autoReleaseYear: releaseYear,
+    searchDebug: {
+      source: "tmdb",
+      matchId: detail.id,
+      popularity: target.popularity ?? null,
+      title: detail.title ?? detail.name ?? title,
+      releaseYear,
+    },
   } satisfies Partial<MediaItemDraft>;
 }
 
@@ -497,4 +593,71 @@ async function fetchOmdbDetails(
   }
 
   return detailBody;
+}
+
+async function fetchFromIgdb(
+  title: string,
+  payload: MediaEnrichmentPayload
+): Promise<Partial<MediaItemDraft> | null> {
+  const games = await searchIgdbGames(title, { limit: 6 });
+  if (games.length === 0) {
+    return null;
+  }
+
+  const preferredYear = payload.overrideYear ?? payload.probableYear ?? null;
+
+  const ranked = games
+    .map((game) => {
+      const releaseYear = game.release_dates?.find((r) => r.y)?.y ?? null;
+      let score = 0;
+      if (preferredYear && releaseYear === preferredYear) {
+        score += 40;
+      }
+      if (game.rating) {
+        score += game.rating;
+      }
+      if (game.name?.toLowerCase() === title.toLowerCase()) {
+        score += 60;
+      }
+      return { game, releaseYear, score };
+    })
+    .sort((a, b) => b.score - a.score);
+
+  const target = ranked[0]?.game ?? games[0];
+  if (!target) return null;
+
+  const releaseYear =
+    target.release_dates?.find((r) => r.y)?.y ?? preferredYear ?? null;
+
+  const coverUrl = target.cover?.image_id
+    ? igdbCoverUrl(target.cover.image_id)
+    : null;
+
+  const platforms = Array.isArray(target.platforms)
+    ? target.platforms
+        .map((platform) => platform?.name)
+        .filter((name): name is string => Boolean(name))
+    : undefined;
+
+  return {
+    title: target.name ?? title,
+    releaseYear,
+    posterUrl: coverUrl,
+    overview: target.summary ?? payload.transcriptExcerpt ?? null,
+    providers: platforms,
+    platforms,
+    mediaType: "game",
+    ratings: target.rating
+      ? [{ source: "IGDB", value: `${Math.round(target.rating)}/100` }]
+      : undefined,
+    autoTitle: target.name ?? title,
+    autoReleaseYear: releaseYear,
+    searchDebug: {
+      source: "igdb",
+      id: target.id,
+      slug: target.slug,
+      platforms,
+      releaseYear,
+    },
+  } satisfies Partial<MediaItemDraft>;
 }

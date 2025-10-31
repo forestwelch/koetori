@@ -1,15 +1,22 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { MediaItem } from "../../types/enrichment";
-import { Loader2, RefreshCw } from "lucide-react";
+import { Loader2, RefreshCw, Edit3 } from "lucide-react";
 
 interface MediaLibraryProps {
   items: MediaItem[];
   isLoading: boolean;
   error?: Error | null;
-  onRefresh?: (memoId: string) => Promise<void>;
+  onRefresh?: (options: {
+    memoId: string;
+    overrideTitle?: string;
+    overrideYear?: number | null;
+    overrideMediaType?: MediaItem["mediaType"];
+  }) => Promise<void>;
   refreshingId?: string | null;
 }
 
@@ -20,6 +27,44 @@ export function MediaLibrary({
   onRefresh,
   refreshingId,
 }: MediaLibraryProps) {
+  const [fixingId, setFixingId] = useState<string | null>(null);
+
+  const handleFixMatch = async (item: MediaItem) => {
+    if (!onRefresh) return;
+    const defaultTitle = item.customTitle ?? item.autoTitle ?? item.title;
+    const newTitle = prompt("Update title", defaultTitle ?? item.title);
+    if (!newTitle) return;
+
+    const yearInput = prompt(
+      "Release year (optional)",
+      (item.customReleaseYear ?? item.autoReleaseYear ?? item.releaseYear ?? "")
+        .toString()
+        .replace("null", "")
+    );
+    let overrideYear: number | null = null;
+    if (yearInput) {
+      const parsed = Number.parseInt(yearInput, 10);
+      if (!Number.isNaN(parsed)) {
+        overrideYear = parsed;
+      }
+    }
+
+    setFixingId(item.memoId);
+    try {
+      await onRefresh({
+        memoId: item.memoId,
+        overrideTitle: newTitle,
+        overrideYear,
+        overrideMediaType: item.mediaType ?? undefined,
+      });
+    } catch (error) {
+      console.error("Failed to fix match", error);
+      alert("Unable to refresh media item. Please try again.");
+    } finally {
+      setFixingId(null);
+    }
+  };
+
   return (
     <section className="space-y-4">
       <header className="flex items-center justify-between">
@@ -111,8 +156,12 @@ export function MediaLibrary({
                 {onRefresh && (
                   <button
                     type="button"
-                    onClick={() => onRefresh(item.memoId)}
-                    disabled={refreshingId === item.memoId}
+                    onClick={() =>
+                      onRefresh({ memoId: item.memoId }).catch(() => undefined)
+                    }
+                    disabled={
+                      refreshingId === item.memoId || fixingId === item.memoId
+                    }
                     className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full border border-slate-700/40 bg-[#101525]/70 px-2 py-1 text-[11px] text-slate-300 transition hover:border-indigo-500/40 hover:text-white disabled:opacity-60"
                   >
                     {refreshingId === item.memoId ? (
@@ -121,6 +170,23 @@ export function MediaLibrary({
                       <RefreshCw className="h-3 w-3" />
                     )}
                     Refresh
+                  </button>
+                )}
+                {onRefresh && (
+                  <button
+                    type="button"
+                    onClick={() => handleFixMatch(item)}
+                    disabled={
+                      fixingId === item.memoId || refreshingId === item.memoId
+                    }
+                    className="absolute right-4 top-12 inline-flex items-center gap-1 rounded-full border border-slate-700/40 bg-[#101525]/70 px-2 py-1 text-[11px] text-indigo-200 transition hover:border-indigo-500/40 hover:text-white disabled:opacity-60"
+                  >
+                    {fixingId === item.memoId ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Edit3 className="h-3 w-3" />
+                    )}
+                    Fix match
                   </button>
                 )}
                 <CardContent className="space-y-3 text-sm text-slate-300">
@@ -183,6 +249,51 @@ export function MediaLibrary({
                   Metadata is still sparse. Try refreshing to fetch art and
                   streaming sources.
                 </div>
+              )}
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-700/30 bg-[#0a0f1c]/70 px-4 py-3 text-[11px] text-slate-400">
+                <div className="space-y-1">
+                  <div>
+                    Auto title:{" "}
+                    <span className="text-slate-300">
+                      {item.autoTitle ?? item.title}
+                    </span>
+                  </div>
+                  {item.customTitle && (
+                    <div>
+                      Custom title:{" "}
+                      <span className="text-indigo-200">
+                        {item.customTitle}
+                      </span>
+                    </div>
+                  )}
+                  <div>
+                    Auto year:{" "}
+                    <span className="text-slate-300">
+                      {item.autoReleaseYear ?? "—"}
+                    </span>
+                    {item.customReleaseYear && (
+                      <span className="ml-2 text-indigo-200">
+                        Custom year: {item.customReleaseYear}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <Link
+                  href={`/#memo-${item.memoId}`}
+                  className="inline-flex items-center gap-1 rounded-full border border-slate-700/40 px-3 py-1 text-slate-300 transition hover:border-indigo-500/40 hover:text-white"
+                >
+                  View memo
+                </Link>
+              </div>
+              {item.searchDebug && (
+                <details className="border-t border-slate-700/20 bg-[#090d16]/60 px-4 py-2 text-[11px] text-slate-500">
+                  <summary className="cursor-pointer text-slate-400">
+                    Debug info
+                  </summary>
+                  <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap text-left text-[10px] text-slate-500">
+                    {JSON.stringify(item.searchDebug, null, 2)}
+                  </pre>
+                </details>
               )}
             </Card>
           ))}

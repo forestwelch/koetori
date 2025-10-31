@@ -53,8 +53,10 @@ Actions:
 - UI: gallery of cards with quick actions (watch trailer, mark consumed, share).
 - [x] Spec enrichment worker contract (input: memo IDs + text snippets, output: `media_items`).
 - [x] Wire up first API client (TMDb + OMDb fallback) with caching + rate limit handling.
+- [x] Add IGDB client for games (via Twitch OAuth) with cover art + platform metadata.
 - [x] Design database schema for `media_items` storage + memo linkage.
 - [x] Add per-memo re-enrichment endpoint + UI refresh action.
+- [x] Surface memo references + manual override flow in the media gallery.
 - [ ] Build gallery view with grouped filters (type, mood, backlog status).
 
 ### 3B. Reminders & Tasks

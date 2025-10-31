@@ -9,6 +9,9 @@ export const dynamic = "force-dynamic";
 
 interface RequeuePayload {
   memoId?: string;
+  overrideTitle?: string | null;
+  overrideYear?: number | null;
+  overrideMediaType?: "movie" | "tv" | "music" | "game" | "unknown";
 }
 
 function unauthorized() {
@@ -35,6 +38,15 @@ export async function POST(request: NextRequest) {
 
   const body = (await request.json().catch(() => ({}))) as RequeuePayload;
   const memoId = body.memoId;
+  const overrideTitle =
+    typeof body.overrideTitle === "string" ? body.overrideTitle.trim() : null;
+  const overrideYear =
+    typeof body.overrideYear === "number"
+      ? body.overrideYear
+      : typeof body.overrideYear === "string"
+        ? Number.parseInt(body.overrideYear, 10)
+        : null;
+  const overrideMediaType = body.overrideMediaType ?? null;
 
   if (!memoId) {
     return NextResponse.json({ error: "memoId is required" }, { status: 400 });
@@ -88,8 +100,51 @@ export async function POST(request: NextRequest) {
     transcriptionId: memo.transcription_id,
   });
 
+  const queue = createQueueDispatcher();
+
+  const mediaTasks = tasks.filter((task) => task.type === "media");
+  if (
+    mediaTasks.length > 0 &&
+    (overrideTitle || overrideYear || overrideMediaType)
+  ) {
+    for (const task of mediaTasks) {
+      if (overrideTitle) {
+        task.payload.overrideTitle = overrideTitle;
+        task.payload.probableTitle = overrideTitle;
+      }
+      if (overrideYear !== null && !Number.isNaN(overrideYear)) {
+        task.payload.overrideYear = overrideYear;
+        task.payload.probableYear = overrideYear;
+      }
+      if (overrideMediaType) {
+        task.payload.probableMediaType = overrideMediaType;
+        task.payload.overrideMediaType = overrideMediaType;
+      }
+    }
+  }
+
+  if (mediaTasks.length === 0 && overrideTitle) {
+    tasks.push({
+      type: "media",
+      payload: {
+        transcriptionId: memo.transcription_id,
+        username: memo.username,
+        memoId: memo.id,
+        memoCategory: memo.category,
+        tags: (memo.tags as string[] | null) ?? null,
+        extracted: (memo.extracted as Record<string, unknown> | null) ?? null,
+        transcriptExcerpt: memo.transcript_excerpt ?? null,
+        probableTitle: overrideTitle,
+        probableYear: overrideYear ?? null,
+        probableMediaType: overrideMediaType ?? "unknown",
+        overrideTitle,
+        overrideYear: overrideYear ?? null,
+        overrideMediaType: overrideMediaType ?? "unknown",
+      },
+    });
+  }
+
   if (tasks.length > 0) {
-    const queue = createQueueDispatcher();
     await queue.enqueueMany(tasks);
   } else {
     await markMemosProcessed([memo.id]);

@@ -12,86 +12,75 @@ async function fetchMediaItems(username: string): Promise<MediaItem[]> {
   const { data, error } = await supabase
     .from("media_items")
     .select(
-      `memo_id, title, release_year, runtime_minutes, poster_url, backdrop_url, overview, trailer_url, platforms, providers, genres, ratings, tmdb_id, imdb_id, media_type, updated_at, memos!inner(transcript_excerpt, tags, username)`
+      `memo_id, title, release_year, runtime_minutes, poster_url, backdrop_url, overview, trailer_url, platforms, providers, genres, ratings, tmdb_id, imdb_id, media_type, auto_title, custom_title, auto_release_year, custom_release_year, search_debug, updated_at, memos!inner(transcript_excerpt, tags, username)`
     )
     .eq("memos.username", username)
     .order("updated_at", { ascending: false })
-    .limit(20);
+    .limit(30);
 
   if (error) {
     throw new Error(`Failed to fetch media items: ${error.message}`);
   }
 
-  const items = (data ?? [])
-    .map((row) => {
-      const tags = Array.isArray(row.memos?.tags) ? row.memos.tags : [];
-      const platformsRaw = Array.isArray(row.platforms) ? row.platforms : [];
-      const providersRaw = Array.isArray(row.providers) ? row.providers : [];
+  const items = (data ?? []).map((row) => {
+    const tags = Array.isArray(row.memos?.tags) ? row.memos.tags : [];
+    const platformsRaw = Array.isArray(row.platforms) ? row.platforms : [];
+    const providersRaw = Array.isArray(row.providers) ? row.providers : [];
 
-      const normalizedPlatforms = platformsRaw
-        .map((platform) =>
-          typeof platform === "string" ? platform.trim() : ""
-        )
-        .filter((platform) => platform.length > 0);
-      const normalizedProviders = providersRaw
-        .map((provider) =>
-          typeof provider === "string" ? provider.trim() : ""
-        )
-        .filter((provider) => provider.length > 0);
+    const normalizedPlatforms = platformsRaw
+      .map((platform) => (typeof platform === "string" ? platform.trim() : ""))
+      .filter((platform) => platform.length > 0);
+    const normalizedProviders = providersRaw
+      .map((provider) => (typeof provider === "string" ? provider.trim() : ""))
+      .filter((provider) => provider.length > 0);
 
-      const title = row.title?.trim() ?? "Untitled";
-      const releaseYear = row.release_year ?? null;
-      const posterUrl =
-        row.poster_url && row.poster_url !== "N/A" ? row.poster_url : null;
-      const backdropUrl =
-        row.backdrop_url && row.backdrop_url !== "N/A"
-          ? row.backdrop_url
-          : null;
-      const trailerUrl =
-        row.trailer_url && row.trailer_url !== "N/A" ? row.trailer_url : null;
-      const genres = Array.isArray(row.genres)
-        ? row.genres.filter(
-            (genre: unknown): genre is string =>
-              typeof genre === "string" && genre.length > 0
-          )
+    const title = row.title?.trim() ?? "Untitled";
+    const releaseYear = row.release_year ?? null;
+    const posterUrl =
+      row.poster_url && row.poster_url !== "N/A" ? row.poster_url : null;
+    const backdropUrl =
+      row.backdrop_url && row.backdrop_url !== "N/A" ? row.backdrop_url : null;
+    const trailerUrl =
+      row.trailer_url && row.trailer_url !== "N/A" ? row.trailer_url : null;
+    const genres = Array.isArray(row.genres)
+      ? row.genres.filter(
+          (genre: unknown): genre is string =>
+            typeof genre === "string" && genre.length > 0
+        )
+      : null;
+    const mediaTypeValue = row.media_type;
+    const normalizedMediaType =
+      mediaTypeValue &&
+      ["movie", "tv", "music", "game", "unknown"].includes(mediaTypeValue)
+        ? (mediaTypeValue as MediaItem["mediaType"])
         : null;
-      const mediaTypeValue = row.media_type;
-      const normalizedMediaType =
-        mediaTypeValue &&
-        ["movie", "tv", "music", "game", "unknown"].includes(mediaTypeValue)
-          ? (mediaTypeValue as MediaItem["mediaType"])
-          : null;
 
-      return {
-        memoId: row.memo_id,
-        title,
-        releaseYear,
-        runtimeMinutes: row.runtime_minutes,
-        posterUrl,
-        backdropUrl,
-        overview: row.overview ?? null,
-        trailerUrl,
-        platforms: normalizedPlatforms.length > 0 ? normalizedPlatforms : null,
-        providers: normalizedProviders.length > 0 ? normalizedProviders : null,
-        genres,
-        ratings: Array.isArray(row.ratings) ? row.ratings : null,
-        transcriptExcerpt: row.memos?.transcript_excerpt ?? null,
-        tags,
-        tmdbId: row.tmdb_id ?? null,
-        imdbId: row.imdb_id ?? null,
-        mediaType: normalizedMediaType,
-        updatedAt: new Date(row.updated_at),
-      } satisfies MediaItem;
-    })
-    .filter((item) => {
-      const hasPoster = Boolean(item.posterUrl);
-      const hasYear = item.releaseYear !== null;
-      const hasProviders =
-        (item.providers && item.providers.length > 0) ||
-        (item.platforms && item.platforms.length > 0);
-      return hasPoster || hasYear || hasProviders;
-    })
-    .slice(0, 12);
+    return {
+      memoId: row.memo_id,
+      title,
+      releaseYear,
+      runtimeMinutes: row.runtime_minutes,
+      posterUrl,
+      backdropUrl,
+      overview: row.overview ?? null,
+      trailerUrl,
+      platforms: normalizedPlatforms.length > 0 ? normalizedPlatforms : null,
+      providers: normalizedProviders.length > 0 ? normalizedProviders : null,
+      genres,
+      ratings: Array.isArray(row.ratings) ? row.ratings : null,
+      transcriptExcerpt: row.memos?.transcript_excerpt ?? null,
+      tags,
+      tmdbId: row.tmdb_id ?? null,
+      imdbId: row.imdb_id ?? null,
+      mediaType: normalizedMediaType,
+      autoTitle: row.auto_title ?? title,
+      customTitle: row.custom_title ?? null,
+      autoReleaseYear: row.auto_release_year ?? releaseYear,
+      customReleaseYear: row.custom_release_year ?? null,
+      searchDebug: row.search_debug ?? null,
+      updatedAt: new Date(row.updated_at),
+    } satisfies MediaItem;
+  });
 
   return items;
 }
@@ -104,7 +93,7 @@ async function fetchReminders(username: string): Promise<ReminderItem[]> {
     )
     .eq("memos.username", username)
     .order("updated_at", { ascending: false })
-    .limit(20);
+    .limit(40);
 
   if (error) {
     throw new Error(`Failed to fetch reminders: ${error.message}`);
@@ -133,17 +122,24 @@ async function fetchShoppingItems(
   const { data, error } = await supabase
     .from("shopping_list_items")
     .select(
-      `memo_id, item_name, quantity, category, urgency_score, status, updated_at, memos!inner(transcript_excerpt, username)`
+      `memo_id, item_name, quantity, category, urgency_score, status, items, updated_at, memos!inner(transcript_excerpt, username)`
     )
     .eq("memos.username", username)
     .order("updated_at", { ascending: false })
-    .limit(30);
+    .limit(40);
 
   if (error) {
     throw new Error(`Failed to fetch shopping list items: ${error.message}`);
   }
 
   return (data ?? []).map((row) => {
+    const parsedItems = Array.isArray(row.items)
+      ? (row.items as string[]).filter((item) => typeof item === "string")
+      : [];
+    if (parsedItems.length === 0 && typeof row.item_name === "string") {
+      parsedItems.push(row.item_name);
+    }
+
     return {
       memoId: row.memo_id,
       itemName: row.item_name,
@@ -152,6 +148,7 @@ async function fetchShoppingItems(
       urgencyScore: row.urgency_score,
       status: row.status,
       transcriptExcerpt: row.memos?.transcript_excerpt ?? null,
+      items: parsedItems,
       updatedAt: new Date(row.updated_at),
     } satisfies ShoppingListItem;
   });

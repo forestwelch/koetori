@@ -48,11 +48,11 @@ export function EnrichmentDashboard({ username }: EnrichmentDashboardProps) {
         items={mediaItems}
         isLoading={mediaLoading}
         error={mediaError instanceof Error ? mediaError : undefined}
-        onRefresh={async (memoId) => {
-          if (!memoId) return;
-          setRefreshingId(memoId);
+        onRefresh={async (options) => {
+          if (!options.memoId) return;
+          setRefreshingId(options.memoId);
           try {
-            await requeue(memoId);
+            await requeue(options);
           } finally {
             setRefreshingId(null);
           }

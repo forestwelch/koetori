@@ -59,29 +59,19 @@ export function ShoppingListBoard({
             <Card
               key={item.memoId}
               variant="default"
-              padding="md"
+              padding="sm"
               className="border-slate-700/30 bg-[#101722]/70"
             >
               <CardContent className="flex items-start gap-3">
-                <span className="mt-1 flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-300">
+                <span className="mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-300">
                   <ShoppingBag className="h-4 w-4" />
                 </span>
 
                 <div className="flex-1 space-y-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-sm font-medium text-white">
-                      {item.itemName}
-                    </h3>
-                    {item.quantity && (
-                      <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] text-emerald-200">
-                        Qty {item.quantity}
-                      </span>
-                    )}
-                    {item.category && (
-                      <span className="rounded-full border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 text-[11px] text-sky-200">
-                        {item.category}
-                      </span>
-                    )}
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-slate-300">
+                    <span className="text-sm font-medium text-white">
+                      {item.category ?? "Shopping"}
+                    </span>
                     <span className="rounded-full border border-slate-700/40 bg-slate-800/60 px-2 py-0.5 text-[11px] text-slate-300">
                       {STATUS_BADGES[item.status] ?? item.status}
                     </span>
@@ -92,15 +82,30 @@ export function ShoppingListBoard({
                     )}
                   </div>
 
-                  <div className="text-xs text-slate-400">
-                    <span className="font-medium text-slate-300">
-                      Last updated:
-                    </span>{" "}
-                    {item.updatedAt.toLocaleString()}
+                  <ul className="grid gap-1 text-sm text-slate-200 md:grid-cols-2">
+                    {item.items.map((entry, index) => (
+                      <li
+                        key={`${item.memoId}-${index}`}
+                        className="flex items-center gap-2 rounded-md border border-slate-700/30 bg-[#0d1421]/70 px-2 py-1"
+                      >
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                        <span className="flex-1 text-sm">{entry}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+                    <span>Last updated: {item.updatedAt.toLocaleString()}</span>
+                    <a
+                      href={`/#memo-${item.memoId}`}
+                      className="rounded-full border border-slate-700/40 px-2 py-0.5 text-slate-300 transition hover:border-emerald-400/50 hover:text-white"
+                    >
+                      View memo
+                    </a>
                   </div>
 
                   {item.transcriptExcerpt && (
-                    <blockquote className="rounded-md border border-slate-700/30 bg-slate-900/30 px-3 py-2 text-xs italic text-slate-400">
+                    <blockquote className="rounded-md border border-slate-700/30 bg-slate-900/30 px-3 py-2 text-[11px] italic text-slate-400">
                       “{item.transcriptExcerpt}”
                     </blockquote>
                   )}

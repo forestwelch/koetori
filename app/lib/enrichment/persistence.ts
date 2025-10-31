@@ -57,7 +57,11 @@ async function upsertMediaItem(
     {
       memo_id: payload.memoId,
       title: draft.title,
+      auto_title: draft.autoTitle ?? draft.title,
+      custom_title: payload.overrideTitle ?? null,
       release_year: draft.releaseYear ?? null,
+      auto_release_year: draft.autoReleaseYear ?? draft.releaseYear ?? null,
+      custom_release_year: payload.overrideYear ?? null,
       runtime_minutes: draft.runtimeMinutes ?? null,
       poster_url: draft.posterUrl ?? null,
       backdrop_url: draft.backdropUrl ?? null,
@@ -70,6 +74,7 @@ async function upsertMediaItem(
       imdb_id: draft.imdbId ?? null,
       media_type: draft.mediaType ?? null,
       ratings: draft.ratings ?? null,
+      search_debug: draft.searchDebug ?? null,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "memo_id" }
@@ -96,6 +101,7 @@ async function upsertReminder(
       recurrence_text: draft.recurrenceText ?? null,
       priority_score: draft.priorityScore ?? null,
       is_recurring: draft.recurrenceHint ?? false,
+      recurrence_rule: null,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "memo_id" }
@@ -121,6 +127,7 @@ async function upsertShoppingItem(
       quantity: draft.quantity ?? null,
       category: draft.category ?? null,
       urgency_score: draft.urgencyScore ?? null,
+      items: draft.items ?? null,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "memo_id" }

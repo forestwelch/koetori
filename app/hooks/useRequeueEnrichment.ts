@@ -2,11 +2,19 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+interface RequeueInput {
+  memoId: string;
+  overrideTitle?: string;
+  overrideYear?: number | null;
+  overrideMediaType?: "movie" | "tv" | "music" | "game" | "unknown";
+}
+
 export function useRequeueEnrichment(username: string | null) {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (memoId: string) => {
+    mutationFn: async (input: RequeueInput) => {
+      const { memoId, overrideTitle, overrideYear, overrideMediaType } = input;
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
       };
@@ -19,7 +27,12 @@ export function useRequeueEnrichment(username: string | null) {
       const response = await fetch("/api/enrichment/requeue", {
         method: "POST",
         headers,
-        body: JSON.stringify({ memoId }),
+        body: JSON.stringify({
+          memoId,
+          overrideTitle: overrideTitle ?? undefined,
+          overrideYear: overrideYear ?? undefined,
+          overrideMediaType: overrideMediaType ?? undefined,
+        }),
       });
 
       if (!response.ok) {

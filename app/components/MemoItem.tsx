@@ -162,6 +162,7 @@ export function MemoItem({
 
   return (
     <div
+      id={`memo-${memo.id}`}
       className="relative"
       style={{
         transform: `translateX(${swipeX}px)`,

@@ -16,6 +16,11 @@ export interface MediaItem {
   ratings: Array<{ source: string; value: string }> | null;
   transcriptExcerpt: string | null;
   tags: string[];
+  autoTitle: string | null;
+  customTitle: string | null;
+  autoReleaseYear: number | null;
+  customReleaseYear: number | null;
+  searchDebug: Record<string, unknown> | null;
   updatedAt: Date;
 }
 
@@ -41,5 +46,6 @@ export interface ShoppingListItem {
   urgencyScore: number | null;
   status: string;
   transcriptExcerpt: string | null;
+  items: string[];
   updatedAt: Date;
 }

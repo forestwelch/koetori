@@ -75,6 +75,9 @@ export interface MediaEnrichmentPayload extends BaseEnrichmentPayload {
   probableYear?: number | null;
   rawTextHints?: string[];
   probableMediaType?: "movie" | "tv" | "music" | "game" | "unknown";
+  overrideTitle?: string | null;
+  overrideYear?: number | null;
+  overrideMediaType?: "movie" | "tv" | "music" | "game" | "unknown";
 }
 
 export interface ReminderEnrichmentPayload extends BaseEnrichmentPayload {
@@ -90,6 +93,7 @@ export interface ShoppingEnrichmentPayload extends BaseEnrichmentPayload {
   quantityGuess?: string | null;
   categoryGuess?: string | null;
   urgencyScore?: number | null;
+  items?: string[] | null;
 }
 
 export type EnrichmentTask =
