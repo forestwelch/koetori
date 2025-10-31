@@ -1,13 +1,29 @@
 "use client";
 
 import {
-  getCategoryColor,
   getCategoryIcon,
   getCategoryLabel,
+  getCategoryIconColor,
 } from "../lib/ui-utils";
 import { Category } from "../types/memo";
 import { categories, FILTER_LABELS } from "../lib/constants";
 import { Button } from "./ui/Button";
+import { Sparkles } from "lucide-react";
+
+type FilterCategory = Category | "all";
+
+const activeContainerStyles: Record<FilterCategory, string> = {
+  all: "bg-slate-500/15 border border-slate-300/40",
+  journal: "bg-emerald-500/15 border border-emerald-400/40",
+  media: "bg-sky-500/15 border border-sky-400/40",
+  event: "bg-amber-500/15 border border-amber-400/40",
+  therapy: "bg-rose-500/15 border border-rose-400/40",
+  tarot: "bg-purple-500/15 border border-purple-400/40",
+  todo: "bg-yellow-500/15 border border-yellow-400/40",
+  idea: "bg-violet-500/15 border border-violet-400/40",
+  "to buy": "bg-cyan-500/15 border border-cyan-400/40",
+  other: "bg-slate-500/15 border border-slate-400/40",
+};
 
 interface QuickFiltersProps {
   categoryFilter: Category | "all";
@@ -34,8 +50,15 @@ export function QuickFilters({
     <div className="hidden lg:flex gap-2 flex-wrap items-center">
       {categories.map((cat) => {
         const IconComponent =
-          cat !== "all" ? getCategoryIcon(cat as Category) : null;
+          cat !== "all" ? getCategoryIcon(cat as Category) : Sparkles;
         const isActive = categoryFilter === cat;
+
+        const inactiveStyles =
+          "bg-[#0d0e14]/40 border border-slate-700/30 text-slate-400";
+        const activeStyles = activeContainerStyles[cat as FilterCategory];
+        const iconColor = isActive
+          ? getCategoryIconColor(cat as Category)
+          : "text-slate-400";
 
         return (
           <Button
@@ -43,18 +66,16 @@ export function QuickFilters({
             onClick={() => handleCategoryClick(cat as Category | "all")}
             variant="unstyled"
             size="custom"
-            className={`group relative flex items-center gap-2 overflow-hidden rounded-full border px-2 py-1 text-xs font-medium transition-all duration-300 ${
-              isActive
-                ? cat === "all"
-                  ? "border-slate-300/70 bg-slate-500/20 text-white shadow-[0_0_20px_rgba(148,163,184,0.4)]"
-                  : `${getCategoryColor(cat as Category).split(" ")[0]} text-white shadow-[0_0_22px_rgba(94,234,212,0.35)]`
-                : "border-slate-700/50 bg-[#0d0e14]/50 text-slate-300 hover:border-slate-500/60 hover:bg-[#131622]/70"
+            aria-pressed={isActive}
+            className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+              isActive ? activeStyles : inactiveStyles
             }`}
           >
-            {IconComponent && (
-              <IconComponent className="h-4 w-4 flex-shrink-0" />
-            )}
-            <span className="max-w-0 overflow-hidden whitespace-nowrap pl-1 text-[11px] transition-all duration-300 group-hover:max-w-[120px] group-hover:pl-2">
+            <IconComponent
+              className={`h-4 w-4 ${iconColor}`}
+              aria-hidden="true"
+            />
+            <span className="sr-only">
               {cat === "all"
                 ? FILTER_LABELS.CATEGORY_ALL
                 : getCategoryLabel(cat as Category)}
