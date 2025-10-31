@@ -250,8 +250,8 @@ export function MediaCard({
       {!item.posterUrl &&
         !(item.providers?.length || item.platforms?.length) && (
           <div className="relative border-t border-amber-500/30 bg-amber-500/10 px-4 py-3 text-[11px] text-amber-200">
-            Metadata is still sparse. Try using Fix match to fetch art and
-            platform details.
+            Metadata is still sparse. Try using &quot;Fix match&quot; to fetch
+            art and platform details.
           </div>
         )}
       {item.searchDebug && (

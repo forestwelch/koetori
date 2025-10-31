@@ -5,7 +5,7 @@ import { Modal } from "../ui/Modal";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { MediaItem } from "../../types/enrichment";
-import { Film, Tv, Gamepad2, BookOpen, Music4, Sparkles } from "lucide-react";
+import { Film, Tv, Gamepad2, BookOpen, Music4 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 const MEDIA_TYPES: Array<{
@@ -68,8 +68,6 @@ export function FixMatchModal({
     });
     onClose();
   };
-
-  const selectedTypeMeta = MEDIA_TYPES.find((t) => t.value === mediaType);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Fix Match" size="sm">

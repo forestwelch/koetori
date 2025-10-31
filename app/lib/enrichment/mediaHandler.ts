@@ -6,6 +6,7 @@ import {
   fetchIgdbTimeToBeat,
 } from "../services/igdb";
 import { normalizePlatformNames } from "./platformMapping";
+import { sanitizeMediaTitle } from "./mediaTitleUtils";
 
 const OMDB_ENDPOINT = "https://www.omdbapi.com/";
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
@@ -239,22 +240,27 @@ export async function handleMediaTask(
 function deriveTitleFromHints(payload: MediaEnrichmentPayload) {
   if (payload.extracted) {
     const candidate = payload.extracted.title ?? payload.extracted.name;
-    if (typeof candidate === "string" && candidate.trim()) {
-      return candidate.trim();
+    if (typeof candidate === "string") {
+      const sanitized = sanitizeMediaTitle(candidate);
+      if (sanitized) return sanitized;
     }
   }
 
   if (payload.tags) {
-    const taggedTitle = payload.tags.find((tag) => tag.length > 3);
-    if (taggedTitle) {
-      return taggedTitle;
+    for (const tag of payload.tags) {
+      if (tag.length > 3) {
+        const sanitized = sanitizeMediaTitle(tag);
+        if (sanitized) return sanitized;
+      }
     }
   }
 
   if (payload.rawTextHints) {
-    const hint = payload.rawTextHints.find((text) => text.length > 3);
-    if (hint) {
-      return hint;
+    for (const hint of payload.rawTextHints) {
+      if (hint.length > 3) {
+        const sanitized = sanitizeMediaTitle(hint);
+        if (sanitized) return sanitized;
+      }
     }
   }
 
@@ -486,6 +492,25 @@ function scoreSearchResult(
   if (probableYear && release.startsWith(String(probableYear))) {
     score += 25;
   }
+
+  // Prefer earlier/original releases when year is not specified
+  // This helps select "Ghost in the Shell" (1995) over "Ghost in the Shell 2.0" (2017)
+  if (!probableYear && release) {
+    const releaseYear = Number.parseInt(release.slice(0, 4), 10);
+    if (!Number.isNaN(releaseYear)) {
+      // Prefer releases from 1970-2010 (era of many classic originals)
+      // Give a small bonus to earlier releases
+      if (releaseYear >= 1970 && releaseYear <= 2010) {
+        score += 10;
+      }
+      // Small penalty for very recent remakes/sequels (2015+) when we're looking for originals
+      // But only apply if popularity is similar (within 2 points)
+      if (releaseYear >= 2015 && result.popularity && result.popularity < 10) {
+        score -= 5;
+      }
+    }
+  }
+
   return score;
 }
 

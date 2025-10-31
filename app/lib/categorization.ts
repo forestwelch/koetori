@@ -57,7 +57,7 @@ Input: "What was that restaurant Thomas recommended? Need to look that up. Shoul
 Output: 1 memo (all Thomas-related plans)
 
 CATEGORIES:
-- media: Movie, book, TV show, podcast, music recommendations
+- media: Movie, book, TV show, podcast, music recommendations (NOT museums, galleries, exhibitions, restaurants, or other physical locations)
 - event: Calendar events, meetings, social plans
 - journal: Personal reflections, daily thoughts
 - therapy: Therapy session insights, mental health notes
@@ -76,7 +76,7 @@ RESPONSE FORMAT (valid JSON only):
       "confidence": 0.95,
       "transcript_excerpt": "The relevant portion of the transcript that relates to this specific memo (the actual words from the recording)",
       "extracted": {
-        "title": "main subject",
+        "title": "main subject (for media items, extract ONLY the title name without action verbs like 'watch', 'play', 'read', e.g., 'Ghost in the Shell' not 'watch Ghost in the Shell')",
         "who": ["person1"],
         "when": "date/time",
         "where": "location",
@@ -98,6 +98,9 @@ Each memo should follow the same categorization rules as the single-memo prompt:
 - Choose the BEST category
 - Provide confidence (0.0-1.0)
 - Extract structured data (title, people, dates, locations, what)
+- For media items: Extract ONLY the media title in the "title" field, WITHOUT action verbs (e.g., "Ghost in the Shell" not "watch Ghost in the Shell", "INSIDE" not "play INSIDE again")
+- Detect action verbs to infer media type: "play" suggests a game, "watch" suggests movie/TV, "read" suggests a book
+- Do NOT categorize physical locations (museums, galleries, restaurants) as "media" - use "todo" or "event" instead
 - Generate 2-5 relevant tags
 - Star if urgent/important/priority
 - Estimate size for actionable items (S/M/L)

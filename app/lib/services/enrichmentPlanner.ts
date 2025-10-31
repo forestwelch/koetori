@@ -4,6 +4,7 @@ import {
   ReminderEnrichmentPayload,
   ShoppingEnrichmentPayload,
 } from "../pipeline/types";
+import { sanitizeMediaTitle } from "../enrichment/mediaTitleUtils";
 
 interface PlannerInput {
   memos: Array<{
@@ -44,13 +45,6 @@ const MEDIA_KEYWORDS: Array<{
 ];
 const REMINDER_CATEGORIES = new Set(["todo", "reminder", "event"]);
 const SHOPPING_CATEGORIES = new Set(["to buy", "shopping", "purchase"]);
-const MEDIA_TITLE_BLOCKLIST = new Set([
-  "youtube",
-  "spotify",
-  "soundcloud",
-  "link",
-  "watch",
-]);
 const SHOPPING_STOPWORDS = new Set([
   "some",
   "a",
@@ -100,6 +94,33 @@ export function planEnrichmentTasks(input: PlannerInput): EnrichmentTask[] {
       inferredMediaType !== "unknown";
 
     if (looksLikeMedia) {
+      // Filter out non-media items like museums, galleries, restaurants
+      const allText = [
+        memo.transcript_excerpt,
+        inferStringField(memo.extracted, ["title", "name", "what", "where"]),
+        ...(memo.tags || []),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      const nonMediaKeywords = [
+        "museum",
+        "gallery",
+        "exhibition",
+        "restaurant",
+        "cafe",
+        "location",
+        "place to visit",
+        "go to the",
+        "visit the",
+      ];
+
+      if (nonMediaKeywords.some((keyword) => allText.includes(keyword))) {
+        // Skip media enrichment for non-media locations
+        continue;
+      }
+
       const probableTitle = deriveMediaTitle(memo);
       if (!probableTitle) {
         continue;
@@ -471,14 +492,4 @@ function capitalize(value: string) {
   return value.replace(/\b([a-z])/g, (match) => match.toUpperCase());
 }
 
-function sanitizeMediaTitle(title: string | null | undefined): string | null {
-  if (!title) return null;
-  const trimmed = title.trim();
-  if (trimmed.length < 3) return null;
-
-  const normalized = trimmed.toLowerCase();
-  if (MEDIA_TITLE_BLOCKLIST.has(normalized)) return null;
-  if (/https?:\/\//.test(normalized)) return null;
-
-  return trimmed;
-}
+// sanitizeMediaTitle is now imported from ../enrichment/mediaTitleUtils
