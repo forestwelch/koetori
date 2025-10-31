@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { MediaItem } from "../../types/enrichment";
 import {
   Loader2,
-  RefreshCw,
   Wand2,
   Trash2,
   Sparkles,
@@ -17,7 +16,6 @@ import {
   BookOpen,
   Music4,
   ExternalLink,
-  Clock3,
   Eye,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -87,6 +85,12 @@ export function MediaLibrary({
 }: MediaLibraryProps) {
   const [fixingId, setFixingId] = useState<string | null>(null);
   const [filter, setFilter] = useState<MediaFilter>("all");
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(
+    new Set()
+  );
+  const [expandedProviders, setExpandedProviders] = useState<Set<string>>(
+    new Set()
+  );
 
   const handleFixMatch = async (item: MediaItem) => {
     if (!onRefresh) return;
@@ -228,12 +232,17 @@ export function MediaLibrary({
             const TypeIcon = typeMeta.icon;
             const providerEntries = item.providers ?? item.platforms ?? [];
             const hasProviders = providerEntries.length > 0;
-            const providerNames = providerEntries.slice(0, 3).join(", ");
-            const providerOverflow = providerEntries.length > 3 ? "…" : "";
+            const isProvidersExpanded = expandedProviders.has(item.memoId);
+            const displayedProviders = isProvidersExpanded
+              ? providerEntries
+              : providerEntries.slice(0, 3);
+            const providerNames = displayedProviders.join(", ");
+            const hasMoreProviders = providerEntries.length > 3;
             const ratingsSummary = item.ratings
               ?.slice(0, 2)
               .map((rating) => `${rating.source}: ${rating.value}`)
               .join(" • ");
+            const isDescriptionExpanded = expandedDescriptions.has(item.memoId);
 
             return (
               <Card
@@ -284,9 +293,11 @@ export function MediaLibrary({
                       </div>
                       <p className="text-sm text-slate-400">
                         {item.releaseYear ?? "Year unknown"}
-                        {item.runtimeMinutes
-                          ? ` • ${item.runtimeMinutes} min`
-                          : ""}
+                        {item.mediaType === "game" && formattedTimeToBeat
+                          ? ` • ${formattedTimeToBeat}`
+                          : item.runtimeMinutes
+                            ? ` • ${item.runtimeMinutes} min`
+                            : ""}
                         {item.source && (
                           <span className="ml-2 uppercase tracking-wide text-[10px] text-slate-500">
                             {item.source}
@@ -307,72 +318,113 @@ export function MediaLibrary({
                       )}
                     </div>
                   </CardHeader>
-                  {onRefresh && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onRefresh({ memoId: item.memoId }).catch(
-                          () => undefined
-                        )
-                      }
-                      disabled={
-                        refreshingId === item.memoId || fixingId === item.memoId
-                      }
-                      aria-label="Refresh metadata"
-                      className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-700/40 bg-[#101525]/70 text-slate-300 transition hover:border-indigo-500/40 hover:text-white disabled:opacity-60 lg:opacity-0 lg:group-hover:opacity-100"
+                  <div className="absolute right-4 top-4 flex flex-col gap-2 opacity-0 transition-opacity lg:group-hover:opacity-100">
+                    {onRefresh && (
+                      <button
+                        type="button"
+                        onClick={() => handleFixMatch(item)}
+                        disabled={
+                          fixingId === item.memoId ||
+                          refreshingId === item.memoId
+                        }
+                        aria-label="Fix match"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-700/40 bg-[#101525]/70 text-indigo-200 transition hover:border-indigo-500/40 hover:text-white disabled:opacity-60"
+                      >
+                        {fixingId === item.memoId ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Wand2 className="h-4 w-4" />
+                        )}
+                      </button>
+                    )}
+                    {onRemove && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemove(item)}
+                        disabled={removingId === item.memoId}
+                        aria-label="Remove from media library"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-rose-600/40 bg-rose-600/20 text-rose-100 transition hover:border-rose-400/40 hover:text-white disabled:opacity-60"
+                      >
+                        {removingId === item.memoId ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </button>
+                    )}
+                    <Link
+                      href={{ pathname: "/", hash: `memo-${item.memoId}` }}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-700/40 bg-[#101525]/70 text-slate-300 transition hover:border-indigo-500/40 hover:text-white"
+                      prefetch={false}
+                      aria-label="View source memo"
                     >
-                      {refreshingId === item.memoId ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <RefreshCw className="h-4 w-4" />
-                      )}
-                    </button>
-                  )}
-                  {onRefresh && (
-                    <button
-                      type="button"
-                      onClick={() => handleFixMatch(item)}
-                      disabled={
-                        fixingId === item.memoId || refreshingId === item.memoId
-                      }
-                      aria-label="Fix match"
-                      className="absolute right-4 top-14 inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-700/40 bg-[#101525]/70 text-indigo-200 transition hover:border-indigo-500/40 hover:text-white disabled:opacity-60 lg:opacity-0 lg:group-hover:opacity-100"
-                    >
-                      {fixingId === item.memoId ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Wand2 className="h-4 w-4" />
-                      )}
-                    </button>
-                  )}
-                  {onRemove && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemove(item)}
-                      disabled={removingId === item.memoId}
-                      aria-label="Remove from media library"
-                      className="absolute right-4 top-24 inline-flex h-8 w-8 items-center justify-center rounded-full border border-rose-600/40 bg-rose-600/20 text-rose-100 transition hover:border-rose-400/40 hover:text-white disabled:opacity-60 lg:opacity-0 lg:group-hover:opacity-100"
-                    >
-                      {removingId === item.memoId ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-4 w-4" />
-                      )}
-                    </button>
-                  )}
+                      <Eye className="h-4 w-4" />
+                    </Link>
+                    {item.externalUrl && (
+                      <a
+                        href={item.externalUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-700/40 bg-[#101525]/70 text-slate-300 transition hover:border-indigo-500/40 hover:text-white"
+                        aria-label="Open external entry"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    )}
+                  </div>
                   <CardContent className="space-y-3 text-sm text-slate-300">
                     {item.overview && (
-                      <p className="line-clamp-3 text-slate-300/90">
-                        {item.overview}
-                      </p>
+                      <div>
+                        <p
+                          className={`text-slate-300/90 ${
+                            isDescriptionExpanded ? "" : "line-clamp-3"
+                          }`}
+                        >
+                          {item.overview}
+                        </p>
+                        {item.overview.length > 150 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newExpanded = new Set(expandedDescriptions);
+                              if (isDescriptionExpanded) {
+                                newExpanded.delete(item.memoId);
+                              } else {
+                                newExpanded.add(item.memoId);
+                              }
+                              setExpandedDescriptions(newExpanded);
+                            }}
+                            className="mt-1 text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+                          >
+                            {isDescriptionExpanded ? "Show less" : "Show more"}
+                          </button>
+                        )}
+                      </div>
                     )}
 
                     <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400">
                       {hasProviders && (
-                        <span className="inline-flex items-center gap-1">
+                        <span className="inline-flex flex-wrap items-center gap-1">
                           <TypeIcon className="h-3 w-3" aria-hidden="true" />
                           {providerLabel(item)} {providerNames}
-                          {providerOverflow}
+                          {hasMoreProviders && !isProvidersExpanded && "…"}
+                          {hasMoreProviders && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newExpanded = new Set(expandedProviders);
+                                if (isProvidersExpanded) {
+                                  newExpanded.delete(item.memoId);
+                                } else {
+                                  newExpanded.add(item.memoId);
+                                }
+                                setExpandedProviders(newExpanded);
+                              }}
+                              className="text-indigo-400 hover:text-indigo-300 transition-colors"
+                            >
+                              {isProvidersExpanded ? "Show less" : "Show more"}
+                            </button>
+                          )}
                         </span>
                       )}
 
@@ -388,51 +440,17 @@ export function MediaLibrary({
                           Trailer <ExternalLink className="h-3 w-3" />
                         </a>
                       )}
-
-                      {formattedTimeToBeat && (
-                        <span className="inline-flex items-center gap-1">
-                          <Clock3 className="h-3 w-3" aria-hidden="true" />
-                          {formattedTimeToBeat} to beat
-                        </span>
-                      )}
                     </div>
                   </CardContent>
                 </div>
                 {!item.posterUrl &&
                   !(item.providers?.length || item.platforms?.length) && (
                     <div className="relative border-t border-amber-500/30 bg-amber-500/10 px-4 py-3 text-[11px] text-amber-200">
-                      Metadata is still sparse. Try refreshing to fetch art and
-                      platform details.
+                      Metadata is still sparse. Try using Fix Match to fetch art
+                      and platform details.
                     </div>
                   )}
-                <div className="flex items-center justify-between gap-2 border-t border-slate-700/30 bg-[#0a0f1c]/70 px-4 py-3 text-[11px] text-slate-400">
-                  <div className="flex items-center gap-2">
-                    <Link
-                      href={{ pathname: "/", hash: `memo-${item.memoId}` }}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-700/40 text-slate-300 transition hover:border-indigo-500/40 hover:text-white"
-                      prefetch={false}
-                      aria-label="View source memo"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Link>
-                    {item.externalUrl && (
-                      <a
-                        href={item.externalUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-700/40 text-slate-300 transition hover:border-indigo-500/40 hover:text-white"
-                        aria-label="Open external entry"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    )}
-                  </div>
-                  {formattedTimeToBeat && (
-                    <span className="hidden text-[10px] uppercase tracking-wide text-slate-500 sm:inline">
-                      {formattedTimeToBeat}
-                    </span>
-                  )}
-                </div>
+                <div className="border-t border-slate-700/30 bg-[#0a0f1c]/70 px-4 py-3" />
                 {item.searchDebug && (
                   <details className="border-t border-slate-700/20 bg-[#090d16]/60 px-4 py-2 text-[11px] text-slate-500">
                     <summary className="cursor-pointer text-slate-400">
