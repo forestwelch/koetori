@@ -118,20 +118,13 @@ export function AppLayout({ children }: AppLayoutProps) {
         <Sidebar currentPath={pathname} />
 
         {/* Main Content Area - width adjusts with sidebar but no shift */}
-        <div className="flex-1 flex flex-col min-w-0 transition-all duration-300">
+        <div className="flex-1 flex flex-col min-w-0 transition-all duration-300 lg:ml-0">
           {/* Top Bar */}
-          <header className="sticky top-0 z-50 border-b border-slate-800/50 bg-[#0a0a0f]/80 backdrop-blur-xl w-full">
+          <header className="sticky top-0 z-50 border-b border-slate-800/50 bg-[#0a0a0f]/80 backdrop-blur-xl w-full overflow-hidden">
             <div className="w-full px-3 sm:px-4 md:px-8">
               <div className="flex items-center justify-between h-16 sm:h-20">
-                {/* Logo - K only now */}
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl sm:text-3xl font-light bg-gradient-to-r from-[#818cf8] via-[#c084fc] to-[#fb7185] bg-clip-text text-transparent">
-                    K
-                  </h1>
-                  <KoetoriExplanation>
-                    <div className="inline" />
-                  </KoetoriExplanation>
-                </div>
+                {/* Logo removed on desktop - only in sidebar now */}
+                <div className="hidden lg:block" />
 
                 {/* Action Buttons */}
                 <ActionButtons
@@ -145,8 +138,8 @@ export function AppLayout({ children }: AppLayoutProps) {
           </header>
 
           {/* Page Content */}
-          <main className="flex-1 overflow-y-auto overflow-x-hidden">
-            <div className="w-full px-3 sm:px-4 md:px-8 pt-6 sm:pt-8">
+          <main className="flex-1 overflow-y-auto overflow-x-hidden overscroll-none">
+            <div className="w-full px-3 sm:px-4 md:px-8 pt-6 sm:pt-8 pb-6 sm:pb-8">
               {children}
             </div>
           </main>

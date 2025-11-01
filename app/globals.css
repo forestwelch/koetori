@@ -57,6 +57,12 @@ body {
   min-height: -webkit-fill-available;
   /* Prevent body scroll - only main content should scroll */
   overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* Prevent overscroll bounce effects */
+* {
+  overscroll-behavior-y: contain;
 }
 
 /* Safe area insets for notched devices */
