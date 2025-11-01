@@ -45,7 +45,7 @@ export default function Home() {
     setIsSpotlightMode,
   } = useFilters();
 
-  const { showError, showWarning } = useToast();
+  const { showError, showWarning, showSuccess } = useToast();
   const {
     setShowRandomMemo,
     setRandomMemo,
@@ -212,6 +212,9 @@ export default function Home() {
       // Clear and close
       setTextInput("");
       setShowTextInput(false);
+
+      // Show success toast
+      showSuccess("Memo created");
 
       // Clear highlight after delay
       setTimeout(() => setNewMemoId(null), 3000);

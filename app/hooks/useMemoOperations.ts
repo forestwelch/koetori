@@ -5,8 +5,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
 import { Memo, Category } from "../types/memo";
 import { MemoFilters } from "./useMemosQuery";
+import { useToast } from "../contexts/ToastContext";
 
 export function useMemoOperations(username: string, refetchMemos: () => void) {
+  const { showSuccess, showError, showWarning } = useToast();
   const queryClient = useQueryClient();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
@@ -88,7 +90,7 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
   const saveEdit = useCallback(
     async (id: string): Promise<void> => {
       if (!editText.trim()) {
-        alert("Memo content cannot be empty");
+        showWarning("Memo content cannot be empty");
         return;
       }
 
@@ -115,8 +117,7 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
         .eq("username", username);
 
       if (error) {
-        console.error("Error updating memo:", error);
-        alert("Failed to update memo");
+        showError(`Failed to update memo: ${error.message}`);
       } else {
         setEditingId(null);
         setEditText("");
@@ -125,9 +126,18 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
           ? { ...snapshot, transcript: editText, needs_review: false }
           : undefined;
         applyMemoSnapshot(updated);
+        showSuccess("Memo saved");
       }
     },
-    [editText, username, getMemoSnapshot, applyMemoSnapshot]
+    [
+      editText,
+      username,
+      getMemoSnapshot,
+      applyMemoSnapshot,
+      showSuccess,
+      showError,
+      showWarning,
+    ]
   );
 
   const softDelete = useCallback(
@@ -141,17 +151,17 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
         .eq("username", username);
 
       if (error) {
-        console.error("Error archiving memo:", error);
-        alert("Failed to archive memo");
+        showError(`Failed to archive memo: ${error.message}`);
       } else {
         const snapshot = getMemoSnapshot(id);
         const now = new Date();
         applyMemoSnapshot(
           snapshot ? { ...snapshot, deleted_at: now } : undefined
         );
+        showSuccess("Memo archived");
       }
     },
-    [username, getMemoSnapshot, applyMemoSnapshot]
+    [username, getMemoSnapshot, applyMemoSnapshot, showSuccess, showError]
   );
 
   const toggleStar = useCallback(
@@ -165,17 +175,19 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
         .eq("username", username);
 
       if (error) {
-        console.error("Error updating star:", error);
-        alert("Failed to update star");
+        showError(
+          `Failed to ${!currentStarred ? "star" : "unstar"} memo: ${error.message}`
+        );
       } else {
         const snapshot = getMemoSnapshot(id);
         const updated = snapshot
           ? { ...snapshot, starred: !currentStarred }
           : undefined;
         applyMemoSnapshot(updated);
+        showSuccess(!currentStarred ? "Memo starred" : "Memo unstarred");
       }
     },
-    [username, getMemoSnapshot, applyMemoSnapshot]
+    [username, getMemoSnapshot, applyMemoSnapshot, showSuccess, showError]
   );
 
   const restoreMemo = useCallback(
@@ -189,8 +201,7 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
         .eq("username", username);
 
       if (error) {
-        console.error("Error restoring memo:", error);
-        alert("Failed to restore memo");
+        showError(`Failed to restore memo: ${error.message}`);
       } else {
         if (memoData) {
           applyMemoSnapshot({ ...memoData, deleted_at: null });
@@ -200,9 +211,10 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
             snapshot ? { ...snapshot, deleted_at: null } : undefined
           );
         }
+        showSuccess("Memo restored");
       }
     },
-    [username, applyMemoSnapshot, getMemoSnapshot]
+    [username, applyMemoSnapshot, getMemoSnapshot, showSuccess, showError]
   );
 
   const hardDelete = useCallback(
@@ -218,17 +230,17 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
         .eq("username", username);
 
       if (error) {
-        console.error("Error deleting memo:", error);
-        alert("Failed to delete memo");
+        showError(`Failed to delete memo: ${error.message}`);
       } else {
         const snapshot = getMemoSnapshot(id);
         const now = new Date();
         applyMemoSnapshot(
           snapshot ? { ...snapshot, deleted_at: now } : undefined
         );
+        showSuccess("Memo deleted permanently");
       }
     },
-    [username, getMemoSnapshot, applyMemoSnapshot]
+    [username, getMemoSnapshot, applyMemoSnapshot, showSuccess, showError]
   );
 
   const handleCategoryChange = useCallback(
@@ -262,8 +274,7 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
         .eq("username", username);
 
       if (error) {
-        console.error("Error updating category:", error);
-        alert("Failed to update category");
+        showError(`Failed to update category: ${error.message}`);
       } else {
         const snapshot = getMemoSnapshot(memoId);
         applyMemoSnapshot(
@@ -271,9 +282,10 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
             ? { ...snapshot, category: newCategory, needs_review: false }
             : undefined
         );
+        showSuccess(`Category changed to ${newCategory}`);
       }
     },
-    [username, getMemoSnapshot, applyMemoSnapshot]
+    [username, getMemoSnapshot, applyMemoSnapshot, showSuccess, showError]
   );
 
   const handleSizeChange = useCallback(
@@ -287,16 +299,16 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
         .eq("username", username);
 
       if (error) {
-        console.error("Error updating size:", error);
-        alert("Failed to update size");
+        showError(`Failed to update size: ${error.message}`);
       } else {
         const snapshot = getMemoSnapshot(memoId);
         applyMemoSnapshot(
           snapshot ? { ...snapshot, size: newSize ?? undefined } : undefined
         );
+        showSuccess(`Size changed to ${newSize || "auto"}`);
       }
     },
-    [username, getMemoSnapshot, applyMemoSnapshot]
+    [username, getMemoSnapshot, applyMemoSnapshot, showSuccess, showError]
   );
 
   const dismissReview = useCallback(
@@ -310,16 +322,16 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
         .eq("username", username);
 
       if (error) {
-        console.error("Error dismissing review:", error);
-        alert("Failed to dismiss review");
+        showError(`Failed to dismiss review: ${error.message}`);
       } else {
         const snapshot = getMemoSnapshot(memoId);
         applyMemoSnapshot(
           snapshot ? { ...snapshot, needs_review: false } : undefined
         );
+        showSuccess("Review dismissed");
       }
     },
-    [username, getMemoSnapshot, applyMemoSnapshot]
+    [username, getMemoSnapshot, applyMemoSnapshot, showSuccess, showError]
   );
 
   return {
