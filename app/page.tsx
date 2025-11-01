@@ -11,6 +11,7 @@ import { useSearch } from "./hooks/useSearch";
 import { useUser } from "./contexts/UserContext";
 import { useFilters } from "./contexts/FilterContext";
 import { useModals } from "./contexts/ModalContext";
+import { useToast } from "./contexts/ToastContext";
 import { FeedbackService } from "./lib/feedback";
 import { FeedbackSubmission } from "./types/feedback";
 
@@ -44,6 +45,7 @@ export default function Home() {
     setIsSpotlightMode,
   } = useFilters();
 
+  const { showError, showWarning } = useToast();
   const {
     setShowRandomMemo,
     setRandomMemo,
@@ -156,12 +158,14 @@ export default function Home() {
       .is("deleted_at", null);
 
     if (error) {
-      console.error("Error fetching random memo:", error);
+      showError(
+        `Failed to fetch random memo: ${error.message || "Unknown error"}`
+      );
       return;
     }
 
     if (!data || data.length === 0) {
-      alert("No memos available");
+      showWarning("No memos available");
       return;
     }
 
@@ -176,7 +180,7 @@ export default function Home() {
 
     setRandomMemo(memo);
     setShowRandomMemo(true);
-  }, [username, setRandomMemo, setShowRandomMemo]);
+  }, [username, setRandomMemo, setShowRandomMemo, showError, showWarning]);
 
   // Handle text input submission
   const handleTextSubmit = async (text: string) => {
@@ -212,7 +216,11 @@ export default function Home() {
       // Clear highlight after delay
       setTimeout(() => setNewMemoId(null), 3000);
     } catch (error) {
-      console.error("Error processing text:", error);
+      showError(
+        error instanceof Error
+          ? `Failed to process text: ${error.message}`
+          : "Failed to process text. Please try again."
+      );
     } finally {
       setIsProcessingText(false);
     }
@@ -232,7 +240,11 @@ export default function Home() {
     try {
       await FeedbackService.submitFeedback(feedback);
     } catch (error) {
-      console.error("Error submitting feedback:", error);
+      showError(
+        error instanceof Error
+          ? `Failed to submit feedback: ${error.message}`
+          : "Failed to submit feedback. Please try again."
+      );
       throw error;
     }
   };

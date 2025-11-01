@@ -4,9 +4,12 @@ import "./globals.css";
 import { UserProvider } from "./contexts/UserContext";
 import { FilterProvider } from "./contexts/FilterContext";
 import { ModalProvider } from "./contexts/ModalContext";
+import { ToastProvider } from "./contexts/ToastContext";
 import { QueryProvider } from "./providers/QueryProvider";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import { OfflineIndicator } from "./components/OfflineIndicator";
+import { ToastContainer } from "./components/ToastContainer";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -64,15 +67,20 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <QueryProvider>
-          <UserProvider>
-            <FilterProvider>
-              <ModalProvider>
-                {children}
-                <PWAInstallPrompt />
-                <OfflineIndicator />
-              </ModalProvider>
-            </FilterProvider>
-          </UserProvider>
+          <ToastProvider>
+            <UserProvider>
+              <FilterProvider>
+                <ModalProvider>
+                  <ErrorBoundary>
+                    {children}
+                    <ToastContainer />
+                    <PWAInstallPrompt />
+                    <OfflineIndicator />
+                  </ErrorBoundary>
+                </ModalProvider>
+              </FilterProvider>
+            </UserProvider>
+          </ToastProvider>
         </QueryProvider>
       </body>
     </html>

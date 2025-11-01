@@ -6,6 +6,7 @@ import { Sparkles, Film, Tv, Gamepad2, BookOpen, Music4 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { MediaCard } from "./MediaCard";
 import { FixMatchModal } from "./FixMatchModal";
+import { useToast } from "../../contexts/ToastContext";
 
 function formatTimeToBeat(minutes: number | null): string | null {
   if (!minutes || minutes <= 0) return null;
@@ -59,6 +60,7 @@ export function MediaLibrary({
   onRemove,
   removingId,
 }: MediaLibraryProps) {
+  const { showError } = useToast();
   const [fixingId, setFixingId] = useState<string | null>(null);
   const [fixMatchItem, setFixMatchItem] = useState<MediaItem | null>(null);
   const [filter, setFilter] = useState<MediaFilter>("all");
@@ -87,8 +89,11 @@ export function MediaLibrary({
         overrideMediaType: data.mediaType,
       });
     } catch (error) {
-      console.error("Failed to fix match", error);
-      alert("Unable to refresh media item. Please try again.");
+      showError(
+        error instanceof Error
+          ? `Failed to refresh media item: ${error.message}`
+          : "Unable to refresh media item. Please try again."
+      );
     } finally {
       setFixingId(null);
     }
@@ -97,14 +102,17 @@ export function MediaLibrary({
   const handleRemove = async (item: MediaItem) => {
     if (!onRemove) return;
     const confirmed = confirm(
-      `Remove “${item.title}” from the media library? This memo will no longer appear here.`
+      `Remove "${item.title}" from the media library? This memo will no longer appear here.`
     );
     if (!confirmed) return;
     try {
       await onRemove(item.memoId);
     } catch (error) {
-      console.error("Failed to remove media item", error);
-      alert("Unable to remove media item. Please try again.");
+      showError(
+        error instanceof Error
+          ? `Failed to remove media item: ${error.message}`
+          : "Unable to remove media item. Please try again."
+      );
     }
   };
 

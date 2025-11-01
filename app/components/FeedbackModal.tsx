@@ -56,7 +56,8 @@ export function FeedbackModal({
       });
       handleClose();
     } catch (error) {
-      console.error("Error submitting feedback:", error);
+      // Error handling is done by parent component (via showError in page.tsx)
+      throw error;
     } finally {
       setIsSubmitting(false);
     }

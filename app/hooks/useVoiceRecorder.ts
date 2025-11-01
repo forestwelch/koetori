@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Category, ExtractedData, TranscriptionResponse } from "../types/memo";
+import { useErrorHandler } from "../components/ErrorBoundary";
 
 interface UseVoiceRecorderReturn {
   isRecording: boolean;
@@ -29,6 +30,7 @@ const MAX_RETRY_ATTEMPTS = 3;
 const RETRY_DELAY = 2000; // 2 seconds
 
 export function useVoiceRecorder(username?: string): UseVoiceRecorderReturn {
+  const handleError = useErrorHandler();
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -217,12 +219,12 @@ export function useVoiceRecorder(username?: string): UseVoiceRecorderReturn {
           setMemoId(data.memo_id);
           retryCountRef.current = 0; // Reset retry count on success
         } catch (err) {
-          console.error("Error uploading audio:", err);
-          setError(
+          const errorMessage =
             err instanceof Error
               ? err.message
-              : "Failed to transcribe audio. Please try again."
-          );
+              : "Failed to transcribe audio. Please try again.";
+          setError(errorMessage);
+          handleError(err, "Failed to transcribe audio");
         } finally {
           setIsProcessing(false);
         }
@@ -232,7 +234,6 @@ export function useVoiceRecorder(username?: string): UseVoiceRecorderReturn {
       mediaRecorder.start();
       setIsRecording(true);
     } catch (err) {
-      console.error("Error accessing microphone:", err);
       if (err instanceof DOMException) {
         if (err.name === "NotAllowedError") {
           setError(

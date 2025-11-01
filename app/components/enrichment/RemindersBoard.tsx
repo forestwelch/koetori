@@ -5,6 +5,7 @@ import { BellRing, Clock, Repeat, Slash } from "lucide-react";
 import { Card, CardContent } from "../ui/Card";
 import { ReminderItem } from "../../types/enrichment";
 import { useReminderActions } from "../../hooks/useReminderActions";
+import { useToast } from "../../contexts/ToastContext";
 
 interface RemindersBoardProps {
   reminders: ReminderItem[];
@@ -27,6 +28,7 @@ export function RemindersBoard({
   error,
   username,
 }: RemindersBoardProps) {
+  const { showError, showWarning } = useToast();
   const { updateReminder, isUpdating } = useReminderActions({ username });
   const [activeTab, setActiveTab] = useState<
     "inbox" | "scheduled" | "dismissed"
@@ -70,7 +72,9 @@ export function RemindersBoard({
 
     const parsed = new Date(input);
     if (Number.isNaN(parsed.getTime())) {
-      alert("Could not parse that date/time");
+      showError(
+        "Could not parse that date/time. Please use format: YYYY-MM-DD HH:MM"
+      );
       return;
     }
 

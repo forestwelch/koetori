@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { useUser } from "../contexts/UserContext";
+import { useToast } from "../contexts/ToastContext";
 import { KoetoriExplanation } from "./KoetoriExplanation";
 import { Button } from "./ui/Button";
 
@@ -13,6 +14,7 @@ export function UsernameInput() {
   const [mode, setMode] = useState<"username" | "signup" | "login">("username");
   const [existingUsername, setExistingUsername] = useState("");
   const { setUsername } = useUser();
+  const { showError } = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Focus input when mode changes
@@ -30,7 +32,7 @@ export function UsernameInput() {
       .limit(1);
 
     if (error) {
-      console.error("Error checking user:", error);
+      showError(`Failed to check username: ${error.message}`);
       return false;
     }
 
@@ -47,7 +49,7 @@ export function UsernameInput() {
     });
 
     if (error) {
-      console.error("Error creating user:", error);
+      showError(`Failed to create account: ${error.message}`);
       return false;
     }
     return true;
@@ -65,7 +67,7 @@ export function UsernameInput() {
       .limit(1);
 
     if (error) {
-      console.error("Error validating login:", error);
+      showError(`Failed to validate login: ${error.message}`);
       return false;
     }
 
