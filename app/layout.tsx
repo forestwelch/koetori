@@ -10,6 +10,7 @@ import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import { OfflineIndicator } from "./components/OfflineIndicator";
 import { ToastContainer } from "./components/ToastContainer";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { ClientLayout } from "./components/layout/ClientLayout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -72,7 +73,7 @@ export default function RootLayout({
               <FilterProvider>
                 <ModalProvider>
                   <ErrorBoundary>
-                    {children}
+                    <ClientLayout>{children}</ClientLayout>
                     <ToastContainer />
                     <PWAInstallPrompt />
                     <OfflineIndicator />

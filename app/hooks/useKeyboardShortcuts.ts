@@ -92,7 +92,17 @@ export function useKeyboardShortcuts({
         return false;
       };
 
+      // Option+R for recording (consistent with other shortcuts)
+      if (
+        handleShortcut(
+          e.code === "KeyR" && hasOnlyModifiers(true) && !isInputField,
+          onRecordToggle
+        )
+      )
+        return;
+
       // Space for recording (only when no modifiers and no modal/input is active)
+      // Keep as fallback for quick recording
       if (
         handleShortcut(
           e.code === "Space" &&

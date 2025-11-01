@@ -187,7 +187,6 @@ export function ModalsContainer({
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
         setShowFeedback={setShowFeedback}
-        onOpenArchive={onOpenArchivedModal}
       />
 
       {/* Filter Command Palette */}

@@ -55,6 +55,8 @@ body {
   padding: 0;
   min-height: 100vh;
   min-height: -webkit-fill-available;
+  /* Prevent body scroll - only main content should scroll */
+  overflow: hidden;
 }
 
 /* Safe area insets for notched devices */

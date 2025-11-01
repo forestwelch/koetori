@@ -49,17 +49,31 @@ function ToastItem({ toast }: { toast: Toast }) {
   const styles = TOAST_STYLES[toast.type];
   const Icon = TOAST_ICONS[toast.type];
 
+  const handleClick = (e: React.MouseEvent) => {
+    if (toast.onClick) {
+      e.stopPropagation();
+      toast.onClick();
+      removeToast(toast.id);
+    }
+  };
+
   return (
     <div
       role="alert"
       aria-live={toast.type === "error" ? "assertive" : "polite"}
-      className={`group relative flex items-start gap-3 rounded-xl border ${styles.border} ${styles.bg} px-4 py-3 shadow-lg backdrop-blur-sm transition-all animate-in slide-in-from-right-full fade-in`}
+      onClick={handleClick}
+      className={`group relative flex items-start gap-3 rounded-xl border ${styles.border} ${styles.bg} px-4 py-3 shadow-lg backdrop-blur-sm transition-all animate-in slide-in-from-right-full fade-in ${
+        toast.onClick ? "cursor-pointer hover:opacity-90" : ""
+      }`}
     >
       <Icon className={`h-5 w-5 shrink-0 ${styles.icon}`} aria-hidden="true" />
       <p className={`flex-1 text-sm ${styles.text}`}>{toast.message}</p>
       <button
         type="button"
-        onClick={() => removeToast(toast.id)}
+        onClick={(e) => {
+          e.stopPropagation();
+          removeToast(toast.id);
+        }}
         className={`shrink-0 rounded-md p-1 transition-colors ${styles.icon} hover:${styles.bg} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900`}
         aria-label="Close notification"
       >

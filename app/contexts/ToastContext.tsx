@@ -15,14 +15,20 @@ export interface Toast {
   message: string;
   type: ToastType;
   duration?: number;
+  onClick?: () => void;
 }
 
 interface ToastContextType {
   toasts: Toast[];
-  showToast: (message: string, type?: ToastType, duration?: number) => void;
+  showToast: (
+    message: string,
+    type?: ToastType,
+    duration?: number,
+    onClick?: () => void
+  ) => void;
   removeToast: (id: string) => void;
   showError: (message: string) => void;
-  showSuccess: (message: string) => void;
+  showSuccess: (message: string, onClick?: () => void) => void;
   showWarning: (message: string) => void;
   showInfo: (message: string) => void;
 }
@@ -37,9 +43,14 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const showToast = useCallback(
-    (message: string, type: ToastType = "info", duration = 5000) => {
+    (
+      message: string,
+      type: ToastType = "info",
+      duration = 5000,
+      onClick?: () => void
+    ) => {
       const id = `toast-${Date.now()}-${Math.random()}`;
-      const toast: Toast = { id, message, type, duration };
+      const toast: Toast = { id, message, type, duration, onClick };
 
       setToasts((prev) => [...prev, toast]);
 
@@ -61,7 +72,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   );
 
   const showSuccess = useCallback(
-    (message: string) => showToast(message, "success", 4000),
+    (message: string, onClick?: () => void) =>
+      showToast(message, "success", 4000, onClick),
     [showToast]
   );
 

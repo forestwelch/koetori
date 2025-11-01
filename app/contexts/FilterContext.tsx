@@ -42,7 +42,7 @@ function FilterProviderInner({ children }: { children: ReactNode }) {
   );
   const [isSpotlightMode, setIsSpotlightMode] = useState(false);
 
-  // Update URL when filters change
+  // Update URL when filters change - preserve current path
   const updateURL = useCallback(
     (category: string, size: string, starred: boolean) => {
       const params = new URLSearchParams();
@@ -51,7 +51,8 @@ function FilterProviderInner({ children }: { children: ReactNode }) {
       if (starred) params.set("starred", "true");
 
       const query = params.toString();
-      router.push(query ? `?${query}` : "/", { scroll: false });
+      const pathname = window.location.pathname;
+      router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
     },
     [router]
   );

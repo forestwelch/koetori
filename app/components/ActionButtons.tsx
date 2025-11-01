@@ -53,7 +53,7 @@ export function ActionButtons({
         onClick={onRecordClick}
         icon={Mic}
         label={isRecording ? "Recording..." : "Record"}
-        shortcut="Space"
+        shortcut="⌥R"
         disabled={isProcessing}
         variant="primary"
         className="shadow-lg shadow-indigo-500/20"
