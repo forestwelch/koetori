@@ -167,7 +167,7 @@ export function MediaCard({
         </CardHeader>
 
         {/* Action Buttons */}
-        <div className="absolute right-4 top-4 flex flex-col gap-2 opacity-0 transition-opacity lg:group-hover:opacity-100">
+        <div className="absolute right-1 top-1 flex flex-col gap-2 opacity-100 lg:opacity-0 transition-opacity lg:group-hover:opacity-100">
           {onFixMatch && (
             <MediaActionButton
               icon={Wand2}
