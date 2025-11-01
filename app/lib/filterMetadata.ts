@@ -1,5 +1,4 @@
 import {
-  Folder,
   Star,
   AlertCircle,
   Archive,

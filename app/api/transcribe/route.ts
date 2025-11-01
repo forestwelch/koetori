@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
 
       logRequest("info", "Processing text input", {
         clientId,
-        textLength: transcript.length,
+        textLength: transcript!.length,
         username,
       });
     } else {
@@ -154,21 +154,13 @@ export async function POST(request: NextRequest) {
 
       username = usernameField.trim().toLowerCase();
 
-      // Validate that audio file exists
-      if (!audioFile || !(audioFile instanceof Blob)) {
-        logRequest("warn", "No audio file provided", { clientId });
-
-        return NextResponse.json(
-          { error: "No audio file provided" },
-          { status: 400, headers }
-        );
-      }
+      // Note: audioFile will be set below after validation
 
       // Validate file size
       if (audioFileField.size > MAX_FILE_SIZE) {
         logRequest("warn", "File size exceeds limit", {
           clientId,
-          fileSize: audioFile.size,
+          fileSize: audioFileField.size,
           maxSize: MAX_FILE_SIZE,
         });
 

@@ -14,9 +14,9 @@ interface ReminderUpdatePayload {
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { memoId: string } }
+  { params }: { params: Promise<{ memoId: string }> }
 ) {
-  const memoId = params.memoId;
+  const { memoId } = await params;
 
   if (!memoId) {
     return NextResponse.json({ error: "Missing memoId" }, { status: 400 });

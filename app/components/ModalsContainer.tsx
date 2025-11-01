@@ -97,6 +97,7 @@ export function ModalsContainer({
     showMemoModal,
     setShowMemoModal,
     memoModalId,
+    setMemoModalId,
   } = useModals();
 
   const { data: memoModalData, isLoading: isLoadingMemo } = useMemoById(

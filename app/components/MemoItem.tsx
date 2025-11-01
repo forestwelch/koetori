@@ -8,7 +8,6 @@ import { Archive, Star, Edit2, AlertCircle } from "lucide-react";
 import { CategorySelector } from "./CategorySelector";
 import { Button } from "./ui/Button";
 
-import { MemoActions } from "./MemoActions";
 import { SwipeIndicator } from "./SwipeIndicator";
 import { FullRecordingModal } from "./FullRecordingModal";
 
@@ -51,10 +50,10 @@ export function MemoItem({
   saveEdit,
   softDelete,
   toggleStar,
-  restoreMemo,
-  hardDelete,
+  restoreMemo: _restoreMemo,
+  hardDelete: _hardDelete,
   onCategoryChange,
-  onSizeChange,
+  onSizeChange: _onSizeChange,
   dismissReview,
   searchQuery,
   isSearchMode = false,

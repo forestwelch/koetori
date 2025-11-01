@@ -37,10 +37,6 @@ export function FullRecordingModal({
     const excerpt = selectedMemo.transcript_excerpt.trim();
     const transcript = currentMemo.transcript;
 
-    // Find the excerpt in the transcript (case-insensitive, flexible whitespace)
-    const excerptWords = excerpt.split(/\s+/);
-    const transcriptWords = transcript.split(/\s+/);
-
     // Simple highlighting: find the excerpt and wrap it
     const excerptIndex = transcript
       .toLowerCase()

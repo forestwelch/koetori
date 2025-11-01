@@ -32,7 +32,7 @@ export default function DashboardPage() {
     dismissReview,
   } = useMemoOperations(username || "", async () => {});
 
-  const handleTextSubmit = async (text: string) => {
+  const handleTextSubmit = async (_text: string) => {
     // No-op for dashboard
   };
 

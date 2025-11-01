@@ -23,7 +23,9 @@ async function fetchMediaItems(username: string): Promise<MediaItem[]> {
   }
 
   const items = (data ?? []).map((row) => {
-    const tags = Array.isArray(row.memos?.tags) ? row.memos.tags : [];
+    // Handle memos as either object or array (Supabase join can return either)
+    const memo = Array.isArray(row.memos) ? row.memos[0] : row.memos;
+    const tags = Array.isArray(memo?.tags) ? memo.tags : [];
     const platformsRaw = Array.isArray(row.platforms) ? row.platforms : [];
     const providersRaw = Array.isArray(row.providers) ? row.providers : [];
 
@@ -82,7 +84,7 @@ async function fetchMediaItems(username: string): Promise<MediaItem[]> {
       providers: normalizedProviders.length > 0 ? normalizedProviders : null,
       genres,
       ratings: Array.isArray(row.ratings) ? row.ratings : null,
-      transcriptExcerpt: row.memos?.transcript_excerpt ?? null,
+      transcriptExcerpt: memo?.transcript_excerpt ?? null,
       tags,
       tmdbId: row.tmdb_id ?? null,
       imdbId: row.imdb_id ?? null,
@@ -117,6 +119,8 @@ async function fetchReminders(username: string): Promise<ReminderItem[]> {
   }
 
   return (data ?? []).map((row) => {
+    // Handle memos as either object or array (Supabase join can return either)
+    const memo = Array.isArray(row.memos) ? row.memos[0] : row.memos;
     return {
       memoId: row.memo_id,
       title: row.title,
@@ -127,7 +131,7 @@ async function fetchReminders(username: string): Promise<ReminderItem[]> {
       isRecurring: row.is_recurring ?? false,
       dueAt: row.due_at ?? null,
       recurrenceRule: row.recurrence_rule ?? null,
-      transcriptExcerpt: row.memos?.transcript_excerpt ?? null,
+      transcriptExcerpt: memo?.transcript_excerpt ?? null,
       updatedAt: new Date(row.updated_at),
     } satisfies ReminderItem;
   });
@@ -150,6 +154,8 @@ async function fetchShoppingItems(
   }
 
   return (data ?? []).map((row) => {
+    // Handle memos as either object or array (Supabase join can return either)
+    const memo = Array.isArray(row.memos) ? row.memos[0] : row.memos;
     const parsedItems = Array.isArray(row.items)
       ? (row.items as string[]).filter((item) => typeof item === "string")
       : [];
@@ -164,7 +170,7 @@ async function fetchShoppingItems(
       category: row.category,
       urgencyScore: row.urgency_score,
       status: row.status,
-      transcriptExcerpt: row.memos?.transcript_excerpt ?? null,
+      transcriptExcerpt: memo?.transcript_excerpt ?? null,
       items: parsedItems,
       updatedAt: new Date(row.updated_at),
     } satisfies ShoppingListItem;

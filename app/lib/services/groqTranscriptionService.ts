@@ -26,17 +26,19 @@ export class GroqTranscriptionService implements TranscriptionService {
       throw new Error("No audio file provided for transcription");
     }
 
-    const proxyFile = new Proxy(request.audioFile, {
+    // Create a File-like object for Groq SDK compatibility
+    // Using Proxy to add name and lastModified properties without copying data
+    const file = new Proxy(request.audioFile, {
       get(target, prop) {
         if (prop === "name")
           return request.originalFilename ?? "recording.webm";
         if (prop === "lastModified") return Date.now();
-        return target[prop as keyof typeof target];
+        return Reflect.get(target, prop);
       },
-    });
+    }) as File;
 
     const transcription = await groq.audio.transcriptions.create({
-      file: proxyFile,
+      file,
       model: "whisper-large-v3-turbo",
       language: "en",
       response_format: "json",
@@ -46,7 +48,7 @@ export class GroqTranscriptionService implements TranscriptionService {
 
     return {
       transcript: transcription.text,
-      language: transcription.language ?? "en",
+      language: "en", // We specify language in the request
       durationSeconds:
         wordEstimate > 0 ? Math.round(wordEstimate / 150) * 60 : null,
       provider: "groq-whisper-large-v3-turbo",

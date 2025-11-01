@@ -59,9 +59,9 @@ export function MediaCard({
   const typeMeta = TYPE_META[item.mediaType ?? "unknown"] ?? TYPE_META.unknown;
   const TypeIcon = typeMeta.icon;
 
-  const handleViewMemo = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleViewMemo = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     console.log("🔍 View memo clicked", {
       memoId: item.memoId,
       hasModals: !!setShowMemoModal && !!setMemoModalId,

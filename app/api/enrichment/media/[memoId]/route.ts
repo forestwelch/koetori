@@ -10,7 +10,7 @@ function unauthorized() {
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { memoId: string } }
+  { params }: { params: Promise<{ memoId: string }> }
 ) {
   if (!process.env.ENRICHMENT_BACKFILL_TOKEN) {
     return NextResponse.json(
@@ -29,7 +29,7 @@ export async function DELETE(
     return unauthorized();
   }
 
-  const memoId = params.memoId;
+  const { memoId } = await params;
   if (!memoId) {
     return NextResponse.json({ error: "memoId is required" }, { status: 400 });
   }

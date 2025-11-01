@@ -55,7 +55,12 @@ export function EnrichmentDashboard({ username }: EnrichmentDashboardProps) {
           if (!options.memoId) return;
           setRefreshingId(options.memoId);
           try {
-            await requeue(options);
+            await requeue({
+              memoId: options.memoId,
+              overrideTitle: options.overrideTitle,
+              overrideYear: options.overrideYear ?? undefined,
+              overrideMediaType: options.overrideMediaType ?? undefined,
+            });
           } finally {
             setRefreshingId(null);
           }
