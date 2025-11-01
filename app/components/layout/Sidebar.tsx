@@ -62,17 +62,17 @@ export function Sidebar({ currentPath }: SidebarProps) {
               className={cn(
                 "flex items-center rounded-lg text-sm font-medium transition-colors group relative overflow-hidden",
                 active
-                  ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
+                  ? "bg-indigo-500/20 text-indigo-300"
                   : "text-slate-400 hover:text-white hover:bg-slate-800/50",
                 // Always use the same structure - never change justify or gap
-                // Slightly shift right by using a bit more left padding
-                "gap-3 pl-[11px] pr-2.5 py-2"
+                // Increased horizontal padding to compensate for navbar height matching sidebar width
+                "gap-[13px] px-3 py-2"
               )}
               title={
                 isCollapsed || !showExpandedContent ? item.label : undefined
               }
             >
-              <Icon className="w-5 h-5 flex-shrink-0" />
+              <Icon className="w-[18px] h-[18px] flex-shrink-0" />
               <span
                 className="whitespace-nowrap"
                 style={{
@@ -133,16 +133,21 @@ export function Sidebar({ currentPath }: SidebarProps) {
         </div>
 
         {/* Desktop Top Section - Logo aligned with nav items, matching navbar height exactly */}
-        <div className="hidden lg:flex overflow-hidden h-16 sm:h-20 items-center">
+        <div className="hidden lg:flex overflow-hidden h-16 items-center">
           <div className="w-full px-2.5">
             <button
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="flex items-center w-full pl-[11px] pr-2.5 py-2 rounded-lg hover:bg-slate-800/50 transition-colors overflow-hidden gap-3"
+              className={cn(
+                "flex items-center w-full rounded-lg text-sm font-medium transition-colors group relative overflow-hidden",
+                "text-slate-400 hover:text-white hover:bg-slate-800/50",
+                // Match nav items exactly - same padding
+                "gap-[13px] px-3 py-2"
+              )}
               aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               <Bird
                 className={cn(
-                  "w-5 h-5 flex-shrink-0 transition-all duration-300",
+                  "w-[18px] h-[18px] flex-shrink-0 transition-all duration-300",
                   showExpandedContent ? "text-slate-300" : "text-slate-400"
                 )}
                 style={{

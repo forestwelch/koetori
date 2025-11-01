@@ -38,8 +38,13 @@ html {
     radial-gradient(at 100% 100%, rgba(244, 63, 94, 0.1) 0px, transparent 50%);
   min-height: 100vh;
   min-height: -webkit-fill-available;
-  /* Reserve space for scrollbar to prevent layout shift */
-  scrollbar-gutter: stable;
+  /* Hide scrollbar - we use overflow: hidden on body */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+html::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }
 
 body {
@@ -58,6 +63,13 @@ body {
   /* Prevent body scroll - only main content should scroll */
   overflow: hidden;
   overscroll-behavior: none;
+  /* Hide scrollbar */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }
 
 /* Prevent overscroll bounce effects */

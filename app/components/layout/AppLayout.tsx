@@ -122,7 +122,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           {/* Top Bar */}
           <header className="sticky top-0 z-50 border-b border-slate-800/50 bg-[#0a0a0f]/80 backdrop-blur-xl w-full overflow-hidden">
             <div className="w-full px-3 sm:px-4 md:px-8">
-              <div className="flex items-center justify-between h-16 sm:h-20">
+              <div className="flex items-center justify-between h-16">
                 {/* Logo removed on desktop - only in sidebar now */}
                 <div className="hidden lg:block" />
 
