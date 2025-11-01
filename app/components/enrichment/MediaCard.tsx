@@ -274,7 +274,7 @@ export function MediaCard({
         )}
       {item.searchDebug && (
         <details className="mt-2 border-t border-slate-700/20 bg-[#090d16]/60 px-4 py-2 text-[11px] text-slate-500">
-          <summary className="cursor-pointer text-slate-400 pt-2">
+          <summary className="cursor-pointer text-slate-400">
             Debug info
           </summary>
           <div className="mt-2 space-y-2">
