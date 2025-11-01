@@ -101,7 +101,7 @@ export function MediaCard({
       className="group relative h-full overflow-hidden bg-gradient-to-br from-[#0f111f]/80 via-[#15192d]/70 to-[#1a1f33]/80"
     >
       {item.backdropUrl && (
-        <div className="absolute inset-0 opacity-30">
+        <div className="pointer-events-none absolute inset-0 opacity-30">
           <Image
             src={item.backdropUrl}
             alt=""
@@ -274,7 +274,7 @@ export function MediaCard({
         )}
       {item.searchDebug && (
         <details className="mt-2 border-t border-slate-700/20 bg-[#090d16]/60 px-4 py-2 text-[11px] text-slate-500">
-          <summary className="cursor-pointer text-slate-400">
+          <summary className="cursor-pointer text-slate-400 pt-2">
             Debug info
           </summary>
           <div className="mt-2 space-y-2">
