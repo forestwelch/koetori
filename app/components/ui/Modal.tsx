@@ -63,7 +63,7 @@ export function Modal({
         <Dialog className="outline-none flex flex-col h-full sm:h-auto overflow-hidden">
           {/* Header */}
           {(title || showCloseButton) && (
-            <div className="flex items-center justify-between p-4 sm:p-6 flex-shrink-0">
+            <div className="flex items-center justify-between px-4 py-1.5 sm:px-4 sm:py-2 flex-shrink-0">
               <div>
                 {title && (
                   <Heading
@@ -74,7 +74,7 @@ export function Modal({
                   </Heading>
                 )}
                 {description && (
-                  <p className="text-sm text-slate-400 mt-1">{description}</p>
+                  <p className="text-sm text-slate-400 mt-0">{description}</p>
                 )}
               </div>
               {showCloseButton && (
@@ -92,7 +92,7 @@ export function Modal({
           )}
 
           {/* Content */}
-          <div className="p-4 sm:p-6 flex-1 overflow-y-auto min-h-0">
+          <div className="px-4 pt-0 pb-2 sm:px-4 sm:pt-0 sm:pb-3 flex-1 overflow-y-auto min-h-0">
             {children}
           </div>
         </Dialog>
