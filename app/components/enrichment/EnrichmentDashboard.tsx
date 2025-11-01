@@ -86,6 +86,7 @@ export function EnrichmentDashboard({ username }: EnrichmentDashboardProps) {
         items={shoppingItems}
         isLoading={shoppingLoading}
         error={shoppingError instanceof Error ? shoppingError : undefined}
+        username={username}
       />
     </div>
   );
