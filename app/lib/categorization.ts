@@ -80,8 +80,7 @@ RESPONSE FORMAT (valid JSON only):
         "who": ["person1"],
         "when": "date/time",
         "where": "location",
-        "what": "brief summary",
-        "actionable": true
+        "what": "brief summary"
       },
       "tags": ["tag1", "tag2"],
       "starred": false,
@@ -103,8 +102,8 @@ Each memo should follow the same categorization rules as the single-memo prompt:
 - Do NOT categorize physical locations (museums, galleries, restaurants) as "media" - use "todo" or "event" instead
 - Generate 2-5 relevant tags
 - Star if urgent/important/priority
-- Estimate size for actionable items (S/M/L)
-- Keep "what" field specific and actionable
+- Estimate size for todo items (S/M/L)
+- Keep "what" field specific and concise
 
 Now analyze this transcript and determine if it should be split:
 ${transcript}
