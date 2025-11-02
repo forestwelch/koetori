@@ -8,6 +8,7 @@ import { Button } from "../ui/Button";
 import { ShoppingListItem } from "../../types/enrichment";
 import { useShoppingActions } from "../../hooks/useShoppingActions";
 import { useToast } from "../../contexts/ToastContext";
+import { LoadingSpinner } from "../LoadingSpinner";
 
 interface ShoppingListBoardProps {
   items: ShoppingListItem[];
@@ -118,9 +119,8 @@ export function ShoppingListBoard({
       </header>
 
       {isLoading ? (
-        <div className="flex items-center gap-2 text-sm text-slate-400">
-          <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-          Collecting shopping items…
+        <div className="flex items-center justify-center py-2">
+          <LoadingSpinner size="md" message="Loading shopping list..." />
         </div>
       ) : error ? (
         <div className="text-sm text-rose-400">

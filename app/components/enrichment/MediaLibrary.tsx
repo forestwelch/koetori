@@ -7,6 +7,7 @@ import type { LucideIcon } from "lucide-react";
 import { MediaCard } from "./MediaCard";
 import { FixMatchModal } from "./FixMatchModal";
 import { useToast } from "../../contexts/ToastContext";
+import { LoadingSpinner } from "../LoadingSpinner";
 
 function formatTimeToBeat(minutes: number | null): string | null {
   if (!minutes || minutes <= 0) return null;
@@ -155,9 +156,8 @@ export function MediaLibrary({
       </header>
 
       {isLoading ? (
-        <div className="flex items-center gap-2 text-sm text-slate-400">
-          <span className="h-2 w-2 animate-pulse rounded-full bg-indigo-500" />
-          Loading media…
+        <div className="flex items-center justify-center py-2">
+          <LoadingSpinner size="md" message="Loading media..." />
         </div>
       ) : error ? (
         <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-200">

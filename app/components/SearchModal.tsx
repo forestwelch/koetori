@@ -7,6 +7,7 @@ import { Input } from "./ui/Input";
 import { Memo, Category } from "../types/memo";
 import { MemoItem } from "./MemoItem";
 import { useModals } from "../contexts/ModalContext";
+import { LoadingSpinner } from "./LoadingSpinner";
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -168,13 +169,7 @@ export function SearchModal({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title="Search Memos"
-      size="xl"
-      className="sm:items-start sm:pt-16"
-    >
+    <Modal isOpen={isOpen} onClose={handleClose} title="Search Memos" size="xl">
       <div className="flex flex-col h-full sm:h-auto">
         <div className="mb-6 flex-shrink-0">
           <Input
@@ -203,9 +198,8 @@ export function SearchModal({
                 </p>
               </div>
             ) : isSearching ? (
-              <div className="text-center py-12">
-                <div className="w-8 h-8 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-slate-400 text-lg">Searching...</p>
+              <div className="flex items-center justify-center py-2">
+                <LoadingSpinner size="md" message="Searching..." />
               </div>
             ) : searchResults.length === 0 ? (
               <div className="text-center py-12">

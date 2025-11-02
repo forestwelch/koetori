@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "./ui/Button";
+import { LoadingSpinner } from "./LoadingSpinner";
 
 interface RecordingOverlayProps {
   isRecording: boolean;
@@ -67,12 +68,8 @@ export function RecordingOverlay({
             aria-live="polite"
             className="flex flex-col items-center"
           >
-            {/* Processing Animation */}
-            <div
-              className="w-32 h-32 border-8 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mb-6"
-              aria-hidden="true"
-            />
-            <div className="flex flex-col items-center gap-3">
+            <LoadingSpinner size="lg" />
+            <div className="flex flex-col items-center gap-3 mt-6">
               <div className="text-indigo-400 text-2xl font-medium">
                 Processing...
               </div>

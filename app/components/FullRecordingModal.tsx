@@ -87,7 +87,7 @@ export function FullRecordingModal({
           </h3>
 
           {isLoading ? (
-            <div className="flex justify-center py-8">
+            <div className="flex justify-center py-4">
               <LoadingSpinner size="md" />
             </div>
           ) : (
