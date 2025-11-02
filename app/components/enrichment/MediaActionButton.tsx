@@ -10,7 +10,7 @@ interface MediaActionButtonProps {
   href?: string;
   disabled?: boolean;
   isLoading?: boolean;
-  variant?: "default" | "danger" | "primary";
+  variant?: "default" | "danger" | "primary" | "success";
 }
 
 export function MediaActionButton({
@@ -32,6 +32,8 @@ export function MediaActionButton({
       "border-rose-600/40 bg-rose-600/20 text-rose-100 hover:border-rose-400/40 hover:text-white",
     primary:
       "border-indigo-500/40 bg-indigo-500/20 text-indigo-200 hover:border-indigo-500/60 hover:text-white",
+    success:
+      "border-emerald-500/40 bg-emerald-500/20 text-emerald-200 hover:border-emerald-500/60 hover:text-white",
   };
 
   const className = `${baseClasses} ${variantClasses[variant]}`;

@@ -19,20 +19,11 @@ export default function ShoppingDashboardPage() {
   }
 
   return (
-    <div>
-      <div className="mb-6">
-        <h2 className="text-2xl font-light text-white mb-2">Shopping List</h2>
-        <p className="text-slate-400 text-sm">
-          Items to purchase extracted from your memos
-        </p>
-      </div>
-
-      <ShoppingListBoard
-        items={shoppingItems}
-        isLoading={shoppingLoading}
-        error={shoppingError instanceof Error ? shoppingError : undefined}
-        username={username}
-      />
-    </div>
+    <ShoppingListBoard
+      items={shoppingItems}
+      isLoading={shoppingLoading}
+      error={shoppingError instanceof Error ? shoppingError : undefined}
+      username={username}
+    />
   );
 }

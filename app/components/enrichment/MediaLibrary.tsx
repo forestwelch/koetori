@@ -1,13 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { MediaItem } from "../../types/enrichment";
+import { MediaItem, MediaStatus } from "../../types/enrichment";
 import { Sparkles, Film, Tv, Gamepad2, BookOpen, Music4 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { MediaCard } from "./MediaCard";
 import { FixMatchModal } from "./FixMatchModal";
 import { useToast } from "../../contexts/ToastContext";
 import { LoadingSpinner } from "../LoadingSpinner";
+import { useQueryClient } from "@tanstack/react-query";
 
 function formatTimeToBeat(minutes: number | null): string | null {
   if (!minutes || minutes <= 0) return null;
@@ -38,6 +39,7 @@ interface MediaLibraryProps {
 }
 
 type MediaFilter = "all" | "movie" | "tv" | "game" | "book" | "music";
+type StatusFilter = "all" | "to-watch" | "watched" | "backlog";
 
 const FILTER_OPTIONS: Array<{
   key: MediaFilter;
@@ -52,6 +54,16 @@ const FILTER_OPTIONS: Array<{
   { key: "music", icon: Music4, label: "Music" },
 ];
 
+const STATUS_FILTER_OPTIONS: Array<{
+  key: StatusFilter;
+  label: string;
+}> = [
+  { key: "all", label: "All Status" },
+  { key: "to-watch", label: "To Watch" },
+  { key: "watched", label: "Watched" },
+  { key: "backlog", label: "Backlog" },
+];
+
 export function MediaLibrary({
   items,
   isLoading,
@@ -61,10 +73,13 @@ export function MediaLibrary({
   onRemove,
   removingId,
 }: MediaLibraryProps) {
-  const { showError } = useToast();
+  const { showError, showSuccess } = useToast();
+  const queryClient = useQueryClient();
   const [fixingId, setFixingId] = useState<string | null>(null);
   const [fixMatchItem, setFixMatchItem] = useState<MediaItem | null>(null);
   const [filter, setFilter] = useState<MediaFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(
     new Set()
   );
@@ -117,41 +132,129 @@ export function MediaLibrary({
     }
   };
 
+  const handleStatusChange = async (memoId: string, status: MediaStatus) => {
+    setUpdatingStatusId(memoId);
+    try {
+      // Optimistically update UI - update all media-items queries
+      queryClient.setQueriesData<MediaItem[]>(
+        { queryKey: ["media-items"] },
+        (oldData) => {
+          if (!oldData) return oldData;
+          return oldData.map((item) =>
+            item.memoId === memoId ? { ...item, status } : item
+          );
+        }
+      );
+
+      const response = await fetch(`/api/media/${memoId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update status");
+      }
+
+      showSuccess(
+        status === "watched"
+          ? "Marked as watched"
+          : status === "backlog"
+            ? "Added to backlog"
+            : "Removed from backlog"
+      );
+
+      // Invalidate to ensure consistency
+      await queryClient.invalidateQueries({
+        queryKey: ["media-items"],
+      });
+    } catch (error) {
+      showError(
+        error instanceof Error
+          ? `Failed to update status: ${error.message}`
+          : "Failed to update status"
+      );
+      // Revert optimistic update
+      await queryClient.invalidateQueries({
+        queryKey: ["media-items"],
+      });
+    } finally {
+      setUpdatingStatusId(null);
+    }
+  };
+
   const filteredItems = useMemo(() => {
-    if (filter === "all") return items;
-    return items.filter((item) => item.mediaType === filter);
-  }, [items, filter]);
+    let filtered = items;
+
+    // Filter by media type
+    if (filter !== "all") {
+      filtered = filtered.filter((item) => item.mediaType === filter);
+    }
+
+    // Filter by status
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((item) => item.status === statusFilter);
+    }
+
+    return filtered;
+  }, [items, filter, statusFilter]);
 
   return (
     <section className="space-y-4">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-white">Media Library</h2>
-          <p className="text-sm text-slate-400">
-            Automatically enriched movies, shows, books, and more.
-          </p>
+      <header className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-white">Media Library</h2>
+            <p className="text-sm text-slate-400">
+              Automatically enriched movies, shows, books, and more.
+            </p>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2 text-[11px]">
-          {FILTER_OPTIONS.map(({ key, icon: Icon, label }) => {
-            const isActive = filter === key;
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setFilter(key)}
-                title={label}
-                aria-label={label}
-                aria-pressed={isActive}
-                className={`inline-flex h-8 w-8 items-center justify-center rounded-full border transition ${
-                  isActive
-                    ? "border-indigo-500/60 bg-indigo-500/20 text-white shadow"
-                    : "border-slate-700/60 bg-slate-900/40 text-slate-300 hover:text-white"
-                }`}
-              >
-                <Icon className="h-4 w-4" />
-              </button>
-            );
-          })}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          {/* Media Type Filters */}
+          <div className="flex flex-wrap items-center gap-2 text-[11px]">
+            {FILTER_OPTIONS.map(({ key, icon: Icon, label }) => {
+              const isActive = filter === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setFilter(key)}
+                  title={label}
+                  aria-label={label}
+                  aria-pressed={isActive}
+                  className={`inline-flex h-8 w-8 items-center justify-center rounded-full border transition ${
+                    isActive
+                      ? "border-indigo-500/60 bg-indigo-500/20 text-white shadow"
+                      : "border-slate-700/60 bg-slate-900/40 text-slate-300 hover:text-white"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                </button>
+              );
+            })}
+          </div>
+          {/* Status Filters */}
+          <div className="flex flex-wrap items-center gap-2">
+            {STATUS_FILTER_OPTIONS.map(({ key, label }) => {
+              const isActive = statusFilter === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setStatusFilter(key)}
+                  aria-pressed={isActive}
+                  className={`rounded-full border px-3 py-1 text-xs transition ${
+                    isActive
+                      ? "border-emerald-500/60 bg-emerald-500/20 text-emerald-200"
+                      : "border-slate-700/60 bg-slate-900/40 text-slate-400 hover:text-slate-300"
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </header>
 
@@ -205,8 +308,10 @@ export function MediaLibrary({
                 }}
                 onFixMatch={onRefresh ? () => setFixMatchItem(item) : undefined}
                 onRemove={onRemove ? () => handleRemove(item) : undefined}
+                onStatusChange={handleStatusChange}
                 isFixing={fixingId === item.memoId}
                 isRemoving={removingId === item.memoId}
+                isUpdatingStatus={updatingStatusId === item.memoId}
                 refreshingId={refreshingId}
               />
             );

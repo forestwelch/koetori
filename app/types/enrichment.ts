@@ -1,3 +1,5 @@
+export type MediaStatus = "to-watch" | "watched" | "backlog";
+
 export interface MediaItem {
   memoId: string;
   title: string;
@@ -24,6 +26,7 @@ export interface MediaItem {
   source: "tmdb" | "igdb" | "omdb" | "manual" | null;
   externalUrl: string | null;
   timeToBeatMinutes: number | null;
+  status: MediaStatus;
   updatedAt: Date;
 }
 

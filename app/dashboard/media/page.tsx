@@ -26,43 +26,34 @@ export default function MediaDashboardPage() {
   }
 
   return (
-    <div>
-      <div className="mb-6">
-        <h2 className="text-2xl font-light text-white mb-2">Media Library</h2>
-        <p className="text-slate-400 text-sm">
-          Movies, shows, games, and music discovered from your memos
-        </p>
-      </div>
-
-      <MediaLibrary
-        items={mediaItems}
-        isLoading={mediaLoading}
-        error={mediaError instanceof Error ? mediaError : undefined}
-        onRefresh={async (options) => {
-          if (!options.memoId) return;
-          setRefreshingId(options.memoId);
-          try {
-            await requeue({
-              memoId: options.memoId,
-              overrideTitle: options.overrideTitle,
-              overrideYear: options.overrideYear ?? undefined,
-              overrideMediaType: options.overrideMediaType ?? undefined,
-            });
-          } finally {
-            setRefreshingId(null);
-          }
-        }}
-        onRemove={async (memoId) => {
-          setRemovingId(memoId);
-          try {
-            await removeMediaItem(memoId);
-          } finally {
-            setRemovingId(null);
-          }
-        }}
-        refreshingId={refreshingId && isRequeueing ? refreshingId : null}
-        removingId={removingId && isRemoving ? removingId : null}
-      />
-    </div>
+    <MediaLibrary
+      items={mediaItems}
+      isLoading={mediaLoading}
+      error={mediaError instanceof Error ? mediaError : undefined}
+      onRefresh={async (options) => {
+        if (!options.memoId) return;
+        setRefreshingId(options.memoId);
+        try {
+          await requeue({
+            memoId: options.memoId,
+            overrideTitle: options.overrideTitle,
+            overrideYear: options.overrideYear ?? undefined,
+            overrideMediaType: options.overrideMediaType ?? undefined,
+          });
+        } finally {
+          setRefreshingId(null);
+        }
+      }}
+      onRemove={async (memoId) => {
+        setRemovingId(memoId);
+        try {
+          await removeMediaItem(memoId);
+        } finally {
+          setRemovingId(null);
+        }
+      }}
+      refreshingId={refreshingId && isRequeueing ? refreshingId : null}
+      removingId={removingId && isRemoving ? removingId : null}
+    />
   );
 }

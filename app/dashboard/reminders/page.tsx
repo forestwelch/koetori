@@ -19,20 +19,11 @@ export default function RemindersDashboardPage() {
   }
 
   return (
-    <div>
-      <div className="mb-6">
-        <h2 className="text-2xl font-light text-white mb-2">Reminders</h2>
-        <p className="text-slate-400 text-sm">
-          Tasks and reminders extracted from your memos
-        </p>
-      </div>
-
-      <RemindersBoard
-        reminders={reminders}
-        isLoading={remindersLoading}
-        error={remindersError instanceof Error ? remindersError : undefined}
-        username={username}
-      />
-    </div>
+    <RemindersBoard
+      reminders={reminders}
+      isLoading={remindersLoading}
+      error={remindersError instanceof Error ? remindersError : undefined}
+      username={username}
+    />
   );
 }

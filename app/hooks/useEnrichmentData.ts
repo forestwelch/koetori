@@ -12,7 +12,7 @@ async function fetchMediaItems(username: string): Promise<MediaItem[]> {
   const { data, error } = await supabase
     .from("media_items")
     .select(
-      `memo_id, title, release_year, runtime_minutes, poster_url, backdrop_url, overview, trailer_url, platforms, providers, genres, ratings, tmdb_id, imdb_id, media_type, auto_title, custom_title, auto_release_year, custom_release_year, search_debug, source, external_url, time_to_beat_minutes, updated_at, memos!inner(transcript_excerpt, tags, username)`
+      `memo_id, title, release_year, runtime_minutes, poster_url, backdrop_url, overview, trailer_url, platforms, providers, genres, ratings, tmdb_id, imdb_id, media_type, auto_title, custom_title, auto_release_year, custom_release_year, search_debug, source, external_url, time_to_beat_minutes, status, updated_at, memos!inner(transcript_excerpt, tags, username)`
     )
     .eq("memos.username", username)
     .order("updated_at", { ascending: false })
@@ -97,6 +97,7 @@ async function fetchMediaItems(username: string): Promise<MediaItem[]> {
       source: (row.source as MediaItem["source"]) ?? null,
       externalUrl: row.external_url ?? null,
       timeToBeatMinutes: row.time_to_beat_minutes ?? null,
+      status: (row.status as MediaItem["status"]) ?? "to-watch",
       updatedAt: new Date(row.updated_at),
     } satisfies MediaItem;
   });

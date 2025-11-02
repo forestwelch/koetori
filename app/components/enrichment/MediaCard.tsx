@@ -14,6 +14,9 @@ import {
   BookOpen,
   Music4,
   Sparkles,
+  CheckCircle2,
+  Clock,
+  Archive,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { MediaActionButton } from "./MediaActionButton";
@@ -37,8 +40,13 @@ interface MediaCardProps {
   onToggleProviders: () => void;
   onFixMatch?: () => void;
   onRemove?: () => void;
+  onStatusChange?: (
+    memoId: string,
+    status: "to-watch" | "watched" | "backlog"
+  ) => void;
   isFixing?: boolean;
   isRemoving?: boolean;
+  isUpdatingStatus?: boolean;
   refreshingId?: string | null;
 }
 
@@ -51,8 +59,10 @@ export function MediaCard({
   onToggleProviders,
   onFixMatch,
   onRemove,
+  onStatusChange,
   isFixing = false,
   isRemoving = false,
+  isUpdatingStatus = false,
   refreshingId,
 }: MediaCardProps) {
   const { setShowMemoModal, setMemoModalId } = useModals();
@@ -168,6 +178,51 @@ export function MediaCard({
 
         {/* Action Buttons */}
         <div className="absolute right-1 top-1 flex flex-col gap-2 opacity-100 lg:opacity-0 transition-opacity lg:group-hover:opacity-100">
+          {/* Status Actions */}
+          {onStatusChange && (
+            <>
+              {item.status !== "watched" && (
+                <MediaActionButton
+                  icon={CheckCircle2}
+                  label="Mark as watched"
+                  onClick={() => onStatusChange(item.memoId, "watched")}
+                  disabled={isUpdatingStatus}
+                  isLoading={isUpdatingStatus}
+                  variant="success"
+                />
+              )}
+              {item.status !== "backlog" && item.status !== "watched" && (
+                <MediaActionButton
+                  icon={Archive}
+                  label="Add to backlog"
+                  onClick={() => onStatusChange(item.memoId, "backlog")}
+                  disabled={isUpdatingStatus}
+                  isLoading={isUpdatingStatus}
+                  variant="default"
+                />
+              )}
+              {item.status === "backlog" && (
+                <MediaActionButton
+                  icon={Clock}
+                  label="Move to to-watch"
+                  onClick={() => onStatusChange(item.memoId, "to-watch")}
+                  disabled={isUpdatingStatus}
+                  isLoading={isUpdatingStatus}
+                  variant="default"
+                />
+              )}
+              {item.status === "watched" && (
+                <MediaActionButton
+                  icon={Clock}
+                  label="Move to to-watch"
+                  onClick={() => onStatusChange(item.memoId, "to-watch")}
+                  disabled={isUpdatingStatus}
+                  isLoading={isUpdatingStatus}
+                  variant="default"
+                />
+              )}
+            </>
+          )}
           {onFixMatch && (
             <MediaActionButton
               icon={Wand2}
