@@ -143,10 +143,11 @@ async function fetchShoppingItems(
   const { data, error } = await supabase
     .from("shopping_list_items")
     .select(
-      `memo_id, item_name, quantity, category, urgency_score, status, items, updated_at, memos!inner(transcript_excerpt, username)`
+      `memo_id, item_name, quantity, category, urgency_score, status, items, display_order, updated_at, memos!inner(transcript_excerpt, username)`
     )
     .eq("memos.username", username)
-    .order("updated_at", { ascending: false })
+    .order("status", { ascending: true })
+    .order("display_order", { ascending: true })
     .limit(40);
 
   if (error) {
@@ -172,6 +173,7 @@ async function fetchShoppingItems(
       status: row.status,
       transcriptExcerpt: memo?.transcript_excerpt ?? null,
       items: parsedItems,
+      displayOrder: row.display_order ?? 0,
       updatedAt: new Date(row.updated_at),
     } satisfies ShoppingListItem;
   });

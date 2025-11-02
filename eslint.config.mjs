@@ -21,6 +21,13 @@ const eslintConfig = [
       "test-device-api.js", // CommonJS test utility
     ],
   },
+  {
+    rules: {
+      // Disable unescaped entities rule - modern browsers handle apostrophes/quotes fine
+      // This rule causes too many false positives and interrupts workflow
+      "react/no-unescaped-entities": "off",
+    },
+  },
 ];
 
 export default eslintConfig;

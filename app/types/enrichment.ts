@@ -50,5 +50,6 @@ export interface ShoppingListItem {
   status: string;
   transcriptExcerpt: string | null;
   items: string[];
+  displayOrder: number;
   updatedAt: Date;
 }
