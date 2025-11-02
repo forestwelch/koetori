@@ -6,10 +6,12 @@ import { supabase } from "../lib/supabase";
 import { Memo, Category } from "../types/memo";
 import { MemoFilters } from "./useMemosQuery";
 import { useToast } from "../contexts/ToastContext";
+import { useFeedback } from "../contexts/FeedbackContext";
 
 export function useMemoOperations(username: string, refetchMemos: () => void) {
   const { showSuccess, showError, showWarning } = useToast();
   const queryClient = useQueryClient();
+  const { showFeedback } = useFeedback();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const [editingSummaryId, setEditingSummaryId] = useState<string | null>(null);
@@ -75,7 +77,7 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
       }
 
       const inboxQueries = queryClient.getQueriesData<Memo[]>({
-        queryKey: ["inbox-memos"],
+        queryKey: ["inbox"],
       });
       for (const [, data] of inboxQueries) {
         const found = data?.find((memo) => memo.id === id);
@@ -87,6 +89,25 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
       return undefined;
     },
     [queryClient]
+  );
+
+  const getMemoForFeedback = useCallback(
+    async (id: string): Promise<Memo | null> => {
+      const { data, error } = await supabase
+        .from("memos")
+        .select("*")
+        .eq("id", id)
+        .eq("username", username)
+        .single();
+
+      if (error || !data) return null;
+
+      return {
+        ...data,
+        timestamp: new Date(data.timestamp),
+      };
+    },
+    [username]
   );
 
   const applyMemoSnapshot = useCallback(
@@ -152,14 +173,31 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
       if (error) {
         showError(`Failed to update memo: ${error.message}`);
       } else {
+        // Get memo data for feedback
+        const snapshot = getMemoSnapshot(id);
+        const memoForFeedback = snapshot || (await getMemoForFeedback(id));
+
         setEditingId(null);
         setEditText("");
-        const snapshot = getMemoSnapshot(id);
         const updated = snapshot
           ? { ...snapshot, transcript: editText, needs_review: false }
           : undefined;
         applyMemoSnapshot(updated);
         showSuccess("Memo saved");
+
+        // Show feedback dialog
+        if (memoForFeedback) {
+          showFeedback({
+            memoId: id,
+            editType: "transcript",
+            originalValue: snapshot?.transcript || null,
+            newValue: editText,
+            transcript: memoForFeedback.transcript,
+            category: memoForFeedback.category,
+            confidence: memoForFeedback.confidence,
+            targetElement: (document.activeElement as HTMLElement) || null,
+          });
+        }
       }
     },
     [
@@ -170,6 +208,8 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
       showSuccess,
       showError,
       showWarning,
+      getMemoForFeedback,
+      showFeedback,
     ]
   );
 
@@ -295,6 +335,21 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
       setEditingSummaryId(null);
       setSummaryEditText("");
       showSuccess("Summary saved");
+
+      // Show feedback dialog
+      const memoForFeedback = await getMemoForFeedback(id);
+      if (memoForFeedback) {
+        showFeedback({
+          memoId: id,
+          editType: "summary",
+          originalValue: originalWhat || null,
+          newValue: trimmedText,
+          transcript: memoForFeedback.transcript,
+          category: memoForFeedback.category,
+          confidence: memoForFeedback.confidence,
+          targetElement: (document.activeElement as HTMLElement) || null,
+        });
+      }
     },
     [
       summaryEditText,
@@ -303,6 +358,8 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
       showSuccess,
       showError,
       showWarning,
+      getMemoForFeedback,
+      showFeedback,
     ]
   );
 
@@ -399,9 +456,32 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
             : undefined
         );
         showSuccess(`Category changed to ${newCategory}`);
+
+        // Show feedback dialog
+        const memoForFeedback = snapshot || (await getMemoForFeedback(memoId));
+        if (memoForFeedback) {
+          showFeedback({
+            memoId: memoId,
+            editType: "category",
+            originalValue: oldCategory,
+            newValue: newCategory,
+            transcript: memoForFeedback.transcript,
+            category: memoForFeedback.category,
+            confidence: memoForFeedback.confidence,
+            targetElement: (document.activeElement as HTMLElement) || null,
+          });
+        }
       }
     },
-    [username, getMemoSnapshot, applyMemoSnapshot, showSuccess, showError]
+    [
+      username,
+      getMemoSnapshot,
+      applyMemoSnapshot,
+      showSuccess,
+      showError,
+      getMemoForFeedback,
+      showFeedback,
+    ]
   );
 
   const handleSizeChange = useCallback(
@@ -418,13 +498,37 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
         showError(`Failed to update size: ${error.message}`);
       } else {
         const snapshot = getMemoSnapshot(memoId);
+        const oldSize = snapshot?.size ?? null;
         applyMemoSnapshot(
           snapshot ? { ...snapshot, size: newSize ?? undefined } : undefined
         );
         showSuccess(`Size changed to ${newSize || "auto"}`);
+
+        // Show feedback dialog
+        const memoForFeedback = snapshot || (await getMemoForFeedback(memoId));
+        if (memoForFeedback) {
+          showFeedback({
+            memoId: memoId,
+            editType: "size",
+            originalValue: oldSize?.toString() || null,
+            newValue: newSize?.toString() || null,
+            transcript: memoForFeedback.transcript,
+            category: memoForFeedback.category,
+            confidence: memoForFeedback.confidence,
+            targetElement: (document.activeElement as HTMLElement) || null,
+          });
+        }
       }
     },
-    [username, getMemoSnapshot, applyMemoSnapshot, showSuccess, showError]
+    [
+      username,
+      getMemoSnapshot,
+      applyMemoSnapshot,
+      showSuccess,
+      showError,
+      getMemoForFeedback,
+      showFeedback,
+    ]
   );
 
   const dismissReview = useCallback(

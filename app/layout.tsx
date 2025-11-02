@@ -5,12 +5,14 @@ import { UserProvider } from "./contexts/UserContext";
 import { FilterProvider } from "./contexts/FilterContext";
 import { ModalProvider } from "./contexts/ModalContext";
 import { ToastProvider } from "./contexts/ToastContext";
+import { FeedbackProvider } from "./contexts/FeedbackContext";
 import { QueryProvider } from "./providers/QueryProvider";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import { OfflineIndicator } from "./components/OfflineIndicator";
 import { ToastContainer } from "./components/ToastContainer";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ClientLayout } from "./components/layout/ClientLayout";
+import { EditFeedbackContainer } from "./components/EditFeedbackContainer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -72,12 +74,15 @@ export default function RootLayout({
             <UserProvider>
               <FilterProvider>
                 <ModalProvider>
-                  <ErrorBoundary>
-                    <ClientLayout>{children}</ClientLayout>
-                    <ToastContainer />
-                    <PWAInstallPrompt />
-                    <OfflineIndicator />
-                  </ErrorBoundary>
+                  <FeedbackProvider>
+                    <ErrorBoundary>
+                      <ClientLayout>{children}</ClientLayout>
+                      <ToastContainer />
+                      <EditFeedbackContainer />
+                      <PWAInstallPrompt />
+                      <OfflineIndicator />
+                    </ErrorBoundary>
+                  </FeedbackProvider>
                 </ModalProvider>
               </FilterProvider>
             </UserProvider>
