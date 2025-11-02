@@ -4,6 +4,8 @@
  * Audio waveform-style bars animation
  */
 
+import { useMemo } from "react";
+
 interface LoadingSpinnerProps {
   message?: string;
   size?: "sm" | "md" | "lg";
@@ -13,29 +15,32 @@ export function LoadingSpinner({
   message = "Loading...",
   size = "md",
 }: LoadingSpinnerProps) {
-  const barCount = 9;
+  const barCount = 15;
   const barConfig = {
-    sm: { width: "0.2rem", containerHeight: "3rem", minHeight: "0.4rem" },
-    md: { width: "0.25rem", containerHeight: "3.5rem", minHeight: "0.5rem" },
-    lg: { width: "0.3rem", containerHeight: "4rem", minHeight: "0.6rem" },
+    sm: { width: "0.2rem", containerHeight: "12rem", minHeight: "1.2rem" },
+    md: { width: "0.2rem", containerHeight: "15rem", minHeight: "1.5rem" },
+    lg: { width: "0.2rem", containerHeight: "18rem", minHeight: "1.8rem" },
   };
 
   const config = barConfig[size];
 
   // Generate initial randomized heights and animation properties
-  const barAnimations = Array.from({ length: barCount }).map((_, i) => {
-    const baseDelay = i * 80;
-    const randomOffset = (i % 3) * 40;
-    const delay = baseDelay + randomOffset;
-    const duration = 0.5 + (i % 4) * 0.15;
-    // Random starting height (between 1x and 3x minHeight)
-    const startMultiplier = 1 + ((i % 7) / 7) * 2;
-    const startHeight = `${parseFloat(config.minHeight) * startMultiplier}rem`;
-    // Peak height (between 1.5x and 4x minHeight)
-    const peakMultiplier = 1.5 + ((i % 5) / 5) * 2.5;
-    const peakHeight = `${parseFloat(config.minHeight) * peakMultiplier}rem`;
-    return { delay, duration, startHeight, peakHeight };
-  });
+  // useMemo ensures these values are generated once per mount and stay consistent during that render
+  const barAnimations = useMemo(() => {
+    return Array.from({ length: barCount }).map((_, i) => {
+      const baseDelay = i * 60;
+      const randomOffset = Math.random() * 100; // Random delay offset (0-100ms)
+      const delay = baseDelay + randomOffset;
+      const duration = 0.4 + Math.random() * 0.4; // Random duration (0.4-0.8s)
+      // Random starting height (between 0.5x and 2.5x minHeight)
+      const startMultiplier = 0.5 + Math.random() * 2;
+      const startHeight = `${parseFloat(config.minHeight) * startMultiplier}rem`;
+      // Peak height (between 1.5x and 4x minHeight)
+      const peakMultiplier = 1.5 + Math.random() * 2.5;
+      const peakHeight = `${parseFloat(config.minHeight) * peakMultiplier}rem`;
+      return { delay, duration, startHeight, peakHeight };
+    });
+  }, [barCount, config.minHeight]); // Regenerate when these change
 
   return (
     <>
@@ -59,7 +64,7 @@ export function LoadingSpinner({
       `}</style>
       <div className="py-12 text-center" role="status" aria-live="polite">
         <div
-          className="flex items-end justify-center gap-0.5"
+          className="flex items-end justify-center gap-1"
           style={{
             height: config.containerHeight,
             position: "relative",
@@ -85,7 +90,6 @@ export function LoadingSpinner({
             );
           })}
         </div>
-        {message && <p className="mt-4 text-[#94a3b8] text-sm">{message}</p>}
       </div>
     </>
   );
