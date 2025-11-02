@@ -193,22 +193,31 @@ body::-webkit-scrollbar {
   display: none; /* Chrome, Safari and Opera */
 }
 
-/* Move and shrink React Query and Next.js devtools */
+/* Move React Query devtools to bottom left */
 #react-query-devtools-btn,
-[data-tanstack-query-devtools-toggle-button] {
+[data-tanstack-query-devtools-toggle-button],
+button[data-tanstack-query-devtools-toggle-button] {
   bottom: 1rem !important;
   left: 1rem !important;
+  top: auto !important;
   right: auto !important;
-  transform: scale(0.6) !important;
+  transform: scale(0.8) !important;
   transform-origin: bottom left !important;
   z-index: 20 !important;
 }
 
-/* Move Next.js build indicator */
-#__next-build-watcher {
+/* Move Next.js build indicator to bottom left next to React Query */
+#__next-build-watcher,
+.__next-build-watcher,
+[data-nextjs-build-watcher],
+div[data-nextjs-build-watcher],
+#__next-build-indicator {
   bottom: 1rem !important;
-  left: 1rem !important;
+  left: 4rem !important;
+  top: auto !important;
   right: auto !important;
-  transform: scale(0.7) !important;
+  transform: scale(0.8) !important;
   transform-origin: bottom left !important;
+  z-index: 20 !important;
+  position: fixed !important;
 }
