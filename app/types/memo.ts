@@ -37,7 +37,6 @@ export interface Memo {
   timestamp: Date;
   deleted_at?: Date | null; // For soft delete
   starred?: boolean; // Starred/priority items
-  size?: TaskSize; // T-shirt size for tasks (S: <5min, M: <30min, L: >30min)
   source: MemoSource; // Where the memo came from: app or device
   input_type: MemoInputType; // How it was captured: audio or text
   device_id?: string; // Device identifier (only for device sources)
@@ -49,7 +48,6 @@ export interface CategorizationResult {
   extracted: ExtractedData;
   tags: string[];
   starred?: boolean; // Auto-star if urgent/important
-  size?: TaskSize; // T-shirt size for tasks
   transcript_excerpt?: string; // Relevant portion of transcript (if split)
 }
 
@@ -62,5 +60,4 @@ export interface TranscriptionResponse {
   tags: string[];
   memo_id: string;
   starred?: boolean; // Auto-star if urgent/important
-  size?: TaskSize; // T-shirt size for tasks
 }

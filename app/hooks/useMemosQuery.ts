@@ -7,7 +7,6 @@ import { Memo, Category } from "../types/memo";
 export interface MemoFilters {
   username: string;
   categoryFilter: Category | "all";
-  sizeFilter: "all" | "S" | "M" | "L";
   starredOnly: boolean;
 }
 
@@ -26,11 +25,6 @@ async function fetchMemos(filters: MemoFilters): Promise<Memo[]> {
   // Apply category filter
   if (filters.categoryFilter !== "all") {
     query = query.eq("category", filters.categoryFilter);
-  }
-
-  // Apply size filter
-  if (filters.sizeFilter !== "all") {
-    query = query.eq("size", filters.sizeFilter);
   }
 
   const { data, error } = await query;

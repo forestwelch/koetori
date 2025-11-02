@@ -44,7 +44,6 @@ export interface UnderstandingMemo {
   extracted?: Record<string, unknown> | null;
   tags?: string[] | null;
   starred?: boolean;
-  size?: string | null;
 }
 
 export interface UnderstandingTask {
@@ -129,7 +128,6 @@ export interface MemoWriteResult {
     extracted: Record<string, unknown> | null;
     tags: string[] | null;
     starred: boolean;
-    size: string | null;
     transcript_excerpt: string | null;
   }>;
 }

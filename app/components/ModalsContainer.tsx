@@ -40,7 +40,6 @@ interface ModalsContainerProps {
     newCategory: Category,
     oldCategory: Category
   ) => void;
-  onSizeChange: (memoId: string, newSize: "S" | "M" | "L" | null) => void;
   dismissReview: (memoId: string) => void;
 
   // Text input processing
@@ -75,7 +74,6 @@ export function ModalsContainer({
   restoreMemo,
   hardDelete,
   onCategoryChange,
-  onSizeChange,
   dismissReview,
   onTextSubmit,
   onFeedbackSubmit,
@@ -167,7 +165,6 @@ export function ModalsContainer({
         restoreMemo={restoreMemo}
         hardDelete={hardDelete}
         onCategoryChange={onCategoryChange}
-        onSizeChange={onSizeChange}
         dismissReview={dismissReview}
       />
 
@@ -264,7 +261,6 @@ export function ModalsContainer({
               restoreMemo={restoreMemo}
               hardDelete={hardDelete}
               onCategoryChange={onCategoryChange}
-              onSizeChange={onSizeChange}
               dismissReview={dismissReview}
             />
           )}

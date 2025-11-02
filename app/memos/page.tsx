@@ -19,7 +19,6 @@ import { EmptyState } from "../components/EmptyState";
 import { MemosList } from "../components/MemosList";
 import { ModalsContainer } from "../components/ModalsContainer";
 import { QuickFilters } from "../components/QuickFilters";
-import { SizeFilterShowcase } from "../components/SizeFilterShowcase";
 import { FiltersDrawer } from "../components/FiltersDrawer";
 import { Filter, Star, Archive } from "lucide-react";
 import { Button } from "../components/ui/Button";
@@ -31,10 +30,8 @@ export default function MemosPage() {
   const { username } = useUser();
   const {
     categoryFilter,
-    sizeFilter,
     starredOnly,
     setCategoryFilter,
-    setSizeFilter,
     setStarredOnly,
     isSpotlightMode,
     setIsSpotlightMode,
@@ -56,7 +53,6 @@ export default function MemosPage() {
   } = useMemosQuery({
     username: username || "",
     categoryFilter,
-    sizeFilter,
     starredOnly,
   });
 
@@ -83,7 +79,6 @@ export default function MemosPage() {
     restoreMemo,
     hardDelete,
     handleCategoryChange,
-    handleSizeChange,
     dismissReview,
   } = useMemoOperations(username || "", refetchMemos);
 
@@ -316,13 +311,6 @@ export default function MemosPage() {
             onFilterClick={() => setIsSpotlightMode(false)}
           />
         </div>
-
-        <div className="mt-4">
-          <SizeFilterShowcase
-            sizeFilter={sizeFilter}
-            setSizeFilter={setSizeFilter}
-          />
-        </div>
       </div>
 
       {/* Memos Content */}
@@ -362,7 +350,6 @@ export default function MemosPage() {
             restoreMemo={restoreMemo}
             hardDelete={hardDelete}
             onCategoryChange={handleCategoryChange}
-            onSizeChange={handleSizeChange}
             dismissReview={dismissReview}
             expandedId={expandedId}
             setExpandedId={setExpandedId}
@@ -398,7 +385,6 @@ export default function MemosPage() {
         restoreMemo={restoreMemo}
         hardDelete={hardDelete}
         onCategoryChange={handleCategoryChange}
-        onSizeChange={handleSizeChange}
         dismissReview={dismissReview}
         onTextSubmit={handleTextSubmit}
         onFeedbackSubmit={handleFeedbackSubmit}
@@ -417,8 +403,6 @@ export default function MemosPage() {
         onClose={() => setIsFiltersDrawerOpen(false)}
         categoryFilter={categoryFilter}
         setCategoryFilter={setCategoryFilter}
-        sizeFilter={sizeFilter}
-        setSizeFilter={setSizeFilter}
       />
     </>
   );

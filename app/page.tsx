@@ -59,7 +59,6 @@ export default function InboxPage() {
     restoreMemo,
     hardDelete,
     handleCategoryChange,
-    handleSizeChange,
     dismissReview,
   } = useMemoOperations(username || "", refetchInbox);
 
@@ -279,7 +278,6 @@ export default function InboxPage() {
             restoreMemo={restoreMemo}
             hardDelete={hardDelete}
             onCategoryChange={handleCategoryChange}
-            onSizeChange={handleSizeChange}
             dismissReview={dismissReview}
             expandedId={expandedId}
             setExpandedId={setExpandedId}
@@ -315,7 +313,6 @@ export default function InboxPage() {
         restoreMemo={restoreMemo}
         hardDelete={hardDelete}
         onCategoryChange={handleCategoryChange}
-        onSizeChange={handleSizeChange}
         dismissReview={dismissReview}
         onTextSubmit={handleTextSubmit}
         onFeedbackSubmit={handleFeedbackSubmit}

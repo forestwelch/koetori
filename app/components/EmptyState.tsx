@@ -9,11 +9,9 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({ onRecordClick, isProcessing }: EmptyStateProps) {
-  const { categoryFilter, sizeFilter, starredOnly, resetFilters } =
-    useFilters();
+  const { categoryFilter, starredOnly, resetFilters } = useFilters();
 
-  const hasActiveFilters =
-    categoryFilter !== "all" || sizeFilter !== "all" || starredOnly;
+  const hasActiveFilters = categoryFilter !== "all" || starredOnly;
 
   if (hasActiveFilters) {
     return (

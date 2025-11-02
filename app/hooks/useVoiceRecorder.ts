@@ -45,6 +45,7 @@ export function useVoiceRecorder(username?: string): UseVoiceRecorderReturn {
   const [extracted, setExtracted] = useState<ExtractedData | null>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [memoId, setMemoId] = useState<string | null>(null);
+  const [memosCreated, setMemosCreated] = useState(0);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -209,14 +210,21 @@ export function useVoiceRecorder(username?: string): UseVoiceRecorderReturn {
 
         try {
           const data = await uploadWithRetry(audioBlob);
-          // Phase 8: Handle categorization response
+          // Handle response - API returns memos array and memo_ids array
+          const memosArray = Array.isArray(data.memos) ? data.memos : [];
+          const firstMemo = memosArray.length > 0 ? memosArray[0] : null;
+          const createdCount = data.memos_created ?? memosArray.length ?? 0;
+
           setTranscription(data.transcript);
-          setCategory(data.category);
-          setConfidence(data.confidence);
-          setNeedsReview(data.needs_review);
-          setExtracted(data.extracted);
-          setTags(data.tags);
-          setMemoId(data.memo_id);
+          setMemosCreated(createdCount);
+          if (firstMemo) {
+            setCategory(firstMemo.category || null);
+            setConfidence(firstMemo.confidence ?? null);
+            setNeedsReview(firstMemo.needs_review ?? false);
+            setExtracted(firstMemo.extracted || null);
+            setTags(firstMemo.tags || []);
+          }
+          setMemoId(data.memo_ids?.[0] || firstMemo?.id || null);
           retryCountRef.current = 0; // Reset retry count on success
         } catch (err) {
           const errorMessage =
@@ -264,6 +272,7 @@ export function useVoiceRecorder(username?: string): UseVoiceRecorderReturn {
     setExtracted(null);
     setTags([]);
     setMemoId(null);
+    setMemosCreated(0);
   }, []);
 
   return {
@@ -277,6 +286,7 @@ export function useVoiceRecorder(username?: string): UseVoiceRecorderReturn {
     extracted,
     tags,
     memoId,
+    memosCreated,
     recordingTime,
     maxRecordingTime: MAX_RECORDING_TIME,
     audioStream,

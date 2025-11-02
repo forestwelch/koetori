@@ -484,53 +484,6 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
     ]
   );
 
-  const handleSizeChange = useCallback(
-    async (memoId: string, newSize: "S" | "M" | "L" | null): Promise<void> => {
-      const { error } = await supabase
-        .from("memos")
-        .update({
-          size: newSize,
-        })
-        .eq("id", memoId)
-        .eq("username", username);
-
-      if (error) {
-        showError(`Failed to update size: ${error.message}`);
-      } else {
-        const snapshot = getMemoSnapshot(memoId);
-        const oldSize = snapshot?.size ?? null;
-        applyMemoSnapshot(
-          snapshot ? { ...snapshot, size: newSize ?? undefined } : undefined
-        );
-        showSuccess(`Size changed to ${newSize || "auto"}`);
-
-        // Show feedback dialog
-        const memoForFeedback = snapshot || (await getMemoForFeedback(memoId));
-        if (memoForFeedback) {
-          showFeedback({
-            memoId: memoId,
-            editType: "size",
-            originalValue: oldSize?.toString() || null,
-            newValue: newSize?.toString() || null,
-            transcript: memoForFeedback.transcript,
-            category: memoForFeedback.category,
-            confidence: memoForFeedback.confidence,
-            targetElement: (document.activeElement as HTMLElement) || null,
-          });
-        }
-      }
-    },
-    [
-      username,
-      getMemoSnapshot,
-      applyMemoSnapshot,
-      showSuccess,
-      showError,
-      getMemoForFeedback,
-      showFeedback,
-    ]
-  );
-
   const dismissReview = useCallback(
     async (memoId: string): Promise<void> => {
       const { error } = await supabase
@@ -576,7 +529,6 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
     restoreMemo,
     hardDelete,
     handleCategoryChange,
-    handleSizeChange,
     dismissReview,
   };
 }

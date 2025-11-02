@@ -32,7 +32,6 @@ interface MemoModalProps {
     newCategory: Category,
     oldCategory: Category
   ) => void;
-  onSizeChange?: (memoId: string, newSize: "S" | "M" | "L" | null) => void;
   dismissReview: (memoId: string) => void;
 }
 
@@ -57,7 +56,6 @@ export function MemoModal({
   restoreMemo,
   hardDelete,
   onCategoryChange,
-  onSizeChange,
   dismissReview,
 }: MemoModalProps) {
   if (!memo) return null;
@@ -85,7 +83,6 @@ export function MemoModal({
           restoreMemo={restoreMemo}
           hardDelete={hardDelete}
           onCategoryChange={onCategoryChange}
-          onSizeChange={onSizeChange}
           dismissReview={dismissReview}
           isExpanded={true}
           onToggleExpand={() => {}}

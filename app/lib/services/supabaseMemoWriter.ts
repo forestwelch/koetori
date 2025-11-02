@@ -45,7 +45,6 @@ export class SupabaseMemoWriter implements MemoWriterService {
       extracted: memo.extracted ?? null,
       tags: memo.tags ?? null,
       starred: memo.starred ?? false,
-      size: memo.size ?? null,
       username: request.metadata.username,
       source: request.metadata.source,
       input_type: request.metadata.inputType,
@@ -71,7 +70,6 @@ export class SupabaseMemoWriter implements MemoWriterService {
         extracted: memo.extracted,
         tags: memo.tags,
         starred: memo.starred,
-        size: memo.size,
         transcript_excerpt: memo.transcript_excerpt ?? null,
       })),
     };

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { X, Check } from "lucide-react";
 import { Popover } from "react-aria-components";
 
-export type EditType = "category" | "summary" | "size" | "transcript" | "tags";
+export type EditType = "category" | "summary" | "transcript" | "tags";
 
 interface EditFeedbackDialogProps {
   isOpen: boolean;

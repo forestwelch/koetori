@@ -39,7 +39,6 @@ interface SearchModalProps {
     newCategory: Category,
     oldCategory: Category
   ) => void;
-  onSizeChange: (memoId: string, newSize: "S" | "M" | "L" | null) => void;
   dismissReview: (memoId: string) => void;
 }
 
@@ -67,7 +66,6 @@ export function SearchModal({
   restoreMemo,
   hardDelete,
   onCategoryChange,
-  onSizeChange,
   dismissReview,
 }: SearchModalProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -144,14 +142,6 @@ export function SearchModal({
       searchResults.map((memo) =>
         memo.id === id ? { ...memo, category: newCat } : memo
       )
-    );
-  };
-
-  const handleSizeChange = (id: string, size: "S" | "M" | "L" | null) => {
-    onSizeChange(id, size);
-    // Update size in memory
-    setSearchResults(
-      searchResults.map((memo) => (memo.id === id ? { ...memo, size } : memo))
     );
   };
 
@@ -233,7 +223,6 @@ export function SearchModal({
                     restoreMemo={restoreMemo}
                     hardDelete={hardDelete}
                     onCategoryChange={handleCategoryChange}
-                    onSizeChange={handleSizeChange}
                     dismissReview={handleDismissReview}
                     searchQuery={searchQuery}
                     isSearchMode={true}

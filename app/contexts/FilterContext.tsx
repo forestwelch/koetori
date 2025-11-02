@@ -14,10 +14,8 @@ import { Category } from "../types/memo";
 
 interface FilterContextType {
   categoryFilter: Category | "all";
-  sizeFilter: "all" | "S" | "M" | "L";
   starredOnly: boolean;
   setCategoryFilter: (category: Category | "all") => void;
-  setSizeFilter: (size: "all" | "S" | "M" | "L") => void;
   setStarredOnly: (starred: boolean) => void;
   resetFilters: () => void;
   isSpotlightMode: boolean;
@@ -34,9 +32,6 @@ function FilterProviderInner({ children }: { children: ReactNode }) {
   const [categoryFilter, setCategoryFilterState] = useState<Category | "all">(
     (searchParams.get("category") as Category | "all") || "all"
   );
-  const [sizeFilter, setSizeFilterState] = useState<"all" | "S" | "M" | "L">(
-    (searchParams.get("size") as "all" | "S" | "M" | "L") || "all"
-  );
   const [starredOnly, setStarredOnlyState] = useState<boolean>(
     searchParams.get("starred") === "true"
   );
@@ -44,10 +39,9 @@ function FilterProviderInner({ children }: { children: ReactNode }) {
 
   // Update URL when filters change - preserve current path
   const updateURL = useCallback(
-    (category: string, size: string, starred: boolean) => {
+    (category: string, starred: boolean) => {
       const params = new URLSearchParams();
       if (category !== "all") params.set("category", category);
-      if (size !== "all") params.set("size", size);
       if (starred) params.set("starred", "true");
 
       const query = params.toString();
@@ -61,42 +55,31 @@ function FilterProviderInner({ children }: { children: ReactNode }) {
   const setCategoryFilter = useCallback(
     (newCategory: Category | "all") => {
       setCategoryFilterState(newCategory);
-      updateURL(newCategory, sizeFilter, starredOnly);
+      updateURL(newCategory, starredOnly);
     },
-    [sizeFilter, starredOnly, updateURL]
-  );
-
-  const setSizeFilter = useCallback(
-    (size: "all" | "S" | "M" | "L") => {
-      setSizeFilterState(size);
-      updateURL(categoryFilter, size, starredOnly);
-    },
-    [categoryFilter, starredOnly, updateURL]
+    [starredOnly, updateURL]
   );
 
   const setStarredOnly = useCallback(
     (starred: boolean) => {
       setStarredOnlyState(starred);
-      updateURL(categoryFilter, sizeFilter, starred);
+      updateURL(categoryFilter, starred);
     },
-    [categoryFilter, sizeFilter, updateURL]
+    [categoryFilter, updateURL]
   );
 
   const resetFilters = useCallback(() => {
     setCategoryFilterState("all");
-    setSizeFilterState("all");
     setStarredOnlyState(false);
-    updateURL("all", "all", false);
+    updateURL("all", false);
   }, [updateURL]);
 
   // Sync with URL changes (e.g., browser back/forward)
   useEffect(() => {
     const category = searchParams.get("category") || "all";
-    const size = searchParams.get("size") || "all";
     const starred = searchParams.get("starred") === "true";
 
     setCategoryFilterState(category as Category | "all");
-    setSizeFilterState(size as "all" | "S" | "M" | "L");
     setStarredOnlyState(starred);
   }, [searchParams]);
 
@@ -104,10 +87,8 @@ function FilterProviderInner({ children }: { children: ReactNode }) {
     <FilterContext.Provider
       value={{
         categoryFilter,
-        sizeFilter,
         starredOnly,
         setCategoryFilter,
-        setSizeFilter,
         setStarredOnly,
         resetFilters,
         isSpotlightMode,

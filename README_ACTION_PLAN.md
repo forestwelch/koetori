@@ -91,7 +91,8 @@ Actions:
 - [ ] Add prompt management UI with versioning + rollback support.
 - [ ] Outline tarot repository data model (cards, spreads, journal entries, audio attachments).
 - [ ] Explore AI-assisted README generation pipeline tied to `App Ideas` memos.
-- [ ] **Edit Feedback Collection:** Non-intrusive dialog that appears after edits (category, summary, size, etc.) asking "Why did you make this change?" to collect user feedback for AI learning system. Should be dismissible with "Skip" and save feedback to database for future learning system integration.
+- [ ] **Edit Feedback Collection:** Non-intrusive dialog that appears after edits (category, summary, etc.) asking "Why did you make this change?" to collect user feedback for AI learning system. Should be dismissible with "Skip" and save feedback to database for future learning system integration.
+- [ ] **Mobile Audit & Redesign:** Comprehensive mobile experience audit and redesign. Known issues include hamburger menu positioning, layout problems on small screens, click target sizes, and recording experience. Planned improvements: full mobile redesign with better touch targets, mobile-first recording experience, improved navigation patterns. Scheduled after core features are complete.
 
 ## Phase 5 — Background Intelligence
 

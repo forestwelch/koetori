@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "../lib/ui-utils";
-import { Film, Bell, ShoppingBag } from "lucide-react";
+import { Film, Bell, ShoppingBag, CheckSquare } from "lucide-react";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -14,6 +14,7 @@ const dashboardTabs = [
   { href: "/dashboard/media", label: "Media", icon: Film },
   { href: "/dashboard/reminders", label: "Reminders", icon: Bell },
   { href: "/dashboard/shopping", label: "Shopping", icon: ShoppingBag },
+  { href: "/dashboard/todos", label: "Todos", icon: CheckSquare },
 ];
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {

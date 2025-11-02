@@ -29,7 +29,6 @@ interface MemosListProps {
     newCategory: Category,
     oldCategory: Category
   ) => void;
-  onSizeChange: (memoId: string, newSize: "S" | "M" | "L" | null) => void;
   dismissReview: (memoId: string) => void;
   expandedId: string | null;
   setExpandedId: (id: string | null) => void;
@@ -55,7 +54,6 @@ export function MemosList({
   restoreMemo,
   hardDelete,
   onCategoryChange,
-  onSizeChange,
   dismissReview,
   expandedId,
   setExpandedId,
@@ -96,7 +94,6 @@ export function MemosList({
             restoreMemo={restoreMemo}
             hardDelete={hardDelete}
             onCategoryChange={onCategoryChange}
-            onSizeChange={onSizeChange}
             dismissReview={dismissReview}
             isExpanded={expandedId === memo.id}
             onToggleExpand={() =>

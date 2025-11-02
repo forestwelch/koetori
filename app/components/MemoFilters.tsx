@@ -13,10 +13,8 @@ interface MemoFiltersProps {
   setFilter: (filter: "all" | "review" | "archive" | "starred") => void;
   categoryFilter: Category | "all";
   setCategoryFilter: (category: Category | "all") => void;
-  sizeFilter: "S" | "M" | "L" | "all";
-  setSizeFilter: (size: "S" | "M" | "L" | "all") => void;
-  openDropdown: "view" | "category" | "size" | null;
-  setOpenDropdown: (dropdown: "view" | "category" | "size" | null) => void;
+  openDropdown: "view" | "category" | null;
+  setOpenDropdown: (dropdown: "view" | "category" | null) => void;
 }
 
 export default function MemoFilters({
@@ -24,8 +22,6 @@ export default function MemoFilters({
   setFilter,
   categoryFilter,
   setCategoryFilter,
-  sizeFilter,
-  setSizeFilter,
   openDropdown,
   setOpenDropdown,
 }: MemoFiltersProps) {
@@ -176,90 +172,6 @@ export default function MemoFilters({
               )}
             </Button>
           ))}
-        </div>
-      </div>
-
-      {/* Size Filter */}
-      <div className="relative group">
-        <Button
-          onClick={() =>
-            setOpenDropdown(openDropdown === "size" ? null : "size")
-          }
-          variant="unstyled"
-          size="custom"
-          className="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium bg-[#0d0e14]/40 border border-slate-700/20 text-[#cbd5e1] hover:bg-[#0d0e14]/60 transition-all backdrop-blur-xl whitespace-nowrap min-w-[4rem]"
-        >
-          {sizeFilter === "all" ? "Size" : sizeFilter} ▾
-        </Button>
-
-        {/* Dropdown - hover on desktop, click on mobile */}
-        <div
-          className={`absolute top-full left-0 mt-1 w-40 bg-[#0d0e14]/98 backdrop-blur-xl border border-slate-700/40 rounded-lg shadow-2xl overflow-hidden transition-all z-50 ${
-            openDropdown === "size"
-              ? "opacity-100 visible"
-              : "opacity-0 invisible"
-          } sm:group-hover:opacity-100 sm:group-hover:visible`}
-        >
-          <Button
-            onClick={() => {
-              setSizeFilter("all");
-              setOpenDropdown(null);
-            }}
-            variant="unstyled"
-            size="custom"
-            className={`w-full px-3 py-2 text-sm text-left justify-start transition-colors ${
-              sizeFilter === "all"
-                ? "bg-slate-500/30 text-white"
-                : "text-slate-300 hover:bg-slate-700/30"
-            }`}
-          >
-            {FILTER_LABELS.SIZE_ALL}
-          </Button>
-          <Button
-            onClick={() => {
-              setSizeFilter("S");
-              setOpenDropdown(null);
-            }}
-            variant="unstyled"
-            size="custom"
-            className={`w-full px-3 py-2 text-sm text-left justify-start transition-colors ${
-              sizeFilter === "S"
-                ? "bg-slate-500/30 text-white"
-                : "text-slate-300 hover:bg-slate-700/30"
-            }`}
-          >
-            {FILTER_LABELS.SIZE_S}
-          </Button>
-          <Button
-            onClick={() => {
-              setSizeFilter("M");
-              setOpenDropdown(null);
-            }}
-            variant="unstyled"
-            size="custom"
-            className={`w-full px-3 py-2 text-sm text-left justify-start transition-colors ${
-              sizeFilter === "M"
-                ? "bg-slate-500/30 text-white"
-                : "text-slate-300 hover:bg-slate-700/30"
-            }`}
-          >
-            {FILTER_LABELS.SIZE_M}
-          </Button>
-          <Button
-            onClick={() => {
-              setSizeFilter("L");
-              setOpenDropdown(null);
-            }}
-            variant="unstyled"
-            size="custom"
-            className={`w-full px-3 py-2 text-sm text-left justify-start transition-colors ${
-              sizeFilter === "L"
-                ? "bg-slate-500/30 text-white"
-                : "text-slate-300 hover:bg-slate-700/30"
-            }`}
-          >
-            {FILTER_LABELS.SIZE_L}
-          </Button>
         </div>
       </div>
     </div>

@@ -51,7 +51,6 @@ export class LlamaUnderstandingService implements UnderstandingService {
         extracted: memo.extracted ? { ...memo.extracted } : null,
         tags: memo.tags ?? null,
         starred: memo.starred ?? false,
-        size: memo.size ?? null,
       })),
       raw: parsed,
     };

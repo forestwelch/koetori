@@ -83,8 +83,7 @@ RESPONSE FORMAT (valid JSON only):
         "what": "brief summary"
       },
       "tags": ["tag1", "tag2"],
-      "starred": false,
-      "size": "M"
+      "starred": false
     }
   ]
 }
@@ -102,7 +101,6 @@ Each memo should follow the same categorization rules as the single-memo prompt:
 - Do NOT categorize physical locations (museums, galleries, restaurants) as "media" - use "todo" or "event" instead
 - Generate 2-5 relevant tags
 - Star if urgent/important/priority
-- Estimate size for todo items (S/M/L)
 - Keep "what" field specific and concise
 
 Now analyze this transcript and determine if it should be split:
@@ -146,13 +144,6 @@ export function validateCategorizationResult(
   // Check if starred
   const starred = typeof result.starred === "boolean" ? result.starred : false;
 
-  // Validate size
-  const validSizes = ["S", "M", "L"];
-  const size =
-    result.size && validSizes.includes(result.size as string)
-      ? (result.size as "S" | "M" | "L")
-      : null;
-
   // Extract transcript excerpt if present
   const transcript_excerpt =
     typeof result.transcript_excerpt === "string"
@@ -170,7 +161,6 @@ export function validateCategorizationResult(
     extracted,
     tags,
     starred,
-    size,
     transcript_excerpt,
   };
 }

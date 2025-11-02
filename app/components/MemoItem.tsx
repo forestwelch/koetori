@@ -36,7 +36,6 @@ interface MemoItemProps {
     newCategory: Category,
     oldCategory: Category
   ) => void;
-  onSizeChange?: (memoId: string, newSize: "S" | "M" | "L" | null) => void;
   dismissReview: (memoId: string) => void;
   // Search props
   searchQuery?: string;
@@ -66,7 +65,6 @@ export function MemoItem({
   restoreMemo: _restoreMemo,
   hardDelete: _hardDelete,
   onCategoryChange,
-  onSizeChange: _onSizeChange,
   dismissReview,
   searchQuery,
   isSearchMode = false,
@@ -520,11 +518,6 @@ export function MemoItem({
                 )}
 
                 {/* Task Size - visible on mobile in expanded view */}
-                {memo.size && (
-                  <span className="px-1.5 py-0.5 bg-slate-700/30 text-slate-300 border border-slate-600/30 rounded text-xs font-medium">
-                    {memo.size}
-                  </span>
-                )}
 
                 {/* Date */}
                 <span className="ml-auto text-[#64748b]">
