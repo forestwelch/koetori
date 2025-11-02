@@ -20,6 +20,13 @@ interface MemoItemProps {
   startEdit: (memo: Memo) => void;
   cancelEdit: () => void;
   saveEdit: (id: string) => void;
+  // Summary editing props
+  editingSummaryId: string | null;
+  summaryEditText: string;
+  setSummaryEditText: (text: string) => void;
+  startEditSummary: (memo: Memo) => void;
+  cancelEditSummary: () => void;
+  saveSummary: (id: string) => void;
   softDelete: (id: string) => void;
   toggleStar: (id: string, current: boolean) => void;
   restoreMemo: (id: string, memoData?: Memo) => void;
@@ -48,6 +55,12 @@ export function MemoItem({
   startEdit,
   cancelEdit,
   saveEdit,
+  editingSummaryId,
+  summaryEditText,
+  setSummaryEditText,
+  startEditSummary,
+  cancelEditSummary,
+  saveSummary,
   softDelete,
   toggleStar,
   restoreMemo: _restoreMemo,
@@ -187,6 +200,10 @@ export function MemoItem({
           isExpanded ? "Collapse memo details" : "Expand memo details"
         }
         onKeyDown={(e) => {
+          // Don't expand/collapse if user is editing something
+          if (editingSummaryId === memo.id || editingId === memo.id) {
+            return;
+          }
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             toggleExpanded();
@@ -214,13 +231,45 @@ export function MemoItem({
               )}
             </div>
 
-            {/* Summary */}
-            <div className="flex-1 min-w-0">
-              <p className="text-[#cbd5e1] text-xs sm:text-sm line-clamp-1 mb-1">
-                {isSearchMode && searchQuery
-                  ? highlightText(summary, searchQuery)
-                  : summary}
-              </p>
+            {/* Summary - Inline Editable */}
+            <div className="flex-1 min-w-0 flex items-start">
+              {editingSummaryId === memo.id ? (
+                <input
+                  type="text"
+                  value={summaryEditText}
+                  onChange={(e) => setSummaryEditText(e.target.value)}
+                  onBlur={() => saveSummary(memo.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      saveSummary(memo.id);
+                    } else if (e.key === "Escape") {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      cancelEditSummary();
+                    } else if (e.key === " ") {
+                      e.stopPropagation();
+                    }
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-full text-[#cbd5e1] text-xs sm:text-sm bg-transparent border-b-2 border-indigo-500/70 focus:border-indigo-400 focus:outline-none pb-0.5 mb-1 min-h-[1.5rem]"
+                  autoFocus
+                />
+              ) : (
+                <p
+                  className="text-[#cbd5e1] text-xs sm:text-sm line-clamp-1 mb-1 cursor-text hover:text-white transition-colors min-h-[1.5rem] border-b-2 border-transparent"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    startEditSummary(memo);
+                  }}
+                  title="Click to edit summary"
+                >
+                  {isSearchMode && searchQuery
+                    ? highlightText(summary, searchQuery)
+                    : summary}
+                </p>
+              )}
 
               {/* Search mode: Show additional matches in contracted view */}
               {isSearchMode && searchQuery && (
@@ -470,13 +519,6 @@ export function MemoItem({
                   </span>
                 )}
 
-                {/* Actionable flag */}
-                {memo.extracted?.actionable && (
-                  <span className="px-1.5 py-0.5 bg-orange-500/10 text-orange-400 border border-orange-500/40 rounded text-xs">
-                    🎯 Actionable
-                  </span>
-                )}
-
                 {/* Task Size - visible on mobile in expanded view */}
                 {memo.size && (
                   <span className="px-1.5 py-0.5 bg-slate-700/30 text-slate-300 border border-slate-600/30 rounded text-xs font-medium">
@@ -496,14 +538,16 @@ export function MemoItem({
                 </span>
               </div>
 
-              {/* Extracted Data */}
+              {/* Extracted Data - Only show if we have actual content */}
               {memo.extracted &&
-                (memo.extracted.title ||
-                  memo.extracted.who ||
+                ((memo.extracted.title && memo.category === "media") ||
+                  (memo.extracted.who &&
+                    Array.isArray(memo.extracted.who) &&
+                    memo.extracted.who.length > 0) ||
                   memo.extracted.when ||
                   memo.extracted.where) && (
                   <div className="mb-2 p-2 bg-[#0a0a0f]/60 backdrop-blur-xl rounded-lg border border-slate-700/10 space-y-1 text-xs">
-                    {memo.extracted.title && (
+                    {memo.extracted.title && memo.category === "media" && (
                       <div>
                         <span className="text-[#64748b] font-medium">
                           Title:{" "}
@@ -515,21 +559,23 @@ export function MemoItem({
                         </span>
                       </div>
                     )}
-                    {memo.extracted.who && memo.extracted.who.length > 0 && (
-                      <div>
-                        <span className="text-[#64748b] font-medium">
-                          People:{" "}
-                        </span>
-                        <span className="text-[#cbd5e1]">
-                          {isSearchMode && searchQuery
-                            ? highlightText(
-                                memo.extracted.who.join(", "),
-                                searchQuery
-                              )
-                            : memo.extracted.who.join(", ")}
-                        </span>
-                      </div>
-                    )}
+                    {memo.extracted.who &&
+                      Array.isArray(memo.extracted.who) &&
+                      memo.extracted.who.length > 0 && (
+                        <div>
+                          <span className="text-[#64748b] font-medium">
+                            People:{" "}
+                          </span>
+                          <span className="text-[#cbd5e1]">
+                            {isSearchMode && searchQuery
+                              ? highlightText(
+                                  memo.extracted.who.join(", "),
+                                  searchQuery
+                                )
+                              : memo.extracted.who.join(", ")}
+                          </span>
+                        </div>
+                      )}
                     {memo.extracted.when && (
                       <div>
                         <span className="text-[#64748b] font-medium">

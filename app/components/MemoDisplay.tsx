@@ -77,7 +77,7 @@ export function MemoDisplay({
             Extracted Information
           </h4>
 
-          {extracted.title && (
+          {extracted.title && category === "media" && (
             <div className="flex gap-2">
               <span className="text-[#64748b] text-sm font-medium min-w-[60px]">
                 Title:
@@ -123,14 +123,6 @@ export function MemoDisplay({
                 Summary:
               </span>
               <span className="text-[#cbd5e1] text-sm">{extracted.what}</span>
-            </div>
-          )}
-
-          {extracted.actionable && (
-            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-slate-700/30">
-              <span className="text-xs px-2 py-0.5 bg-orange-500/20 text-orange-400 border border-orange-500/30 rounded">
-                🎯 Actionable
-              </span>
             </div>
           )}
         </div>

@@ -101,19 +101,6 @@ export function useKeyboardShortcuts({
       )
         return;
 
-      // Space for recording (only when no modifiers and no modal/input is active)
-      // Keep as fallback for quick recording
-      if (
-        handleShortcut(
-          e.code === "Space" &&
-            !isInputField &&
-            !isModalOpen &&
-            hasOnlyModifiers(),
-          onRecordToggle
-        )
-      )
-        return;
-
       // Option/Alt shortcuts (use e.code instead of e.key for macOS compatibility)
       if (
         handleShortcut(e.code === "KeyP" && hasOnlyModifiers(true), () =>

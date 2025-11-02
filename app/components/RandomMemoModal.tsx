@@ -64,7 +64,7 @@ export function RandomMemoModal({
           <div className="text-[#64748b] text-xs font-semibold uppercase tracking-wider mb-2">
             Extracted Information
           </div>
-          {memo.extracted.title && (
+          {memo.extracted.title && memo.category === "media" && (
             <div>
               <span className="text-[#64748b] font-medium">Title: </span>
               <span className="text-[#cbd5e1]">{memo.extracted.title}</span>
@@ -92,13 +92,6 @@ export function RandomMemoModal({
             <div>
               <span className="text-[#64748b] font-medium">Summary: </span>
               <span className="text-[#cbd5e1]">{memo.extracted.what}</span>
-            </div>
-          )}
-          {memo.extracted.actionable && (
-            <div className="pt-1">
-              <span className="text-xs px-2 py-0.5 bg-orange-500/10 text-orange-400 border border-orange-500/40 rounded-full backdrop-blur-xl">
-                🎯 Actionable
-              </span>
             </div>
           )}
         </div>

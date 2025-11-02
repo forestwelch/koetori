@@ -22,6 +22,13 @@ interface SearchModalProps {
   startEdit: (memo: Memo) => void;
   cancelEdit: () => void;
   saveEdit: (memoId: string) => void;
+  // Summary editing props
+  editingSummaryId: string | null;
+  summaryEditText: string;
+  setSummaryEditText: (text: string) => void;
+  startEditSummary: (memo: Memo) => void;
+  cancelEditSummary: () => void;
+  saveSummary: (memoId: string) => void;
   softDelete: (memoId: string) => void;
   toggleStar: (memoId: string, currentStarred: boolean) => void;
   restoreMemo: (memoId: string, memoData?: Memo) => void;
@@ -48,6 +55,12 @@ export function SearchModal({
   startEdit,
   cancelEdit,
   saveEdit,
+  editingSummaryId,
+  summaryEditText,
+  setSummaryEditText,
+  startEditSummary,
+  cancelEditSummary,
+  saveSummary,
   softDelete,
   toggleStar,
   restoreMemo,
@@ -97,6 +110,24 @@ export function SearchModal({
     setSearchResults(
       searchResults.map((memo) =>
         memo.id === id ? { ...memo, transcript: editText } : memo
+      )
+    );
+  };
+
+  const handleSaveSummary = (id: string) => {
+    saveSummary(id);
+    // Update extracted.what in search results immediately
+    setSearchResults(
+      searchResults.map((memo) =>
+        memo.id === id
+          ? {
+              ...memo,
+              extracted: {
+                ...memo.extracted,
+                what: summaryEditText.trim(),
+              },
+            }
+          : memo
       )
     );
   };
@@ -197,6 +228,12 @@ export function SearchModal({
                     startEdit={startEdit}
                     cancelEdit={cancelEdit}
                     saveEdit={handleSaveEdit}
+                    editingSummaryId={editingSummaryId}
+                    summaryEditText={summaryEditText}
+                    setSummaryEditText={setSummaryEditText}
+                    startEditSummary={startEditSummary}
+                    cancelEditSummary={cancelEditSummary}
+                    saveSummary={handleSaveSummary}
                     softDelete={handleSoftDelete}
                     toggleStar={handleToggleStar}
                     restoreMemo={restoreMemo}

@@ -143,14 +143,17 @@ export function FullRecordingModal({
                         {/* Extracted Data */}
                         {memo.extracted && (
                           <div className="space-y-1 text-xs">
-                            {memo.extracted.title && (
-                              <div>
-                                <span className="text-[#64748b]">Title: </span>
-                                <span className="text-[#e2e8f0]">
-                                  {memo.extracted.title}
-                                </span>
-                              </div>
-                            )}
+                            {memo.extracted.title &&
+                              memo.category === "media" && (
+                                <div>
+                                  <span className="text-[#64748b]">
+                                    Title:{" "}
+                                  </span>
+                                  <span className="text-[#e2e8f0]">
+                                    {memo.extracted.title}
+                                  </span>
+                                </div>
+                              )}
                             {memo.extracted.who &&
                               memo.extracted.who.length > 0 && (
                                 <div>

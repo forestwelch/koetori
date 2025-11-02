@@ -86,7 +86,7 @@ export function MemoContent({
           memo.extracted.where ||
           memo.extracted.what) && (
           <div className="mt-3 p-3 bg-[#0a0a0f]/60 backdrop-blur-xl rounded-xl border border-slate-700/10 space-y-1.5 text-sm select-text">
-            {memo.extracted.title && (
+            {memo.extracted.title && memo.category === "media" && (
               <div>
                 <span className="text-[#64748b] font-medium">Title: </span>
                 <span className="text-[#e2e8f0]">{memo.extracted.title}</span>
@@ -116,13 +116,6 @@ export function MemoContent({
               <div>
                 <span className="text-[#64748b] font-medium">Summary: </span>
                 <span className="text-[#cbd5e1]">{memo.extracted.what}</span>
-              </div>
-            )}
-            {memo.extracted.actionable && (
-              <div className="pt-1">
-                <span className="text-xs px-2 py-0.5 bg-orange-500/10 text-orange-400 border border-orange-500/40 rounded-full backdrop-blur-xl">
-                  🎯 Actionable
-                </span>
               </div>
             )}
           </div>

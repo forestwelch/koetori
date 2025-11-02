@@ -24,6 +24,13 @@ interface ModalsContainerProps {
   startEdit: (memo: Memo) => void;
   cancelEdit: () => void;
   saveEdit: (id: string) => void;
+  // Summary editing props
+  editingSummaryId: string | null;
+  summaryEditText: string;
+  setSummaryEditText: (text: string) => void;
+  startEditSummary: (memo: Memo) => void;
+  cancelEditSummary: () => void;
+  saveSummary: (id: string) => void;
   softDelete: (id: string) => void;
   toggleStar: (id: string, current: boolean) => void;
   restoreMemo: (id: string, memoData?: Memo) => Promise<void>;
@@ -57,6 +64,12 @@ export function ModalsContainer({
   startEdit,
   cancelEdit,
   saveEdit,
+  editingSummaryId,
+  summaryEditText,
+  setSummaryEditText,
+  startEditSummary,
+  cancelEditSummary,
+  saveSummary,
   softDelete,
   toggleStar,
   restoreMemo,
@@ -143,6 +156,12 @@ export function ModalsContainer({
         startEdit={startEdit}
         cancelEdit={cancelEdit}
         saveEdit={saveEdit}
+        editingSummaryId={editingSummaryId}
+        summaryEditText={summaryEditText}
+        setSummaryEditText={setSummaryEditText}
+        startEditSummary={startEditSummary}
+        cancelEditSummary={cancelEditSummary}
+        saveSummary={saveSummary}
         softDelete={softDelete}
         toggleStar={toggleStar}
         restoreMemo={restoreMemo}
@@ -234,6 +253,12 @@ export function ModalsContainer({
               startEdit={startEdit}
               cancelEdit={cancelEdit}
               saveEdit={saveEdit}
+              editingSummaryId={editingSummaryId}
+              summaryEditText={summaryEditText}
+              setSummaryEditText={setSummaryEditText}
+              startEditSummary={startEditSummary}
+              cancelEditSummary={cancelEditSummary}
+              saveSummary={saveSummary}
               softDelete={softDelete}
               toggleStar={toggleStar}
               restoreMemo={restoreMemo}

@@ -41,6 +41,12 @@ export default function InboxPage() {
     editingId,
     editText,
     setEditText,
+    editingSummaryId,
+    summaryEditText,
+    setSummaryEditText,
+    startEditSummary,
+    cancelEditSummary,
+    saveSummary,
     newMemoId,
     setNewMemoId,
     expandedId,
@@ -262,6 +268,12 @@ export default function InboxPage() {
             startEdit={startEdit}
             cancelEdit={cancelEdit}
             saveEdit={saveEdit}
+            editingSummaryId={editingSummaryId}
+            summaryEditText={summaryEditText}
+            setSummaryEditText={setSummaryEditText}
+            startEditSummary={startEditSummary}
+            cancelEditSummary={cancelEditSummary}
+            saveSummary={saveSummary}
             softDelete={softDelete}
             toggleStar={toggleStar}
             restoreMemo={restoreMemo}
@@ -292,6 +304,12 @@ export default function InboxPage() {
         startEdit={startEdit}
         cancelEdit={cancelEdit}
         saveEdit={saveEdit}
+        editingSummaryId={editingSummaryId}
+        summaryEditText={summaryEditText}
+        setSummaryEditText={setSummaryEditText}
+        startEditSummary={startEditSummary}
+        cancelEditSummary={cancelEditSummary}
+        saveSummary={saveSummary}
         softDelete={softDelete}
         toggleStar={toggleStar}
         restoreMemo={restoreMemo}

@@ -16,6 +16,13 @@ interface MemoModalProps {
   startEdit: (memo: Memo) => void;
   cancelEdit: () => void;
   saveEdit: (id: string) => void;
+  // Summary editing props
+  editingSummaryId: string | null;
+  summaryEditText: string;
+  setSummaryEditText: (text: string) => void;
+  startEditSummary: (memo: Memo) => void;
+  cancelEditSummary: () => void;
+  saveSummary: (id: string) => void;
   softDelete: (memoId: string) => void;
   toggleStar: (memoId: string, current: boolean) => void;
   restoreMemo: (memoId: string, memoData?: Memo) => void;
@@ -39,6 +46,12 @@ export function MemoModal({
   startEdit,
   cancelEdit,
   saveEdit,
+  editingSummaryId,
+  summaryEditText,
+  setSummaryEditText,
+  startEditSummary,
+  cancelEditSummary,
+  saveSummary,
   softDelete,
   toggleStar,
   restoreMemo,
@@ -61,6 +74,12 @@ export function MemoModal({
           startEdit={startEdit}
           cancelEdit={cancelEdit}
           saveEdit={saveEdit}
+          editingSummaryId={editingSummaryId}
+          summaryEditText={summaryEditText}
+          setSummaryEditText={setSummaryEditText}
+          startEditSummary={startEditSummary}
+          cancelEditSummary={cancelEditSummary}
+          saveSummary={saveSummary}
           softDelete={softDelete}
           toggleStar={toggleStar}
           restoreMemo={restoreMemo}

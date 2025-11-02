@@ -12,6 +12,8 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
   const queryClient = useQueryClient();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
+  const [editingSummaryId, setEditingSummaryId] = useState<string | null>(null);
+  const [summaryEditText, setSummaryEditText] = useState("");
   const [newMemoId, setNewMemoId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -25,6 +27,16 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
     setEditText("");
   }, []);
 
+  const startEditSummary = useCallback((memo: Memo) => {
+    setEditingSummaryId(memo.id);
+    setSummaryEditText(memo.extracted?.what || "");
+  }, []);
+
+  const cancelEditSummary = useCallback(() => {
+    setEditingSummaryId(null);
+    setSummaryEditText("");
+  }, []);
+
   const updateQueries = useCallback(
     (updater: (memos: Memo[], filters: MemoFilters) => Memo[]) => {
       const queries = queryClient.getQueriesData<Memo[]>({
@@ -36,21 +48,42 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
         const next = updater(data, filters);
         queryClient.setQueryData<Memo[]>(key, next);
       });
+      // Also update inbox queries
+      const inboxQueries = queryClient.getQueriesData<Memo[]>({
+        queryKey: ["inbox-memos"],
+      });
+      inboxQueries.forEach(([key, data]) => {
+        if (!data) return;
+        const updated = updater(data, {} as MemoFilters);
+        queryClient.setQueryData<Memo[]>(key, updated);
+      });
     },
     [queryClient]
   );
 
   const getMemoSnapshot = useCallback(
     (id: string): Memo | undefined => {
-      const queries = queryClient.getQueriesData<Memo[]>({
+      // Check both memos and inbox-memos queries
+      const memosQueries = queryClient.getQueriesData<Memo[]>({
         queryKey: ["memos"],
       });
-      for (const [, data] of queries) {
+      for (const [, data] of memosQueries) {
         const found = data?.find((memo) => memo.id === id);
         if (found) {
           return found;
         }
       }
+
+      const inboxQueries = queryClient.getQueriesData<Memo[]>({
+        queryKey: ["inbox-memos"],
+      });
+      for (const [, data] of inboxQueries) {
+        const found = data?.find((memo) => memo.id === id);
+        if (found) {
+          return found;
+        }
+      }
+
       return undefined;
     },
     [queryClient]
@@ -188,6 +221,89 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
       }
     },
     [username, getMemoSnapshot, applyMemoSnapshot, showSuccess, showError]
+  );
+
+  const saveSummary = useCallback(
+    async (id: string): Promise<void> => {
+      const trimmedText = summaryEditText.trim();
+
+      if (!trimmedText) {
+        showWarning("Summary cannot be empty");
+        return;
+      }
+
+      // Get current memo to check if it changed
+      const { data: currentMemo } = await supabase
+        .from("memos")
+        .select("extracted")
+        .eq("id", id)
+        .single();
+
+      const originalWhat = (currentMemo?.extracted as { what?: string })?.what;
+
+      // If text hasn't changed, just exit
+      if (originalWhat === trimmedText) {
+        setEditingSummaryId(null);
+        setSummaryEditText("");
+        return;
+      }
+
+      // Update database first
+      const currentExtracted =
+        (currentMemo?.extracted as Record<string, unknown>) || {};
+      const updatedExtracted = {
+        ...currentExtracted,
+        what: trimmedText,
+      };
+
+      const { error } = await supabase
+        .from("memos")
+        .update({ extracted: updatedExtracted })
+        .eq("id", id)
+        .eq("username", username);
+
+      if (error) {
+        showError(`Failed to update summary: ${error.message}`);
+        return;
+      }
+
+      // Update React Query cache - update ALL queries that might contain this memo
+      // Query keys are: ["memos", filters] and ["inbox", username]
+      const updateMemo = (m: Memo) => {
+        if (m.id === id) {
+          return {
+            ...m,
+            extracted: m.extracted
+              ? { ...m.extracted, what: trimmedText }
+              : { what: trimmedText },
+          };
+        }
+        return m;
+      };
+
+      // Update all memos queries (they have ["memos", filters] keys)
+      queryClient.setQueriesData<Memo[]>({ queryKey: ["memos"] }, (oldData) =>
+        oldData ? oldData.map(updateMemo) : oldData
+      );
+
+      // Update all inbox queries (they have ["inbox", username] keys)
+      queryClient.setQueriesData<Memo[]>({ queryKey: ["inbox"] }, (oldData) =>
+        oldData ? oldData.map(updateMemo) : oldData
+      );
+
+      // Clear editing state
+      setEditingSummaryId(null);
+      setSummaryEditText("");
+      showSuccess("Summary saved");
+    },
+    [
+      summaryEditText,
+      username,
+      queryClient,
+      showSuccess,
+      showError,
+      showWarning,
+    ]
   );
 
   const restoreMemo = useCallback(
@@ -338,6 +454,9 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
     editingId,
     editText,
     setEditText,
+    editingSummaryId,
+    summaryEditText,
+    setSummaryEditText,
     newMemoId,
     setNewMemoId,
     expandedId,
@@ -345,6 +464,9 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
     startEdit,
     cancelEdit,
     saveEdit,
+    startEditSummary,
+    cancelEditSummary,
+    saveSummary,
     softDelete,
     toggleStar,
     restoreMemo,

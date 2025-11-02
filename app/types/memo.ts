@@ -14,12 +14,11 @@ export type Category =
 export type TaskSize = "S" | "M" | "L" | null; // S: <5min, M: <30min, L: >30min
 
 export interface ExtractedData {
-  title?: string; // Main subject or item name
+  title?: string; // Main subject or item name (primarily for media items)
   who?: string[]; // People mentioned
   when?: string; // Date/time information
   where?: string; // Location mentioned
-  what?: string; // Brief summary
-  actionable?: boolean; // Requires follow-up action
+  what?: string; // Brief summary - main summary field
 }
 
 export type MemoSource = "app" | "device";
