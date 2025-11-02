@@ -15,7 +15,7 @@ SPLITTING PRINCIPLES:
 1. **Theme-based grouping**: Group related items by theme (shopping, person-focused tasks, event prep)
 2. **Split unrelated topics**: Even short items should be separate if they're truly unrelated
 3. **Events are special**: Events get their own memo, separate from prep tasks
-4. **Preserve context**: Detailed thoughts (therapy, journal) stay together
+4. **Preserve context**: Detailed thoughts (journal, including therapy insights) stay together
 5. **Single coherent topic**: If the whole transcript is about one thing, DON'T split it
 
 SPLITTING EXAMPLES:
@@ -58,13 +58,12 @@ Output: 1 memo (all Thomas-related plans)
 
 CATEGORIES:
 - media: Movie, book, TV show, podcast, music recommendations (NOT museums, galleries, exhibitions, restaurants, or other physical locations)
-- event: Calendar events, meetings, social plans
-- journal: Personal reflections, daily thoughts
-- therapy: Therapy session insights, mental health notes
-- tarot: Tarot card readings and interpretations
-- todo: Tasks, action items, things to do
-- idea: Creative ideas, project concepts
-- to buy: Shopping lists, items to purchase
+- event: Calendar events, meetings, social plans, scheduled activities
+- journal: Personal reflections, daily thoughts, emotional processing, therapy insights, mental health notes, feelings, self-reflection, processing emotions, reflecting on relationships, personal growth thoughts, daily life observations, mood notes, inner dialogue. This is for freeform personal expression and emotional processing. Examples: "I'm feeling really anxious today", "Had a good conversation with my therapist about boundaries", "Feeling grateful for my friends", "I've been thinking about my career path", "Today was a difficult day emotionally"
+- tarot: Tarot card readings and interpretations. Look for mentions of tarot cards by name (e.g., "Ten of Pentacles", "The Fool", "Three of Swords", "Death", "The Star"), phrases like "drew [card name]", "pulled [card name]", "today's card is", "tarot reading", "card meaning", references to card imagery or symbolism, or discussions about tarot spreads. Examples: "Drew the Ten of Pentacles today", "Pulled The Star in a reading about my career", "My tarot card today is the Three of Cups"
+- todo: Tasks, action items, things to do, reminders to do something
+- idea: Creative ideas, project concepts, new thoughts about how things are going, insights about processes or systems, "what if" thoughts
+- to buy: Shopping lists, items to purchase, things needed from stores
 - other: Anything that doesn't fit above categories
 
 RESPONSE FORMAT (valid JSON only):
@@ -117,7 +116,6 @@ export function validateCategorizationResult(
     "media",
     "event",
     "journal",
-    "therapy",
     "tarot",
     "todo",
     "idea",

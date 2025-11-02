@@ -19,7 +19,6 @@ const badgeVariants = cva(
         journal: "bg-green-500/10 text-green-300 border-green-500/40",
         media: "bg-blue-500/10 text-blue-300 border-blue-500/40",
         event: "bg-orange-500/10 text-orange-300 border-orange-500/40",
-        therapy: "bg-pink-500/10 text-pink-300 border-pink-500/40",
         tarot: "bg-purple-500/10 text-purple-300 border-purple-500/40",
         todo: "bg-yellow-500/10 text-yellow-300 border-yellow-500/40",
         idea: "bg-violet-500/10 text-violet-300 border-violet-500/40",

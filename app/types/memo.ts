@@ -3,8 +3,7 @@
 export type Category =
   | "media" // Movie/book/show/podcast recommendations
   | "event" // Calendar events, meetings, plans
-  | "journal" // Personal thoughts/reflections
-  | "therapy" // Therapy insights
+  | "journal" // Personal thoughts/reflections (includes therapy insights)
   | "tarot" // Tarot readings
   | "todo" // Tasks/action items
   | "idea" // Ideas to explore

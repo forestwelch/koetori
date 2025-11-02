@@ -2,6 +2,7 @@ import {
   MediaEnrichmentPayload,
   ReminderEnrichmentPayload,
   ShoppingEnrichmentPayload,
+  TodoEnrichmentPayload,
   EnrichmentTask,
 } from "../pipeline/types";
 
@@ -48,10 +49,16 @@ export interface ShoppingListItemDraft {
   items?: string[] | null;
 }
 
+export interface TodoItemDraft {
+  summary: string;
+  size?: "S" | "M" | "L" | null;
+}
+
 export interface EnrichmentJobContext {
   media?: MediaEnrichmentPayload;
   reminder?: ReminderEnrichmentPayload;
   shopping?: ShoppingEnrichmentPayload;
+  todo?: TodoEnrichmentPayload;
 }
 
 export type EnrichmentJobResult =
@@ -72,6 +79,12 @@ export type EnrichmentJobResult =
       type: "shopping";
       draft: ShoppingListItemDraft;
       payload: ShoppingEnrichmentPayload;
+    }
+  | {
+      status: "completed";
+      type: "todo";
+      draft: TodoItemDraft;
+      payload: TodoEnrichmentPayload;
     }
   | {
       status: "skipped";

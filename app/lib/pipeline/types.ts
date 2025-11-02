@@ -57,7 +57,7 @@ export interface UnderstandingResult {
   raw?: unknown;
 }
 
-export type EnrichmentTaskType = "media" | "reminder" | "shopping";
+export type EnrichmentTaskType = "media" | "reminder" | "shopping" | "todo";
 
 export interface BaseEnrichmentPayload {
   transcriptionId: string;
@@ -95,6 +95,11 @@ export interface ShoppingEnrichmentPayload extends BaseEnrichmentPayload {
   items?: string[] | null;
 }
 
+export interface TodoEnrichmentPayload extends BaseEnrichmentPayload {
+  summary?: string | null;
+  estimatedSize?: "S" | "M" | "L" | null;
+}
+
 export type EnrichmentTask =
   | {
       type: "media";
@@ -107,6 +112,10 @@ export type EnrichmentTask =
   | {
       type: "shopping";
       payload: ShoppingEnrichmentPayload;
+    }
+  | {
+      type: "todo";
+      payload: TodoEnrichmentPayload;
     };
 
 export interface MemoWriteRequest {

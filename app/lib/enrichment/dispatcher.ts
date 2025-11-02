@@ -2,6 +2,7 @@ import { EnrichmentTask } from "../pipeline/types";
 import { handleMediaTask } from "./mediaHandler";
 import { handleReminderTask } from "./reminderHandler";
 import { handleShoppingTask } from "./shoppingHandler";
+import { handleTodoTask } from "./todoHandler";
 import { EnrichmentJobResult } from "./types";
 import { markMemoProcessed, persistEnrichmentResult } from "./persistence";
 
@@ -15,6 +16,8 @@ export async function runEnrichmentTask(
       return persist(task, await handleReminderTask(task.payload));
     case "shopping":
       return persist(task, await handleShoppingTask(task.payload));
+    case "todo":
+      return persist(task, await handleTodoTask(task.payload));
     default:
       throw new Error(
         `Unsupported enrichment task type ${(task as { type: string }).type}`

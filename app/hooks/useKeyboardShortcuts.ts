@@ -165,7 +165,6 @@ export function useKeyboardShortcuts({
           s: "media",
           d: "event",
           f: "journal",
-          g: "therapy",
           h: "tarot",
           j: "todo",
           k: "idea",

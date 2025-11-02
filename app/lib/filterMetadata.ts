@@ -90,13 +90,6 @@ export const CATEGORY_FILTERS: Record<Category | "all", FilterMetadata> = {
     colors: "from-purple-500/30 via-purple-400/20 to-fuchsia-500/30",
     searchTerms: ["journal", "diary", "writing", "log"],
   },
-  therapy: {
-    id: "therapy",
-    label: "Therapy",
-    icon: Heart,
-    colors: "from-amber-500/30 via-amber-400/20 to-orange-500/30",
-    searchTerms: ["therapy", "mental", "health", "feelings"],
-  },
   tarot: {
     id: "tarot",
     label: "Tarot",
@@ -172,7 +165,6 @@ export const CATEGORY_ORDER: (Category | "all")[] = [
   "media",
   "event",
   "journal",
-  "therapy",
   "tarot",
   "todo",
   "idea",

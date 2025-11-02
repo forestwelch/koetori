@@ -14,6 +14,9 @@ export async function persistEnrichmentResult(
     case "shopping":
       await upsertShoppingItem(result);
       break;
+    case "todo":
+      await upsertTodoItem(result);
+      break;
   }
 
   await markMemoProcessed(result.payload.memoId);
@@ -155,6 +158,30 @@ async function upsertShoppingItem(
 
   if (error) {
     console.error("[enrichment] failed to upsert shopping item", {
+      memoId: payload.memoId,
+      error: error.message,
+    });
+  }
+}
+
+async function upsertTodoItem(
+  result: Extract<EnrichmentJobResult, { type: "todo" }>
+) {
+  const draft = result.draft;
+  const payload = result.payload;
+  const { error } = await supabase.from("todo_items").upsert(
+    {
+      memo_id: payload.memoId,
+      summary: draft.summary,
+      size: draft.size ?? "M",
+      status: "open",
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "memo_id" }
+  );
+
+  if (error) {
+    console.error("[enrichment] failed to upsert todo item", {
       memoId: payload.memoId,
       error: error.message,
     });

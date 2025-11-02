@@ -4,11 +4,18 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
 import { Memo } from "../types/memo";
 
+/**
+ * Fetches memos for the inbox.
+ *
+ * Inbox shows memos that:
+ * - Are not deleted (deleted_at IS NULL)
+ * - Do NOT have any enrichment items (media_items, reminders, shopping_list_items, todo_items, etc.)
+ * - Need user attention to be "enriched" or processed
+ *
+ * Once a memo has an enrichment item created, it's no longer in the inbox
+ * because it has a "home" (media dashboard, reminders, shopping list, todos, etc.)
+ */
 async function fetchInboxMemos(username: string): Promise<Memo[]> {
-  // Query memos that are unprocessed:
-  // 1. enrichment_processed_at IS NULL (never processed)
-  // 2. OR enrichment_processed_at IS NOT NULL BUT no enrichment items exist
-
   // First, get all non-deleted memos for this user
   const { data: allMemos, error: memosError } = await supabase
     .from("memos")
@@ -26,37 +33,27 @@ async function fetchInboxMemos(username: string): Promise<Memo[]> {
 
   const memoIds = allMemos.map((m) => m.id);
 
-  // Check which memos have enrichment items
-  const [mediaResult, remindersResult, shoppingResult] = await Promise.all([
-    supabase.from("media_items").select("memo_id").in("memo_id", memoIds),
-    supabase.from("reminders").select("memo_id").in("memo_id", memoIds),
-    supabase
-      .from("shopping_list_items")
-      .select("memo_id")
-      .in("memo_id", memoIds),
+  // Check which memos have enrichment items (all enrichment tables)
+  const [mediaResult, remindersResult, shoppingResult, todosResult] =
+    await Promise.all([
+      supabase.from("media_items").select("memo_id").in("memo_id", memoIds),
+      supabase.from("reminders").select("memo_id").in("memo_id", memoIds),
+      supabase
+        .from("shopping_list_items")
+        .select("memo_id")
+        .in("memo_id", memoIds),
+      supabase.from("todo_items").select("memo_id").in("memo_id", memoIds),
+    ]);
+
+  // Collect all memo IDs that have enrichment items
+  const memosWithEnrichment = new Set([
+    ...(mediaResult.data || []).map((item) => item.memo_id),
+    ...(remindersResult.data || []).map((item) => item.memo_id),
+    ...(shoppingResult.data || []).map((item) => item.memo_id),
+    ...(todosResult.data || []).map((item) => item.memo_id),
   ]);
 
-  const mediaMemoIds = new Set(
-    (mediaResult.data || []).map((item) => item.memo_id)
-  );
-  const reminderMemoIds = new Set(
-    (remindersResult.data || []).map((item) => item.memo_id)
-  );
-  const shoppingMemoIds = new Set(
-    (shoppingResult.data || []).map((item) => item.memo_id)
-  );
-
-  // Memos that have been processed and have enrichment items
-  const processedWithEnrichment = new Set([
-    ...mediaMemoIds,
-    ...reminderMemoIds,
-    ...shoppingMemoIds,
-  ]);
-
-  // Now fetch full memo data for unprocessed memos
-  // A memo is unprocessed if:
-  // - enrichment_processed_at IS NULL, OR
-  // - enrichment_processed_at IS NOT NULL but has no enrichment items
+  // Now fetch full memo data for potential inbox memos
   const { data: memosData, error } = await supabase
     .from("memos")
     .select("*")
@@ -68,24 +65,14 @@ async function fetchInboxMemos(username: string): Promise<Memo[]> {
     throw new Error(`Failed to fetch inbox memos: ${error.message}`);
   }
 
-  // Filter to only unprocessed memos
-  const unprocessedMemos = (memosData || []).filter((memo) => {
-    // If never processed, include it
-    if (!memo.enrichment_processed_at) {
-      return true;
-    }
-
-    // If processed but no enrichment items created, include it (needs manual action)
-    if (!processedWithEnrichment.has(memo.id)) {
-      return true;
-    }
-
-    // Otherwise, it's processed and has enrichment items - exclude from inbox
-    return false;
-  });
+  // Filter to only memos WITHOUT enrichment items
+  // These are memos that haven't been "enriched" yet - they need user attention
+  const inboxMemos = (memosData || []).filter(
+    (memo) => !memosWithEnrichment.has(memo.id)
+  );
 
   // Transform to Memo type
-  return unprocessedMemos.map((memo) => ({
+  return inboxMemos.map((memo) => ({
     ...memo,
     timestamp: new Date(memo.timestamp),
   }));

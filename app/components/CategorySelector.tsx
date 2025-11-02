@@ -25,7 +25,6 @@ const CATEGORIES: { value: Category; label: string }[] = [
   { value: "media", label: "Media" },
   { value: "event", label: "Event" },
   { value: "journal", label: "Journal" },
-  { value: "therapy", label: "Therapy" },
   { value: "tarot", label: "Tarot" },
   { value: "todo", label: "To Do" },
   { value: "idea", label: "Idea" },

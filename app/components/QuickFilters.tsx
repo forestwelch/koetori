@@ -17,7 +17,6 @@ const activeContainerStyles: Record<FilterCategory, string> = {
   journal: "bg-emerald-500/15 border border-emerald-400/40",
   media: "bg-sky-500/15 border border-sky-400/40",
   event: "bg-amber-500/15 border border-amber-400/40",
-  therapy: "bg-rose-500/15 border border-rose-400/40",
   tarot: "bg-purple-500/15 border border-purple-400/40",
   todo: "bg-yellow-500/15 border border-yellow-400/40",
   idea: "bg-violet-500/15 border border-violet-400/40",

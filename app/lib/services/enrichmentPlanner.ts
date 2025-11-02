@@ -43,7 +43,8 @@ const MEDIA_KEYWORDS: Array<{
   { keywords: ["game", "videogame", "play"], type: "game" },
   { keywords: ["book", "novel", "read", "reading"], type: "book" },
 ];
-const REMINDER_CATEGORIES = new Set(["todo", "reminder", "event"]);
+const REMINDER_CATEGORIES = new Set(["reminder", "event"]);
+const TODO_CATEGORIES = new Set(["todo"]);
 const SHOPPING_CATEGORIES = new Set(["to buy", "shopping", "purchase"]);
 const SHOPPING_STOPWORDS = new Set([
   "some",
@@ -144,6 +145,49 @@ export function planEnrichmentTasks(input: PlannerInput): EnrichmentTask[] {
       tasks.push({
         type: "media",
         payload: mediaPayload,
+      });
+      continue;
+    }
+
+    if (TODO_CATEGORIES.has(normalizedCategory)) {
+      // Estimate size from transcript/extracted data
+      const summary =
+        inferStringField(memo.extracted, ["what", "summary", "action"]) ||
+        memo.transcript_excerpt?.substring(0, 200) ||
+        null;
+
+      const allText = [memo.transcript_excerpt, summary, ...(memo.tags || [])]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      let estimatedSize: "S" | "M" | "L" | null = "M"; // Default
+      const quickIndicators = ["quick", "fast", "just", "simple", "minute"];
+      const longIndicators = [
+        "long",
+        "extensive",
+        "project",
+        "complex",
+        "hours",
+      ];
+
+      if (quickIndicators.some((indicator) => allText.includes(indicator))) {
+        estimatedSize = "S";
+      } else if (
+        longIndicators.some((indicator) => allText.includes(indicator))
+      ) {
+        estimatedSize = "L";
+      }
+
+      const todoPayload: TodoEnrichmentPayload = {
+        ...basePayload,
+        summary,
+        estimatedSize,
+      };
+
+      tasks.push({
+        type: "todo",
+        payload: todoPayload,
       });
       continue;
     }
