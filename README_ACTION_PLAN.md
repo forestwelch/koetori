@@ -83,7 +83,7 @@ Actions:
 - **Power Inbox:** first screen lists review-needed, pending reminders, suggested actions.
 - **Category Studio:** settings pane to add/rename categories, assign icons (manual upload or AI-generated SVG), toggle visibility.
 - **Prompt Tuner:** UI to edit prompt fragments per category/intent for power users.
-- **App Ideas Mode:** dedicated view for “app feature” memos; offer auto-generated implementation README scaffolds by inspecting the codebase.
+- **App Ideas Mode:** dedicated view for "app feature" memos; offer auto-generated implementation README scaffolds by inspecting the codebase.
 - **Health & Wellbeing Focus:** flag memos tagged health/sleep, surface as a mini-dashboard.
 - **Tarot Repository:** allow recordings + notes per card, build encyclopedia view over time.
 - [ ] Draft IA for Power Inbox (sections, ordering rules, badges, quick actions).
@@ -91,6 +91,7 @@ Actions:
 - [ ] Add prompt management UI with versioning + rollback support.
 - [ ] Outline tarot repository data model (cards, spreads, journal entries, audio attachments).
 - [ ] Explore AI-assisted README generation pipeline tied to `App Ideas` memos.
+- [ ] **Edit Feedback Collection:** Non-intrusive dialog that appears after edits (category, summary, size, etc.) asking "Why did you make this change?" to collect user feedback for AI learning system. Should be dismissible with "Skip" and save feedback to database for future learning system integration.
 
 ## Phase 5 — Background Intelligence
 
