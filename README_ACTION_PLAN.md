@@ -76,7 +76,7 @@ Actions:
 - Allow one-click completion, export to notes, or sync with external lists later.
 - [x] Define taxonomy for shopping categories + optional price/quantity metadata.
 - [x] Add persistence table for shopping list items with urgency scoring.
-- [ ] Create list UI with drag-to-reorder, multi-select complete, and export/share options.
+- [x] Create list UI with drag-to-reorder, multi-select complete, and export/share options.
 
 ## Phase 4 — Personal Knowledge Modes
 

@@ -12,6 +12,7 @@ export default function TodosDashboardPage() {
     data: todos = [],
     isLoading: todosLoading,
     error: todosError,
+    refetch: refetchTodos,
   } = useMemosQuery({
     username: username || "",
     categoryFilter: "todo",
@@ -27,6 +28,7 @@ export default function TodosDashboardPage() {
       todos={todos}
       isLoading={todosLoading}
       error={todosError instanceof Error ? todosError : undefined}
+      refetchTodos={refetchTodos}
     />
   );
 }
