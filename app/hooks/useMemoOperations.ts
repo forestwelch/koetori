@@ -541,11 +541,6 @@ function matchesFilters(memo: Memo, filters: MemoFilters) {
   ) {
     return false;
   }
-  if (filters.sizeFilter !== "all") {
-    if ((memo.size ?? "all") !== filters.sizeFilter) {
-      return false;
-    }
-  }
   if (filters.starredOnly && !memo.starred) {
     return false;
   }

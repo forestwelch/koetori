@@ -11,7 +11,7 @@ interface StatusUpdatePayload {
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { memoId: string } }
+  { params }: { params: Promise<{ memoId: string }> }
 ) {
   try {
     const { memoId } = await params;

@@ -1,8 +1,32 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Category, ExtractedData, TranscriptionResponse } from "../types/memo";
+import { Category, ExtractedData } from "../types/memo";
 import { useErrorHandler } from "../components/ErrorBoundary";
+
+// Full API response type (includes more than TranscriptionResponse)
+interface TranscribeApiResponse {
+  transcript: string;
+  memos_created: number;
+  memo_ids: string[];
+  transcription_id: string;
+  memos: Array<{
+    id: string;
+    category: Category;
+    confidence: number;
+    needs_review: boolean;
+    extracted: ExtractedData | null;
+    tags: string[] | null;
+    starred: boolean;
+    transcript_excerpt: string | null;
+  }>;
+  language?: string;
+  duration?: number | null;
+  provider?: string;
+  processingTime?: number;
+  events?: unknown[];
+  enrichmentTasks?: unknown[];
+}
 
 interface UseVoiceRecorderReturn {
   isRecording: boolean;
@@ -15,6 +39,7 @@ interface UseVoiceRecorderReturn {
   extracted: ExtractedData | null;
   tags: string[];
   memoId: string | null;
+  memosCreated: number;
   recordingTime: number;
   audioStream: MediaStream | null;
   maxRecordingTime: number;
@@ -95,7 +120,7 @@ export function useVoiceRecorder(username?: string): UseVoiceRecorderReturn {
 
   // Helper function to upload with retry logic
   const uploadWithRetry = useCallback(
-    async (audioBlob: Blob, attempt = 1): Promise<TranscriptionResponse> => {
+    async (audioBlob: Blob, attempt = 1): Promise<TranscribeApiResponse> => {
       try {
         const formData = new FormData();
         formData.append("audio", audioBlob, "recording.webm");

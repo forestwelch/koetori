@@ -3,6 +3,7 @@ import {
   MediaEnrichmentPayload,
   ReminderEnrichmentPayload,
   ShoppingEnrichmentPayload,
+  TodoEnrichmentPayload,
 } from "../pipeline/types";
 import { sanitizeMediaTitle } from "../enrichment/mediaTitleUtils";
 

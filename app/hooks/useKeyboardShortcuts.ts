@@ -25,8 +25,6 @@ export function useKeyboardShortcuts({
   const {
     categoryFilter,
     setCategoryFilter,
-    sizeFilter,
-    setSizeFilter,
     starredOnly,
     setStarredOnly,
     resetFilters,
@@ -175,18 +173,6 @@ export function useKeyboardShortcuts({
           closeSpotlight(() => setCategoryFilter(categoryFilters[e.key]));
           return;
         }
-
-        // Size filters
-        const sizeFiltersMap: Record<string, "all" | "S" | "M" | "L"> = {
-          z: "all",
-          x: "S",
-          c: "M",
-          v: "L",
-        };
-        if (e.key in sizeFiltersMap) {
-          closeSpotlight(() => setSizeFilter(sizeFiltersMap[e.key]));
-          return;
-        }
       }
 
       // Escape handler - priority order: recording, modals, spotlight, then reset filters
@@ -228,13 +214,11 @@ export function useKeyboardShortcuts({
     isSpotlightMode,
     showSettings,
     categoryFilter,
-    sizeFilter,
     starredOnly,
     searchQuery,
     searchResults,
     textInput,
     setCategoryFilter,
-    setSizeFilter,
     setStarredOnly,
     setIsSpotlightMode,
     setShowSearch,
