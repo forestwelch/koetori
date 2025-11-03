@@ -2,7 +2,17 @@
 
 import { useMemo, useState } from "react";
 import { MediaItem, MediaStatus } from "../../types/enrichment";
-import { Sparkles, Film, Tv, Gamepad2, BookOpen, Music4 } from "lucide-react";
+import {
+  Sparkles,
+  Film,
+  Tv,
+  Gamepad2,
+  BookOpen,
+  Music4,
+  Grid3x3,
+  List,
+  ArrowUpDown,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { MediaCard } from "./MediaCard";
 import { FixMatchModal } from "./FixMatchModal";
@@ -40,6 +50,8 @@ interface MediaLibraryProps {
 
 type MediaFilter = "all" | "movie" | "tv" | "game" | "book" | "music";
 type StatusFilter = "all" | "to-watch" | "watched" | "backlog";
+type SortOption = "newest" | "oldest" | "title" | "year";
+type ViewMode = "grid" | "grouped";
 
 const FILTER_OPTIONS: Array<{
   key: MediaFilter;
@@ -79,6 +91,9 @@ export function MediaLibrary({
   const [fixMatchItem, setFixMatchItem] = useState<MediaItem | null>(null);
   const [filter, setFilter] = useState<MediaFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [genreFilter, setGenreFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<SortOption>("newest");
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(
     new Set()
@@ -183,6 +198,16 @@ export function MediaLibrary({
     }
   };
 
+  // Extract all unique genres from items
+  const availableGenres = useMemo(() => {
+    const genres = new Set<string>();
+    items.forEach((item) => {
+      item.genres?.forEach((genre) => genres.add(genre));
+    });
+    return Array.from(genres).sort();
+  }, [items]);
+
+  // Filter and sort items
   const filteredItems = useMemo(() => {
     let filtered = items;
 
@@ -196,8 +221,67 @@ export function MediaLibrary({
       filtered = filtered.filter((item) => item.status === statusFilter);
     }
 
-    return filtered;
-  }, [items, filter, statusFilter]);
+    // Filter by genre
+    if (genreFilter !== "all") {
+      filtered = filtered.filter(
+        (item) => item.genres?.includes(genreFilter) ?? false
+      );
+    }
+
+    // Sort items
+    const sorted = [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case "title":
+          return a.title.localeCompare(b.title);
+        case "year":
+          const yearA = a.releaseYear ?? 0;
+          const yearB = b.releaseYear ?? 0;
+          return yearB - yearA; // Newest year first
+        case "oldest":
+          return a.updatedAt.getTime() - b.updatedAt.getTime();
+        case "newest":
+        default:
+          return b.updatedAt.getTime() - a.updatedAt.getTime();
+      }
+    });
+
+    return sorted;
+  }, [items, filter, statusFilter, genreFilter, sortBy]);
+
+  // Group items for grouped view
+  const groupedItems = useMemo(() => {
+    if (viewMode !== "grouped") return null;
+
+    const groups: Record<string, MediaItem[]> = {};
+    filteredItems.forEach((item) => {
+      // Group by status first, then by type
+      const groupKey = `${item.status}-${item.mediaType || "unknown"}`;
+      if (!groups[groupKey]) {
+        groups[groupKey] = [];
+      }
+      groups[groupKey].push(item);
+    });
+
+    return groups;
+  }, [filteredItems, viewMode]);
+
+  // Calculate stats
+  const stats = useMemo(() => {
+    const total = items.length;
+    const byType = {
+      movie: items.filter((i) => i.mediaType === "movie").length,
+      tv: items.filter((i) => i.mediaType === "tv").length,
+      game: items.filter((i) => i.mediaType === "game").length,
+      book: items.filter((i) => i.mediaType === "book").length,
+      music: items.filter((i) => i.mediaType === "music").length,
+    };
+    const byStatus = {
+      "to-watch": items.filter((i) => i.status === "to-watch").length,
+      watched: items.filter((i) => i.status === "watched").length,
+      backlog: items.filter((i) => i.status === "backlog").length,
+    };
+    return { total, byType, byStatus };
+  }, [items]);
 
   return (
     <section className="space-y-4">
@@ -209,53 +293,152 @@ export function MediaLibrary({
               Automatically enriched movies, shows, books, and more.
             </p>
           </div>
-        </div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          {/* Media Type Filters */}
-          <div className="flex flex-wrap items-center gap-2 text-[11px]">
-            {FILTER_OPTIONS.map(({ key, icon: Icon, label }) => {
-              const isActive = filter === key;
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setFilter(key)}
-                  title={label}
-                  aria-label={label}
-                  aria-pressed={isActive}
-                  className={`inline-flex h-8 w-8 items-center justify-center rounded-full border transition ${
-                    isActive
-                      ? "border-indigo-500/60 bg-indigo-500/20 text-white shadow"
-                      : "border-slate-700/60 bg-slate-900/40 text-slate-300 hover:text-white"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                </button>
-              );
-            })}
+          {/* Stats */}
+          <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400">
+            <span className="font-medium text-white">{stats.total}</span>
+            <span>items</span>
+            {stats.byStatus["to-watch"] > 0 && (
+              <>
+                <span>•</span>
+                <span className="text-emerald-400">
+                  {stats.byStatus["to-watch"]} to watch
+                </span>
+              </>
+            )}
+            {stats.byStatus.watched > 0 && (
+              <>
+                <span>•</span>
+                <span className="text-indigo-400">
+                  {stats.byStatus.watched} watched
+                </span>
+              </>
+            )}
           </div>
-          {/* Status Filters */}
+        </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            {/* Media Type Filters */}
+            <div className="flex flex-wrap items-center gap-2 text-[11px]">
+              {FILTER_OPTIONS.map(({ key, icon: Icon, label }) => {
+                const isActive = filter === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setFilter(key)}
+                    title={label}
+                    aria-label={label}
+                    aria-pressed={isActive}
+                    className={`inline-flex h-8 w-8 items-center justify-center rounded-full border transition ${
+                      isActive
+                        ? "border-indigo-500/60 bg-indigo-500/20 text-white shadow"
+                        : "border-slate-700/60 bg-slate-900/40 text-slate-300 hover:text-white"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </button>
+                );
+              })}
+            </div>
+            {/* Status Filters */}
+            <div className="flex flex-wrap items-center gap-2">
+              {STATUS_FILTER_OPTIONS.map(({ key, label }) => {
+                const isActive = statusFilter === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setStatusFilter(key)}
+                    aria-pressed={isActive}
+                    className={`rounded-full border px-3 py-1 text-xs transition ${
+                      isActive
+                        ? "border-emerald-500/60 bg-emerald-500/20 text-emerald-200"
+                        : "border-slate-700/60 bg-slate-900/40 text-slate-400 hover:text-slate-300"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          {/* View Controls */}
+          <div className="flex items-center gap-2">
+            {/* Sort */}
+            <div className="relative">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                className="appearance-none bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-1.5 text-xs text-white pr-8 hover:border-slate-600/50 focus:outline-none focus:border-indigo-500/50"
+              >
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="title">Title A-Z</option>
+                <option value="year">Year (newest)</option>
+              </select>
+              <ArrowUpDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" />
+            </div>
+            {/* View Mode Toggle */}
+            <div className="flex items-center gap-1 rounded-lg border border-slate-700/50 bg-slate-800/50 p-1">
+              <button
+                onClick={() => setViewMode("grid")}
+                className={`p-1.5 rounded transition-colors ${
+                  viewMode === "grid"
+                    ? "bg-indigo-500/20 text-indigo-300"
+                    : "text-slate-400 hover:text-white"
+                }`}
+                aria-label="Grid view"
+              >
+                <Grid3x3 className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode("grouped")}
+                className={`p-1.5 rounded transition-colors ${
+                  viewMode === "grouped"
+                    ? "bg-indigo-500/20 text-indigo-300"
+                    : "text-slate-400 hover:text-white"
+                }`}
+                aria-label="Grouped view"
+              >
+                <List className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+        {/* Genre Filter */}
+        {availableGenres.length > 0 && (
           <div className="flex flex-wrap items-center gap-2">
-            {STATUS_FILTER_OPTIONS.map(({ key, label }) => {
-              const isActive = statusFilter === key;
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setStatusFilter(key)}
-                  aria-pressed={isActive}
-                  className={`rounded-full border px-3 py-1 text-xs transition ${
-                    isActive
-                      ? "border-emerald-500/60 bg-emerald-500/20 text-emerald-200"
-                      : "border-slate-700/60 bg-slate-900/40 text-slate-400 hover:text-slate-300"
-                  }`}
-                >
-                  {label}
-                </button>
-              );
-            })}
+            <span className="text-xs text-slate-500">Genre:</span>
+            <button
+              onClick={() => setGenreFilter("all")}
+              className={`rounded-full border px-2.5 py-1 text-xs transition ${
+                genreFilter === "all"
+                  ? "border-purple-500/60 bg-purple-500/20 text-purple-200"
+                  : "border-slate-700/60 bg-slate-900/40 text-slate-400 hover:text-slate-300"
+              }`}
+            >
+              All
+            </button>
+            {availableGenres.slice(0, 10).map((genre) => (
+              <button
+                key={genre}
+                onClick={() => setGenreFilter(genre)}
+                className={`rounded-full border px-2.5 py-1 text-xs transition ${
+                  genreFilter === genre
+                    ? "border-purple-500/60 bg-purple-500/20 text-purple-200"
+                    : "border-slate-700/60 bg-slate-900/40 text-slate-400 hover:text-slate-300"
+                }`}
+              >
+                {genre}
+              </button>
+            ))}
+            {availableGenres.length > 10 && (
+              <span className="text-xs text-slate-500">
+                +{availableGenres.length - 10} more
+              </span>
+            )}
           </div>
-        </div>
+        )}
       </header>
 
       {isLoading ? (
@@ -271,6 +454,101 @@ export function MediaLibrary({
           {filter === "all"
             ? "No media enrichments yet. Capture a memo with a film, show, or book to see it here."
             : `No ${filter.toUpperCase()} entries yet.`}
+        </div>
+      ) : viewMode === "grouped" && groupedItems ? (
+        <div className="space-y-6">
+          {Object.entries(groupedItems)
+            .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
+            .map(([groupKey, groupItems]) => {
+              const [status, type] = groupKey.split("-");
+              const statusLabel =
+                status === "to-watch"
+                  ? "To Watch"
+                  : status === "watched"
+                    ? "Watched"
+                    : "Backlog";
+              const typeLabel =
+                type === "movie"
+                  ? "Movies"
+                  : type === "tv"
+                    ? "TV Shows"
+                    : type === "game"
+                      ? "Games"
+                      : type === "book"
+                        ? "Books"
+                        : type === "music"
+                          ? "Music"
+                          : "Other";
+
+              return (
+                <div key={groupKey} className="space-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-700/30 pb-2">
+                    <h3 className="text-sm font-semibold text-white">
+                      {statusLabel} • {typeLabel}
+                    </h3>
+                    <span className="text-xs text-slate-400">
+                      {groupItems.length} item
+                      {groupItems.length !== 1 ? "s" : ""}
+                    </span>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    {groupItems.map((item) => {
+                      const formattedTimeToBeat = formatTimeToBeat(
+                        item.timeToBeatMinutes
+                      );
+                      const isDescriptionExpanded = expandedDescriptions.has(
+                        item.memoId
+                      );
+                      const isProvidersExpanded = expandedProviders.has(
+                        item.memoId
+                      );
+
+                      return (
+                        <div key={item.memoId} data-memo-id={item.memoId}>
+                          <MediaCard
+                            item={item}
+                            formattedTimeToBeat={formattedTimeToBeat}
+                            isDescriptionExpanded={isDescriptionExpanded}
+                            isProvidersExpanded={isProvidersExpanded}
+                            onToggleDescription={() => {
+                              const newExpanded = new Set(expandedDescriptions);
+                              if (isDescriptionExpanded) {
+                                newExpanded.delete(item.memoId);
+                              } else {
+                                newExpanded.add(item.memoId);
+                              }
+                              setExpandedDescriptions(newExpanded);
+                            }}
+                            onToggleProviders={() => {
+                              const newExpanded = new Set(expandedProviders);
+                              if (isProvidersExpanded) {
+                                newExpanded.delete(item.memoId);
+                              } else {
+                                newExpanded.add(item.memoId);
+                              }
+                              setExpandedProviders(newExpanded);
+                            }}
+                            onFixMatch={
+                              onRefresh
+                                ? () => setFixMatchItem(item)
+                                : undefined
+                            }
+                            onRemove={
+                              onRemove ? () => handleRemove(item) : undefined
+                            }
+                            onStatusChange={handleStatusChange}
+                            isFixing={fixingId === item.memoId}
+                            isRemoving={removingId === item.memoId}
+                            isUpdatingStatus={updatingStatusId === item.memoId}
+                            refreshingId={refreshingId}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
