@@ -262,7 +262,23 @@ export function MediaLibrary({
       groups[groupKey].push(item);
     });
 
-    return groups;
+    // Sort groups: overdue first, then by status priority, then by type
+    const statusPriority: Record<string, number> = {
+      "to-watch": 1,
+      watched: 2,
+      backlog: 3,
+    };
+
+    return Object.fromEntries(
+      Object.entries(groups).sort(([keyA], [keyB]) => {
+        const [statusA, typeA] = keyA.split("-");
+        const [statusB, typeB] = keyB.split("-");
+        const priorityA = statusPriority[statusA] || 99;
+        const priorityB = statusPriority[statusB] || 99;
+        if (priorityA !== priorityB) return priorityA - priorityB;
+        return typeA.localeCompare(typeB);
+      })
+    );
   }, [filteredItems, viewMode]);
 
   // Calculate stats
@@ -388,6 +404,7 @@ export function MediaLibrary({
                     : "text-slate-400 hover:text-white"
                 }`}
                 aria-label="Grid view"
+                title="Grid view - Show all items in a grid"
               >
                 <Grid3x3 className="w-4 h-4" />
               </button>
@@ -399,6 +416,7 @@ export function MediaLibrary({
                     : "text-slate-400 hover:text-white"
                 }`}
                 aria-label="Grouped view"
+                title="Grouped view - Organize by status (To Watch, Watched, Backlog) and type (Movies, TV Shows, etc.)"
               >
                 <List className="w-4 h-4" />
               </button>
@@ -457,98 +475,96 @@ export function MediaLibrary({
         </div>
       ) : viewMode === "grouped" && groupedItems ? (
         <div className="space-y-6">
-          {Object.entries(groupedItems)
-            .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
-            .map(([groupKey, groupItems]) => {
-              const [status, type] = groupKey.split("-");
-              const statusLabel =
-                status === "to-watch"
-                  ? "To Watch"
-                  : status === "watched"
-                    ? "Watched"
-                    : "Backlog";
-              const typeLabel =
-                type === "movie"
-                  ? "Movies"
-                  : type === "tv"
-                    ? "TV Shows"
-                    : type === "game"
-                      ? "Games"
-                      : type === "book"
-                        ? "Books"
-                        : type === "music"
-                          ? "Music"
-                          : "Other";
+          {Object.entries(groupedItems).map(([groupKey, groupItems]) => {
+            const [status, type] = groupKey.split("-");
+            const statusLabel =
+              status === "to-watch"
+                ? "To Watch"
+                : status === "watched"
+                  ? "Watched"
+                  : "Backlog";
+            const typeLabel =
+              type === "movie"
+                ? "Movies"
+                : type === "tv"
+                  ? "TV Shows"
+                  : type === "game"
+                    ? "Games"
+                    : type === "book"
+                      ? "Books"
+                      : type === "music"
+                        ? "Music"
+                        : type === "unknown" || !type
+                          ? "Uncategorized"
+                          : type.charAt(0).toUpperCase() + type.slice(1);
 
-              return (
-                <div key={groupKey} className="space-y-3">
-                  <div className="flex items-center justify-between border-b border-slate-700/30 pb-2">
-                    <h3 className="text-sm font-semibold text-white">
-                      {statusLabel} • {typeLabel}
-                    </h3>
-                    <span className="text-xs text-slate-400">
-                      {groupItems.length} item
-                      {groupItems.length !== 1 ? "s" : ""}
-                    </span>
-                  </div>
-                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    {groupItems.map((item) => {
-                      const formattedTimeToBeat = formatTimeToBeat(
-                        item.timeToBeatMinutes
-                      );
-                      const isDescriptionExpanded = expandedDescriptions.has(
-                        item.memoId
-                      );
-                      const isProvidersExpanded = expandedProviders.has(
-                        item.memoId
-                      );
-
-                      return (
-                        <div key={item.memoId} data-memo-id={item.memoId}>
-                          <MediaCard
-                            item={item}
-                            formattedTimeToBeat={formattedTimeToBeat}
-                            isDescriptionExpanded={isDescriptionExpanded}
-                            isProvidersExpanded={isProvidersExpanded}
-                            onToggleDescription={() => {
-                              const newExpanded = new Set(expandedDescriptions);
-                              if (isDescriptionExpanded) {
-                                newExpanded.delete(item.memoId);
-                              } else {
-                                newExpanded.add(item.memoId);
-                              }
-                              setExpandedDescriptions(newExpanded);
-                            }}
-                            onToggleProviders={() => {
-                              const newExpanded = new Set(expandedProviders);
-                              if (isProvidersExpanded) {
-                                newExpanded.delete(item.memoId);
-                              } else {
-                                newExpanded.add(item.memoId);
-                              }
-                              setExpandedProviders(newExpanded);
-                            }}
-                            onFixMatch={
-                              onRefresh
-                                ? () => setFixMatchItem(item)
-                                : undefined
-                            }
-                            onRemove={
-                              onRemove ? () => handleRemove(item) : undefined
-                            }
-                            onStatusChange={handleStatusChange}
-                            isFixing={fixingId === item.memoId}
-                            isRemoving={removingId === item.memoId}
-                            isUpdatingStatus={updatingStatusId === item.memoId}
-                            refreshingId={refreshingId}
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
+            return (
+              <div key={groupKey} className="space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-700/30 pb-2">
+                  <h3 className="text-sm font-semibold text-white">
+                    {statusLabel} • {typeLabel}
+                  </h3>
+                  <span className="text-xs text-slate-400">
+                    {groupItems.length} item
+                    {groupItems.length !== 1 ? "s" : ""}
+                  </span>
                 </div>
-              );
-            })}
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {groupItems.map((item) => {
+                    const formattedTimeToBeat = formatTimeToBeat(
+                      item.timeToBeatMinutes
+                    );
+                    const isDescriptionExpanded = expandedDescriptions.has(
+                      item.memoId
+                    );
+                    const isProvidersExpanded = expandedProviders.has(
+                      item.memoId
+                    );
+
+                    return (
+                      <div key={item.memoId} data-memo-id={item.memoId}>
+                        <MediaCard
+                          item={item}
+                          formattedTimeToBeat={formattedTimeToBeat}
+                          isDescriptionExpanded={isDescriptionExpanded}
+                          isProvidersExpanded={isProvidersExpanded}
+                          onToggleDescription={() => {
+                            const newExpanded = new Set(expandedDescriptions);
+                            if (isDescriptionExpanded) {
+                              newExpanded.delete(item.memoId);
+                            } else {
+                              newExpanded.add(item.memoId);
+                            }
+                            setExpandedDescriptions(newExpanded);
+                          }}
+                          onToggleProviders={() => {
+                            const newExpanded = new Set(expandedProviders);
+                            if (isProvidersExpanded) {
+                              newExpanded.delete(item.memoId);
+                            } else {
+                              newExpanded.add(item.memoId);
+                            }
+                            setExpandedProviders(newExpanded);
+                          }}
+                          onFixMatch={
+                            onRefresh ? () => setFixMatchItem(item) : undefined
+                          }
+                          onRemove={
+                            onRemove ? () => handleRemove(item) : undefined
+                          }
+                          onStatusChange={handleStatusChange}
+                          isFixing={fixingId === item.memoId}
+                          isRemoving={removingId === item.memoId}
+                          isUpdatingStatus={updatingStatusId === item.memoId}
+                          refreshingId={refreshingId}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
