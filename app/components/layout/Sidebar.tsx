@@ -2,7 +2,15 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Inbox, FileText, LayoutDashboard, X, Menu, Bird } from "lucide-react";
+import {
+  Inbox,
+  FileText,
+  LayoutDashboard,
+  X,
+  Menu,
+  Bird,
+  Mic,
+} from "lucide-react";
 import { cn } from "../../lib/ui-utils";
 
 interface SidebarProps {
@@ -19,6 +27,7 @@ const navItems: NavItem[] = [
   { href: "/", label: "Inbox", icon: Inbox },
   { href: "/memos", label: "Memos", icon: FileText },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/record", label: "Record", icon: Mic },
 ];
 
 export function Sidebar({ currentPath }: SidebarProps) {
