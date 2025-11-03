@@ -4,9 +4,24 @@ import { useState, useRef } from "react";
 import { Memo, Category } from "../types/memo";
 
 import { CategoryBadge } from "./CategoryBadge";
-import { Archive, Star, Edit2, AlertCircle } from "lucide-react";
+import {
+  Archive,
+  Star,
+  Edit2,
+  AlertCircle,
+  Film,
+  Bell,
+  ShoppingBag,
+  CheckSquare,
+  BookOpen,
+  Sparkles,
+  Lightbulb,
+  ExternalLink,
+} from "lucide-react";
 import { CategorySelector } from "./CategorySelector";
 import { Button } from "./ui/Button";
+import { useMemoEnrichments } from "../hooks/useMemoEnrichments";
+import Link from "next/link";
 
 import { SwipeIndicator } from "./SwipeIndicator";
 import { FullRecordingModal } from "./FullRecordingModal";
@@ -71,6 +86,7 @@ export function MemoItem({
   isExpanded: controlledExpanded,
   onToggleExpand,
 }: MemoItemProps) {
+  const { data: enrichments } = useMemoEnrichments(memo.id);
   const [swipeX, setSwipeX] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
   const [localExpanded, setLocalExpanded] = useState(false);
@@ -610,6 +626,90 @@ export function MemoItem({
                         : tag}
                     </span>
                   ))}
+                </div>
+              )}
+
+              {/* Enrichment Links - Show dashboards this memo is in */}
+              {enrichments && Object.values(enrichments).some((v) => v) && (
+                <div className="mt-3 pt-3 border-t border-slate-700/20">
+                  <div className="flex items-center gap-2 mb-2">
+                    <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+                    <span className="text-xs font-medium text-slate-400">
+                      View in Dashboard:
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {enrichments.hasMedia && (
+                      <Link
+                        href="/dashboard/media"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1.5 px-2 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded-md text-xs transition-colors"
+                      >
+                        <Film className="w-3.5 h-3.5" />
+                        <span>Media</span>
+                      </Link>
+                    )}
+                    {enrichments.hasReminder && (
+                      <Link
+                        href="/dashboard/reminders"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1.5 px-2 py-1 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded-md text-xs transition-colors"
+                      >
+                        <Bell className="w-3.5 h-3.5" />
+                        <span>Reminders</span>
+                      </Link>
+                    )}
+                    {enrichments.hasShopping && (
+                      <Link
+                        href="/dashboard/shopping"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-md text-xs transition-colors"
+                      >
+                        <ShoppingBag className="w-3.5 h-3.5" />
+                        <span>Shopping</span>
+                      </Link>
+                    )}
+                    {enrichments.hasTodo && (
+                      <Link
+                        href="/dashboard/todos"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1.5 px-2 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 rounded-md text-xs transition-colors"
+                      >
+                        <CheckSquare className="w-3.5 h-3.5" />
+                        <span>Todos</span>
+                      </Link>
+                    )}
+                    {enrichments.hasJournal && (
+                      <Link
+                        href="/dashboard/journal"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1.5 px-2 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-md text-xs transition-colors"
+                      >
+                        <BookOpen className="w-3.5 h-3.5" />
+                        <span>Journal</span>
+                      </Link>
+                    )}
+                    {enrichments.hasTarot && (
+                      <Link
+                        href="/dashboard/tarot"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1.5 px-2 py-1 bg-fuchsia-500/10 hover:bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30 rounded-md text-xs transition-colors"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Tarot</span>
+                      </Link>
+                    )}
+                    {enrichments.hasIdea && (
+                      <Link
+                        href="/dashboard/ideas"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1.5 px-2 py-1 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 rounded-md text-xs transition-colors"
+                      >
+                        <Lightbulb className="w-3.5 h-3.5" />
+                        <span>Ideas</span>
+                      </Link>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
