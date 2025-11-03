@@ -1,39 +1,58 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import { Inbox, FileText, LayoutDashboard, X, Bird, Mic } from "lucide-react";
+import {
+  Inbox,
+  FileText,
+  LayoutDashboard,
+  X,
+  Bird,
+  Mic,
+  Shuffle,
+} from "lucide-react";
 import { cn } from "../../lib/ui-utils";
+import { SidebarNavItem } from "./SidebarNavItem";
 
 interface NavItem {
-  href: string;
+  href?: string;
   label: string;
   icon: typeof Inbox;
+  onClick?: () => void;
+  isButton?: boolean;
 }
-
-const navItems: NavItem[] = [
-  { href: "/", label: "Inbox", icon: Inbox },
-  { href: "/memos", label: "Memos", icon: FileText },
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/record", label: "Record", icon: Mic },
-];
 
 interface SidebarProps {
   currentPath: string;
   isMobileMenuOpen?: boolean;
   onMobileMenuToggle?: () => void;
+  onPickRandomMemo?: () => void;
 }
 
 export function Sidebar({
   currentPath,
   isMobileMenuOpen = false,
   onMobileMenuToggle,
+  onPickRandomMemo,
 }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   // Delayed state for logo/text to sync with animation
   const [showExpandedContent, setShowExpandedContent] = useState(true);
 
-  const isActive = (href: string) => {
+  const navItems: NavItem[] = [
+    { href: "/", label: "Inbox", icon: Inbox },
+    { href: "/memos", label: "Memos", icon: FileText },
+    { href: "/dashboard/media", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/record", label: "Record", icon: Mic },
+    {
+      label: "Random",
+      icon: Shuffle,
+      onClick: onPickRandomMemo,
+      isButton: true,
+    },
+  ];
+
+  const isActive = (href?: string) => {
+    if (!href) return false;
     if (href === "/") {
       return currentPath === "/";
     }
@@ -57,43 +76,19 @@ export function Sidebar({
   const sidebarContent = (
     <nav className="h-full flex flex-col border-r border-slate-800/50">
       <div className="flex-1 py-4 space-y-1 px-2.5">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const active = isActive(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center rounded-lg text-sm font-medium transition-colors group relative overflow-hidden",
-                active
-                  ? "bg-indigo-500/20 text-indigo-300"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/50",
-                // Always use the same structure - never change justify or gap
-                // Increased horizontal padding to compensate for navbar height matching sidebar width
-                "gap-[13px] px-3 py-2"
-              )}
-              title={
-                isCollapsed || !showExpandedContent ? item.label : undefined
-              }
-            >
-              <Icon className="w-[18px] h-[18px] flex-shrink-0" />
-              <span
-                className="whitespace-nowrap"
-                style={{
-                  clipPath: showExpandedContent
-                    ? "inset(0)"
-                    : "inset(0 100% 0 0)",
-                  transition: "clip-path 300ms ease-in-out",
-                  width: showExpandedContent ? "auto" : "0",
-                  overflow: "hidden",
-                }}
-              >
-                {item.label}
-              </span>
-            </Link>
-          );
-        })}
+        {navItems.map((item, index) => (
+          <SidebarNavItem
+            key={item.href || `${item.label}-${index}`}
+            href={item.href}
+            label={item.label}
+            icon={item.icon}
+            onClick={item.isButton ? item.onClick : undefined}
+            isActive={item.href ? isActive(item.href) : false}
+            isCollapsed={isCollapsed}
+            showExpandedContent={showExpandedContent}
+            variant="desktop"
+          />
+        ))}
       </div>
     </nav>
   );
@@ -124,26 +119,24 @@ export function Sidebar({
               </div>
               {/* Navigation Items */}
               <nav className="flex-1 py-4 px-4 space-y-2 overflow-y-auto">
-                {navItems.map((item) => {
-                  const Icon = item.icon;
-                  const active = isActive(item.href);
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={onMobileMenuToggle}
-                      className={cn(
-                        "flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors",
-                        active
-                          ? "bg-indigo-500/20 text-indigo-300"
-                          : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-                      )}
-                    >
-                      <Icon className="w-5 h-5 flex-shrink-0" />
-                      <span>{item.label}</span>
-                    </Link>
-                  );
-                })}
+                {navItems.map((item, index) => (
+                  <SidebarNavItem
+                    key={item.href || `${item.label}-${index}`}
+                    href={item.href}
+                    label={item.label}
+                    icon={item.icon}
+                    onClick={
+                      item.isButton
+                        ? () => {
+                            item.onClick?.();
+                            onMobileMenuToggle?.();
+                          }
+                        : onMobileMenuToggle
+                    }
+                    isActive={item.href ? isActive(item.href) : false}
+                    variant="mobile"
+                  />
+                ))}
               </nav>
             </div>
           </div>

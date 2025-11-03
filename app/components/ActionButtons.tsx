@@ -1,6 +1,6 @@
 "use client";
 
-import { Mic, Search, Type, Shuffle, Settings } from "lucide-react";
+import { Mic, Search, Type, Settings, Camera } from "lucide-react";
 import { ActionButton } from "./ActionButton";
 import { useModals } from "../contexts/ModalContext";
 
@@ -8,14 +8,14 @@ interface ActionButtonsProps {
   onRecordClick: () => void;
   isRecording: boolean;
   isProcessing: boolean;
-  onPickRandomMemo: () => void;
+  onTakePicture: () => void;
 }
 
 export function ActionButtons({
   onRecordClick,
   isRecording,
   isProcessing,
-  onPickRandomMemo,
+  onTakePicture,
 }: ActionButtonsProps) {
   const { setShowSearch, setShowTextInput, setShowSettings } = useModals();
 
@@ -39,12 +39,12 @@ export function ActionButtons({
         variant="secondary"
       />
 
-      {/* Random button */}
+      {/* Camera button */}
       <ActionButton
-        onClick={() => onPickRandomMemo()}
-        icon={Shuffle}
-        label="Random"
-        shortcut="⌥J"
+        onClick={onTakePicture}
+        icon={Camera}
+        label="Camera"
+        shortcut="⌥C"
         variant="secondary"
       />
 

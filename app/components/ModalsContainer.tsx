@@ -8,6 +8,7 @@ import { SettingsModal } from "./SettingsModal";
 import { ArchivedMemosModal } from "./ArchivedMemosModal";
 import { FilterCommandPalette } from "./FilterCommandPalette";
 import { MemoModal } from "./MemoModal";
+import { CameraModal } from "./CameraModal";
 import { Modal } from "./ui/Modal";
 import { useModals } from "../contexts/ModalContext";
 import { useFilters } from "../contexts/FilterContext";
@@ -49,6 +50,10 @@ interface ModalsContainerProps {
 
   // Random memo
   onPickRandomMemo: () => void;
+
+  // Image capture
+  onImageCapture: (file: File) => Promise<void>;
+
   username: string;
   isArchivedModalOpen: boolean;
   onOpenArchivedModal: () => void;
@@ -77,6 +82,7 @@ export function ModalsContainer({
   onTextSubmit,
   onFeedbackSubmit,
   onPickRandomMemo,
+  onImageCapture,
   username,
   isArchivedModalOpen,
   onOpenArchivedModal,
@@ -89,6 +95,7 @@ export function ModalsContainer({
     setSearchQuery,
     searchResults,
     isSearching,
+    setIsSearching,
     setSearchResults,
     showTextInput,
     setShowTextInput,
@@ -102,6 +109,8 @@ export function ModalsContainer({
     setShowFeedback,
     showSettings,
     setShowSettings,
+    showCamera,
+    setShowCamera,
     showCommandPalette,
     setShowCommandPalette,
     showMemoModal,
@@ -186,6 +195,13 @@ export function ModalsContainer({
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
         setShowFeedback={setShowFeedback}
+      />
+
+      {/* Camera Modal */}
+      <CameraModal
+        isOpen={showCamera}
+        onClose={() => setShowCamera(false)}
+        onCapture={onImageCapture}
       />
 
       {/* Filter Command Palette */}

@@ -315,6 +315,9 @@ export default function MemosPage() {
         onPickRandomMemo={() => {
           // Handled in AppLayout
         }}
+        onImageCapture={async () => {
+          // Handled in AppLayout
+        }}
         username={username || ""}
         isArchivedModalOpen={isArchivedModalOpen}
         onOpenArchivedModal={() => setIsArchivedModalOpen(true)}

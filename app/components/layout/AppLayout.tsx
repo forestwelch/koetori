@@ -37,6 +37,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     setShowTextInput,
     isProcessingText,
     setIsProcessingText,
+    setShowCamera,
   } = useModals();
   const { showError, showWarning, showSuccess } = useToast();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -101,6 +102,55 @@ export function AppLayout({ children }: AppLayoutProps) {
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
+
+  // Handle camera capture
+  const handleTakePicture = useCallback(() => {
+    setShowCamera(true);
+  }, [setShowCamera]);
+
+  // Handle image upload
+  const handleImageCapture = useCallback(
+    async (file: File) => {
+      if (!username) return;
+
+      try {
+        const formData = new FormData();
+        formData.append("image", file);
+        formData.append("username", username);
+
+        const response = await fetch("/api/transcribe/image", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to process image");
+        }
+
+        await response.json();
+
+        // Show success toast
+        showSuccess("Photo memo created successfully!");
+
+        // Invalidate React Query cache so new memo appears immediately
+        queryClient.invalidateQueries({ queryKey: ["inbox", username] });
+        queryClient.invalidateQueries({ queryKey: ["memos"] });
+
+        // Navigate to inbox if not already there
+        if (pathname !== "/") {
+          router.push("/");
+        }
+      } catch (error) {
+        showError(
+          error instanceof Error
+            ? `Failed to process image: ${error.message}`
+            : "Failed to process image. Please try again."
+        );
+        throw error;
+      }
+    },
+    [username, showSuccess, showError, pathname, router, queryClient]
+  );
 
   // Handle text input submission globally
   const handleTextSubmit = useCallback(
@@ -206,6 +256,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           currentPath={pathname}
           isMobileMenuOpen={isMobileMenuOpen}
           onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          onPickRandomMemo={handlePickRandomMemo}
         />
 
         {/* Main Content Area - width adjusts with sidebar but no shift */}
@@ -224,7 +275,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                     onRecordClick={handleRecordClick}
                     isRecording={isRecording}
                     isProcessing={isProcessing}
-                    onPickRandomMemo={handlePickRandomMemo}
+                    onTakePicture={handleTakePicture}
                   />
 
                   {/* Mobile Hamburger Menu - Right side */}
@@ -294,6 +345,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           }
         }}
         onPickRandomMemo={handlePickRandomMemo}
+        onImageCapture={handleImageCapture}
         username={username || ""}
         isArchivedModalOpen={false}
         onOpenArchivedModal={() => {}}

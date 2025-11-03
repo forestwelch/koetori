@@ -47,6 +47,8 @@ export function useKeyboardShortcuts({
     setSearchResults,
     showRandomMemo,
     setShowRandomMemo,
+    showCamera,
+    setShowCamera,
     showCommandPalette,
     setShowCommandPalette,
   } = useModals();
@@ -111,6 +113,15 @@ export function useKeyboardShortcuts({
         handleShortcut(
           e.code === "KeyT" && hasOnlyModifiers(true) && !isInputField,
           () => setShowTextInput(true)
+        )
+      )
+        return;
+
+      // Option+C for camera
+      if (
+        handleShortcut(
+          e.code === "KeyC" && hasOnlyModifiers(true) && !isInputField,
+          () => setShowCamera(true)
         )
       )
         return;

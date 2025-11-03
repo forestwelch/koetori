@@ -36,6 +36,10 @@ interface ModalContextType {
   showSettings: boolean;
   setShowSettings: (show: boolean) => void;
 
+  // Camera Modal
+  showCamera: boolean;
+  setShowCamera: (show: boolean) => void;
+
   // Command Palette
   showCommandPalette: boolean;
   setShowCommandPalette: (show: boolean) => void;
@@ -74,6 +78,9 @@ export function ModalProvider({ children }: { children: ReactNode }) {
   // Settings
   const [showSettings, setShowSettings] = useState(false);
 
+  // Camera
+  const [showCamera, setShowCamera] = useState(false);
+
   // Command Palette
   const [showCommandPalette, setShowCommandPalette] = useState(false);
 
@@ -87,6 +94,7 @@ export function ModalProvider({ children }: { children: ReactNode }) {
     setShowRandomMemo(false);
     setShowFeedback(false);
     setShowSettings(false);
+    setShowCamera(false);
     setShowCommandPalette(false);
     setShowMemoModal(false);
     setMemoModalId(null);
@@ -117,6 +125,8 @@ export function ModalProvider({ children }: { children: ReactNode }) {
         setShowFeedback,
         showSettings,
         setShowSettings,
+        showCamera,
+        setShowCamera,
         showCommandPalette,
         setShowCommandPalette,
         showMemoModal,
