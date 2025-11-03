@@ -292,7 +292,7 @@ export function RemindersBoard({
     setCustomSchedule,
   ]);
   return (
-    <section className="space-y-4">
+    <section className="space-y-6">
       <header className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <div>

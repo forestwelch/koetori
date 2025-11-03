@@ -9,7 +9,6 @@ import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 import { supabase } from "../../lib/supabase";
 import { Memo } from "../../types/memo";
 import { ActionButtons } from "../ActionButtons";
-import { KoetoriExplanation } from "../KoetoriExplanation";
 import { UsernameInput } from "../UsernameInput";
 import { LoadingState } from "../LoadingState";
 import { Sidebar } from "./Sidebar";
@@ -18,6 +17,7 @@ import { Menu } from "lucide-react";
 import { ActionButton } from "../ActionButton";
 import { RecordingOverlay } from "../RecordingOverlay";
 import { ModalsContainer } from "../ModalsContainer";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -27,10 +27,10 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { username, isLoading: userLoading } = useUser();
   const pathname = usePathname();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const {
     setRandomMemo,
     setShowRandomMemo,
-    textInput,
     setTextInput,
     setShowTextInput,
     isProcessingText,
@@ -122,7 +122,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           throw new Error("Failed to process text");
         }
 
-        const result = await response.json();
+        await response.json();
 
         // Clear and close
         setTextInput("");
@@ -131,12 +131,13 @@ export function AppLayout({ children }: AppLayoutProps) {
         // Show success toast
         showSuccess("Memo created successfully!");
 
-        // Navigate to inbox to see the new memo
+        // Invalidate React Query cache so new memo appears immediately
+        queryClient.invalidateQueries({ queryKey: ["inbox", username] });
+        queryClient.invalidateQueries({ queryKey: ["memos"] });
+
+        // Navigate to inbox if not already there
         if (pathname !== "/") {
           router.push("/");
-        } else {
-          // If already on inbox, refresh the page
-          router.refresh();
         }
       } catch (error) {
         showError(
@@ -158,6 +159,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       showError,
       pathname,
       router,
+      queryClient,
     ]
   );
 
@@ -207,9 +209,9 @@ export function AppLayout({ children }: AppLayoutProps) {
         {/* Main Content Area - width adjusts with sidebar but no shift */}
         <div className="flex-1 flex flex-col min-w-0 transition-all duration-300 lg:ml-0">
           {/* Top Bar */}
-          <header className="sticky top-0 z-50 border-b border-slate-800/50 bg-[#0a0a0f]/80 backdrop-blur-xl w-full overflow-hidden">
+          <header className="sticky top-0 z-50 border-b border-slate-800/50 bg-[#0a0a0f]/80 backdrop-blur-xl w-full overflow-hidden safe-top">
             <div className="w-full px-3 sm:px-4 md:px-8">
-              <div className="flex items-center justify-between h-16">
+              <div className="flex items-center justify-between min-h-[64px] py-2">
                 {/* Logo removed on desktop - only in sidebar now */}
                 <div className="hidden lg:block" />
 
@@ -239,7 +241,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
           {/* Page Content */}
           <main className="flex-1 overflow-y-auto overflow-x-hidden overscroll-none scrollbar-gutter-stable">
-            <div className="w-full max-w-full px-3 sm:px-4 md:px-8 pt-6 sm:pt-8 pb-6 sm:pb-8">
+            <div className="w-full max-w-full px-4 sm:px-6 md:px-8 lg:px-12 pt-6 sm:pt-8 md:pt-10 pb-6 sm:pb-8 md:pb-10">
               {children}
             </div>
           </main>

@@ -176,8 +176,8 @@ export function MediaCard({
           </div>
         </CardHeader>
 
-        {/* Action Buttons */}
-        <div className="absolute right-1 top-1 z-20 flex flex-col gap-2 opacity-100 lg:opacity-0 transition-opacity lg:group-hover:opacity-100 pointer-events-auto">
+        {/* Action Buttons - Better organized, more spacing on mobile */}
+        <div className="absolute right-2 top-2 z-20 flex flex-wrap gap-1.5 sm:gap-2 justify-end max-w-[140px] sm:max-w-none opacity-100 lg:opacity-0 transition-opacity lg:group-hover:opacity-100 pointer-events-auto">
           {/* Status Actions */}
           {onStatusChange && (
             <>

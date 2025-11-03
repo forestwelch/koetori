@@ -267,7 +267,7 @@ export function MediaLibrary({
   }, [items]);
 
   return (
-    <section className="space-y-4 w-full max-w-full">
+    <section className="space-y-6 w-full max-w-full">
       <header className="flex flex-col gap-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>

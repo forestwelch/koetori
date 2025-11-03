@@ -191,3 +191,33 @@ npm run dev
 ```
 
 Visit `http://localhost:3000`
+
+---
+
+## Documentation
+
+See [`docs/`](./docs/README.md) for organized documentation:
+
+- **Development Guides**: Setup, debugging, code audits
+- **User Guides**: Keyboard shortcuts, mobile optimization, testing
+- **Feature Docs**: Toast system, device setup, API enhancements
+
+---
+
+## Recent Improvements
+
+See [`docs/CHANGELOG.md`](./docs/CHANGELOG.md) for detailed changelog.
+
+### Latest Updates
+
+- ✅ Media Library: Added list view mode, improved filtering
+- ✅ Reminders: Clickable analytics badges, overdue/recurring filters
+- ✅ Scrollbar fixes: Fixed layout shift issues
+- ✅ Documentation: Consolidated into organized structure
+- ✅ Edit Feedback: Fully implemented (triggers after edits)
+
+---
+
+## Roadmap
+
+See [`README_ACTION_PLAN.md`](./README_ACTION_PLAN.md) for full roadmap and priorities.

@@ -2,15 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import {
-  Inbox,
-  FileText,
-  LayoutDashboard,
-  X,
-  Menu,
-  Bird,
-  Mic,
-} from "lucide-react";
+import { Inbox, FileText, LayoutDashboard, X, Bird, Mic } from "lucide-react";
 import { cn } from "../../lib/ui-utils";
 
 interface NavItem {
@@ -113,7 +105,7 @@ export function Sidebar({
         <>
           {/* Mobile Overlay */}
           <div
-            className="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+            className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
             onClick={onMobileMenuToggle}
           />
           {/* Mobile Drawer */}
@@ -166,48 +158,51 @@ export function Sidebar({
         )}
       >
         {/* Desktop Top Section - Logo aligned with nav items, matching navbar height exactly */}
-        <div className="hidden lg:flex overflow-hidden h-16 items-center">
+        <div className="hidden lg:block overflow-hidden safe-top">
           <div className="w-full px-2.5">
-            <button
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className={cn(
-                "flex items-center w-full rounded-lg text-sm font-medium transition-colors group relative overflow-hidden",
-                "text-slate-400 hover:text-white hover:bg-slate-800/50",
-                // Match nav items exactly - same padding
-                "gap-[13px] px-3 py-2"
-              )}
-              aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            >
-              <Bird
+            <div className="flex items-center min-h-[64px] py-0">
+              <button
+                onClick={() => setIsCollapsed(!isCollapsed)}
                 className={cn(
-                  "w-[18px] h-[18px] flex-shrink-0 transition-all duration-300",
-                  showExpandedContent ? "text-slate-300" : "text-slate-400"
+                  "flex items-center w-full rounded-lg text-sm font-medium transition-all duration-200 relative overflow-hidden",
+                  "text-slate-400 hover:text-white hover:bg-slate-800/50",
+                  // Match nav items exactly - same padding
+                  // Button has py-2 padding all the time, container has no padding
+                  "gap-[13px] px-3 py-2"
                 )}
-                style={{
-                  filter: "drop-shadow(0 0 0px rgba(129, 140, 248, 0))",
-                  transition: "filter 0.3s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.filter =
-                    "drop-shadow(0 0 8px rgba(129, 140, 248, 0.6)) drop-shadow(0 0 4px rgba(192, 132, 252, 0.4)) drop-shadow(0 0 2px rgba(251, 113, 133, 0.3))";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.filter =
-                    "drop-shadow(0 0 0px rgba(129, 140, 248, 0))";
-                }}
-              />
-              <span
-                className="text-2xl sm:text-3xl font-light whitespace-nowrap bg-gradient-to-r from-[#818cf8] via-[#c084fc] to-[#fb7185] bg-clip-text text-transparent"
-                style={{
-                  clipPath: showExpandedContent
-                    ? "inset(0)"
-                    : "inset(0 100% 0 0)",
-                  transition: "clip-path 300ms ease-in-out",
-                }}
+                aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
               >
-                koetori
-              </span>
-            </button>
+                <Bird
+                  className={cn(
+                    "w-[18px] h-[18px] flex-shrink-0 transition-all duration-300",
+                    showExpandedContent ? "text-slate-300" : "text-slate-400"
+                  )}
+                  style={{
+                    filter: "drop-shadow(0 0 0px rgba(129, 140, 248, 0))",
+                    transition: "filter 0.3s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.filter =
+                      "drop-shadow(0 0 8px rgba(129, 140, 248, 0.6)) drop-shadow(0 0 4px rgba(192, 132, 252, 0.4)) drop-shadow(0 0 2px rgba(251, 113, 133, 0.3))";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.filter =
+                      "drop-shadow(0 0 0px rgba(129, 140, 248, 0))";
+                  }}
+                />
+                <span
+                  className="text-2xl sm:text-3xl font-light whitespace-nowrap bg-gradient-to-r from-[#818cf8] via-[#c084fc] to-[#fb7185] bg-clip-text text-transparent"
+                  style={{
+                    clipPath: showExpandedContent
+                      ? "inset(0)"
+                      : "inset(0 100% 0 0)",
+                    transition: "clip-path 300ms ease-in-out",
+                  }}
+                >
+                  koetori
+                </span>
+              </button>
+            </div>
           </div>
         </div>
 

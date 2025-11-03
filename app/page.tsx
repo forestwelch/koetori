@@ -113,7 +113,7 @@ export default function InboxPage() {
         });
 
         setTimeout(() => setNewMemoId(null), 2000);
-      }, 500);
+      }, 300); // Reduced delay for faster appearance
       return () => clearTimeout(timer);
     }
   }, [

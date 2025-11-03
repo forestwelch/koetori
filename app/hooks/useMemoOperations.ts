@@ -231,10 +231,19 @@ export function useMemoOperations(username: string, refetchMemos: () => void) {
         applyMemoSnapshot(
           snapshot ? { ...snapshot, deleted_at: now } : undefined
         );
+        // Invalidate search queries so deleted memo disappears from search
+        queryClient.invalidateQueries({ queryKey: ["search"] });
         showSuccess("Memo archived");
       }
     },
-    [username, getMemoSnapshot, applyMemoSnapshot, showSuccess, showError]
+    [
+      username,
+      getMemoSnapshot,
+      applyMemoSnapshot,
+      queryClient,
+      showSuccess,
+      showError,
+    ]
   );
 
   const toggleStar = useCallback(

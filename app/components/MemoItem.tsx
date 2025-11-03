@@ -201,7 +201,7 @@ export function MemoItem({
       <SwipeIndicator swipeX={swipeX} />
 
       <div
-        className={`group relative p-3 sm:p-4 bg-[#0d0e14]/40 backdrop-blur-xl rounded-xl border hover:bg-[#0d0e14]/60 transition-all duration-200 cursor-pointer ${
+        className={`group relative p-4 sm:p-5 bg-[#0d0e14]/40 backdrop-blur-xl rounded-xl border hover:bg-[#0d0e14]/60 transition-all duration-200 cursor-pointer ${
           isNew
             ? "border-indigo-500/50 shadow-lg shadow-indigo-500/20"
             : "border-slate-700/20 hover:border-slate-600/40"
@@ -484,16 +484,16 @@ export function MemoItem({
                             : memo.transcript}
                       </p>
 
-                      {/* View Full Recording Button */}
+                      {/* View Full Recording Button - Integrated with transcript */}
                       {memo.transcription_id && memo.transcript_excerpt && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             setIsRecordingModalOpen(true);
                           }}
-                          className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors mt-1"
+                          className="inline-flex items-center gap-1 text-xs text-indigo-400/70 hover:text-indigo-300 transition-colors mt-1.5 border-b border-indigo-400/30 hover:border-indigo-400/50"
                         >
-                          View full
+                          View full recording
                         </button>
                       )}
                     </>
@@ -503,25 +503,6 @@ export function MemoItem({
 
               {/* Metadata row */}
               <div className="flex flex-wrap items-center gap-2 mb-2 text-xs">
-                {/* Confidence */}
-                <div className="flex items-center gap-1.5">
-                  <div className="w-12 h-1.5 bg-[#0a0a0f]/80 backdrop-blur-xl rounded-full overflow-hidden border border-slate-700/10">
-                    <div
-                      className={`h-full ${
-                        memo.confidence >= 0.7
-                          ? "bg-gradient-to-r from-green-500 to-emerald-500"
-                          : memo.confidence >= 0.5
-                            ? "bg-gradient-to-r from-yellow-500 to-amber-500"
-                            : "bg-gradient-to-r from-orange-500 to-red-500"
-                      }`}
-                      style={{ width: `${memo.confidence * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-[#94a3b8]">
-                    {Math.round(memo.confidence * 100)}%
-                  </span>
-                </div>
-
                 {/* Review flag */}
                 {memo.needs_review && (
                   <span
@@ -533,10 +514,8 @@ export function MemoItem({
                   </span>
                 )}
 
-                {/* Task Size - visible on mobile in expanded view */}
-
                 {/* Date */}
-                <span className="ml-auto text-[#64748b]">
+                <span className="text-[#64748b]">
                   {new Date(memo.timestamp).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
@@ -544,6 +523,14 @@ export function MemoItem({
                     hour: "numeric",
                     minute: "2-digit",
                   })}
+                </span>
+
+                {/* Confidence - Very discreet, bottom right */}
+                <span
+                  className="ml-auto text-[#64748b]/60 text-[10px] font-mono"
+                  title={`Confidence: ${Math.round(memo.confidence * 100)}%`}
+                >
+                  {Math.round(memo.confidence * 100)}%
                 </span>
               </div>
 

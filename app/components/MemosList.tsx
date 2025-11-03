@@ -68,7 +68,7 @@ export function MemosList({
   }, [memos, setExpandedId]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {memos.map((memo) => {
         const isNew = memo.id === newMemoId;
 
