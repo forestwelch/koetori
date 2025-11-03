@@ -77,6 +77,7 @@ function TarotCard({ item }: { item: TarotItem }) {
   return (
     <Link
       href={`/#memo-${item.memoId}`}
+      data-memo-id={item.memoId}
       className="group block rounded-xl border border-slate-700/30 bg-slate-800/30 backdrop-blur-sm p-6 hover:bg-slate-800/50 hover:border-slate-600/50 transition-all"
     >
       <div className="flex items-start justify-between mb-3">

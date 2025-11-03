@@ -143,6 +143,33 @@ body::-webkit-scrollbar {
   }
 }
 
+/* Memo highlight glow effect */
+.memo-highlight-glow {
+  animation: memo-glow 2s ease-out;
+  box-shadow:
+    0 0 20px rgba(139, 92, 246, 0.6),
+    0 0 40px rgba(139, 92, 246, 0.4),
+    0 0 60px rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.8) !important;
+}
+
+@keyframes memo-glow {
+  0% {
+    box-shadow:
+      0 0 30px rgba(139, 92, 246, 0.8),
+      0 0 60px rgba(139, 92, 246, 0.6),
+      0 0 90px rgba(139, 92, 246, 0.4);
+    border-color: rgba(139, 92, 246, 1) !important;
+  }
+  100% {
+    box-shadow:
+      0 0 20px rgba(139, 92, 246, 0.6),
+      0 0 40px rgba(139, 92, 246, 0.4),
+      0 0 60px rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.8) !important;
+  }
+}
+
 /* Custom Scrollbar Styling */
 /* Firefox */
 * {

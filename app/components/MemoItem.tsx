@@ -641,7 +641,7 @@ export function MemoItem({
                   <div className="flex flex-wrap gap-2">
                     {enrichments.hasMedia && (
                       <Link
-                        href="/dashboard/media"
+                        href={`/dashboard/media?memoId=${memo.id}`}
                         onClick={(e) => e.stopPropagation()}
                         className="inline-flex items-center gap-1.5 px-2 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded-md text-xs transition-colors"
                       >
@@ -651,7 +651,7 @@ export function MemoItem({
                     )}
                     {enrichments.hasReminder && (
                       <Link
-                        href="/dashboard/reminders"
+                        href={`/dashboard/reminders?memoId=${memo.id}`}
                         onClick={(e) => e.stopPropagation()}
                         className="inline-flex items-center gap-1.5 px-2 py-1 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded-md text-xs transition-colors"
                       >
@@ -661,7 +661,7 @@ export function MemoItem({
                     )}
                     {enrichments.hasShopping && (
                       <Link
-                        href="/dashboard/shopping"
+                        href={`/dashboard/shopping?memoId=${memo.id}`}
                         onClick={(e) => e.stopPropagation()}
                         className="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-md text-xs transition-colors"
                       >
@@ -671,7 +671,7 @@ export function MemoItem({
                     )}
                     {enrichments.hasTodo && (
                       <Link
-                        href="/dashboard/todos"
+                        href={`/dashboard/todos?memoId=${memo.id}`}
                         onClick={(e) => e.stopPropagation()}
                         className="inline-flex items-center gap-1.5 px-2 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 rounded-md text-xs transition-colors"
                       >
@@ -681,7 +681,7 @@ export function MemoItem({
                     )}
                     {enrichments.hasJournal && (
                       <Link
-                        href="/dashboard/journal"
+                        href={`/dashboard/journal?memoId=${memo.id}`}
                         onClick={(e) => e.stopPropagation()}
                         className="inline-flex items-center gap-1.5 px-2 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-md text-xs transition-colors"
                       >
@@ -691,7 +691,7 @@ export function MemoItem({
                     )}
                     {enrichments.hasTarot && (
                       <Link
-                        href="/dashboard/tarot"
+                        href={`/dashboard/tarot?memoId=${memo.id}`}
                         onClick={(e) => e.stopPropagation()}
                         className="inline-flex items-center gap-1.5 px-2 py-1 bg-fuchsia-500/10 hover:bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30 rounded-md text-xs transition-colors"
                       >
@@ -701,7 +701,7 @@ export function MemoItem({
                     )}
                     {enrichments.hasIdea && (
                       <Link
-                        href="/dashboard/ideas"
+                        href={`/dashboard/ideas?memoId=${memo.id}`}
                         onClick={(e) => e.stopPropagation()}
                         className="inline-flex items-center gap-1.5 px-2 py-1 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 rounded-md text-xs transition-colors"
                       >

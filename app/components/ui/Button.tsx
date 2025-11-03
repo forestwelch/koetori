@@ -3,7 +3,6 @@
 import { Button as AriaButton } from "react-aria-components";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../../lib/ui-utils";
-import { LoadingSpinner } from "../LoadingSpinner";
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:pointer-events-none",
@@ -89,11 +88,6 @@ export function Button({
       type={type}
       aria-label={ariaLabel}
     >
-      {isLoading && (
-        <span className="mr-2 inline-flex items-center h-4 w-4" title={title}>
-          <LoadingSpinner size="sm" />
-        </span>
-      )}
       {leftIcon && <span className="mr-2">{leftIcon}</span>}
       {children}
       {rightIcon && <span className="ml-2">{rightIcon}</span>}

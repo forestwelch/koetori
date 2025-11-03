@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useCallback } from "react";
+import { ReactNode, useCallback, useState } from "react";
 import { useUser } from "../../contexts/UserContext";
 import { useVoiceRecorder } from "../../hooks/useVoiceRecorder";
 import { useModals } from "../../contexts/ModalContext";
@@ -13,7 +13,11 @@ import { KoetoriExplanation } from "../KoetoriExplanation";
 import { UsernameInput } from "../UsernameInput";
 import { LoadingState } from "../LoadingState";
 import { Sidebar } from "./Sidebar";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { Menu } from "lucide-react";
+import { ActionButton } from "../ActionButton";
+import { RecordingOverlay } from "../RecordingOverlay";
+import { ModalsContainer } from "../ModalsContainer";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -22,8 +26,18 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const { username, isLoading: userLoading } = useUser();
   const pathname = usePathname();
-  const { setRandomMemo, setShowRandomMemo } = useModals();
-  const { showError, showWarning } = useToast();
+  const router = useRouter();
+  const {
+    setRandomMemo,
+    setShowRandomMemo,
+    textInput,
+    setTextInput,
+    setShowTextInput,
+    isProcessingText,
+    setIsProcessingText,
+  } = useModals();
+  const { showError, showWarning, showSuccess } = useToast();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Voice recording (needed for record button)
   const {
@@ -32,6 +46,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     startRecording,
     stopRecording,
     cancelRecording,
+    recordingTime,
   } = useVoiceRecorder(username || undefined);
 
   // Handle record click
@@ -78,6 +93,74 @@ export function AppLayout({ children }: AppLayoutProps) {
     setShowRandomMemo(true);
   }, [username, setRandomMemo, setShowRandomMemo, showError, showWarning]);
 
+  // Format time for recording overlay
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  // Handle text input submission globally
+  const handleTextSubmit = useCallback(
+    async (text: string) => {
+      if (!text.trim() || isProcessingText || !username) return;
+
+      setIsProcessingText(true);
+      try {
+        const response = await fetch("/api/transcribe", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            text: text.trim(),
+            username: username,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to process text");
+        }
+
+        const result = await response.json();
+
+        // Clear and close
+        setTextInput("");
+        setShowTextInput(false);
+
+        // Show success toast
+        showSuccess("Memo created successfully!");
+
+        // Navigate to inbox to see the new memo
+        if (pathname !== "/") {
+          router.push("/");
+        } else {
+          // If already on inbox, refresh the page
+          router.refresh();
+        }
+      } catch (error) {
+        showError(
+          error instanceof Error
+            ? `Failed to process text: ${error.message}`
+            : "Failed to process text. Please try again."
+        );
+      } finally {
+        setIsProcessingText(false);
+      }
+    },
+    [
+      username,
+      isProcessingText,
+      setIsProcessingText,
+      setTextInput,
+      setShowTextInput,
+      showSuccess,
+      showError,
+      pathname,
+      router,
+    ]
+  );
+
   // Keyboard shortcuts - set up globally
   useKeyboardShortcuts({
     onRecordToggle: handleRecordClick,
@@ -115,7 +198,11 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       <div className="relative z-10 flex min-h-screen h-screen">
         {/* Sidebar */}
-        <Sidebar currentPath={pathname} />
+        <Sidebar
+          currentPath={pathname}
+          isMobileMenuOpen={isMobileMenuOpen}
+          onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        />
 
         {/* Main Content Area - width adjusts with sidebar but no shift */}
         <div className="flex-1 flex flex-col min-w-0 transition-all duration-300 lg:ml-0">
@@ -126,13 +213,26 @@ export function AppLayout({ children }: AppLayoutProps) {
                 {/* Logo removed on desktop - only in sidebar now */}
                 <div className="hidden lg:block" />
 
-                {/* Action Buttons */}
-                <ActionButtons
-                  onRecordClick={handleRecordClick}
-                  isRecording={isRecording}
-                  isProcessing={isProcessing}
-                  onPickRandomMemo={handlePickRandomMemo}
-                />
+                {/* Action Buttons Container */}
+                <div className="flex items-center gap-2 sm:gap-3">
+                  {/* Action Buttons */}
+                  <ActionButtons
+                    onRecordClick={handleRecordClick}
+                    isRecording={isRecording}
+                    isProcessing={isProcessing}
+                    onPickRandomMemo={handlePickRandomMemo}
+                  />
+
+                  {/* Mobile Hamburger Menu - Right side */}
+                  <ActionButton
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    icon={Menu}
+                    label="Menu"
+                    variant="secondary"
+                    iconOnly
+                    className="lg:hidden"
+                  />
+                </div>
               </div>
             </div>
           </header>
@@ -145,6 +245,44 @@ export function AppLayout({ children }: AppLayoutProps) {
           </main>
         </div>
       </div>
+
+      {/* Recording Overlay - Global */}
+      <RecordingOverlay
+        isRecording={isRecording}
+        isProcessing={isProcessing}
+        recordingTime={recordingTime}
+        onStopRecording={stopRecording}
+        formatTime={formatTime}
+      />
+
+      {/* Global Modals Container - for text input and other global modals */}
+      <ModalsContainer
+        editingId={null}
+        editText=""
+        setEditText={() => {}}
+        startEdit={() => {}}
+        cancelEdit={() => {}}
+        saveEdit={() => {}}
+        editingSummaryId={null}
+        summaryEditText=""
+        setSummaryEditText={() => {}}
+        startEditSummary={() => {}}
+        cancelEditSummary={() => {}}
+        saveSummary={() => {}}
+        softDelete={() => {}}
+        toggleStar={() => {}}
+        restoreMemo={async () => {}}
+        hardDelete={async () => {}}
+        onCategoryChange={() => {}}
+        dismissReview={() => {}}
+        onTextSubmit={handleTextSubmit}
+        onFeedbackSubmit={async () => {}}
+        onPickRandomMemo={handlePickRandomMemo}
+        username={username || ""}
+        isArchivedModalOpen={false}
+        onOpenArchivedModal={() => {}}
+        onCloseArchivedModal={() => {}}
+      />
     </div>
   );
 }

@@ -13,10 +13,6 @@ import {
 } from "lucide-react";
 import { cn } from "../../lib/ui-utils";
 
-interface SidebarProps {
-  currentPath: string;
-}
-
 interface NavItem {
   href: string;
   label: string;
@@ -30,8 +26,17 @@ const navItems: NavItem[] = [
   { href: "/record", label: "Record", icon: Mic },
 ];
 
-export function Sidebar({ currentPath }: SidebarProps) {
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
+interface SidebarProps {
+  currentPath: string;
+  isMobileMenuOpen?: boolean;
+  onMobileMenuToggle?: () => void;
+}
+
+export function Sidebar({
+  currentPath,
+  isMobileMenuOpen = false,
+  onMobileMenuToggle,
+}: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   // Delayed state for logo/text to sync with animation
   const [showExpandedContent, setShowExpandedContent] = useState(true);
@@ -67,7 +72,6 @@ export function Sidebar({ currentPath }: SidebarProps) {
             <Link
               key={item.href}
               href={item.href}
-              onClick={() => setIsMobileOpen(false)}
               className={cn(
                 "flex items-center rounded-lg text-sm font-medium transition-colors group relative overflow-hidden",
                 active
@@ -104,43 +108,63 @@ export function Sidebar({ currentPath }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile Menu Button - Top Left */}
-      <button
-        onClick={() => setIsMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-[60] p-2 rounded-lg bg-slate-800/80 backdrop-blur-sm border border-slate-700/50 text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors"
-        aria-label="Open navigation"
-      >
-        <Menu className="w-5 h-5" />
-      </button>
-
-      {/* Mobile Overlay */}
-      {isMobileOpen && (
-        <div
-          className="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-          onClick={() => setIsMobileOpen(false)}
-        />
+      {/* Mobile Navigation Drawer */}
+      {isMobileMenuOpen && (
+        <>
+          {/* Mobile Overlay */}
+          <div
+            className="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+            onClick={onMobileMenuToggle}
+          />
+          {/* Mobile Drawer */}
+          <div className="lg:hidden fixed inset-y-0 right-0 z-50 w-80 bg-[#0a0b0f]/98 backdrop-blur-xl border-l border-slate-800/50 shadow-2xl">
+            <div className="flex flex-col h-full">
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-slate-800/50">
+                <h2 className="text-lg font-semibold text-white">Navigation</h2>
+                <button
+                  onClick={onMobileMenuToggle}
+                  className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/50 transition-colors"
+                  aria-label="Close navigation"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              {/* Navigation Items */}
+              <nav className="flex-1 py-4 px-4 space-y-2 overflow-y-auto">
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={onMobileMenuToggle}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors",
+                        active
+                          ? "bg-indigo-500/20 text-indigo-300"
+                          : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                      )}
+                    >
+                      <Icon className="w-5 h-5 flex-shrink-0" />
+                      <span>{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+          </div>
+        </>
       )}
 
-      {/* Sidebar */}
+      {/* Desktop Sidebar */}
       <aside
         className={cn(
-          "fixed lg:static inset-y-0 left-0 z-40 bg-[#0a0b0f]/95 backdrop-blur-xl transition-[width,transform] duration-300 ease-in-out overflow-hidden",
-          isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
+          "hidden lg:block fixed lg:static inset-y-0 left-0 z-40 bg-[#0a0b0f]/95 backdrop-blur-xl transition-[width] duration-300 ease-in-out overflow-hidden",
           isCollapsed ? "lg:w-16" : "lg:w-64"
         )}
       >
-        {/* Mobile Close Button */}
-        <div className="lg:hidden flex items-center justify-between p-4 border-b border-slate-800/50">
-          <h2 className="text-lg font-semibold text-white">Navigation</h2>
-          <button
-            onClick={() => setIsMobileOpen(false)}
-            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/50 transition-colors"
-            aria-label="Close navigation"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
         {/* Desktop Top Section - Logo aligned with nav items, matching navbar height exactly */}
         <div className="hidden lg:flex overflow-hidden h-16 items-center">
           <div className="w-full px-2.5">
