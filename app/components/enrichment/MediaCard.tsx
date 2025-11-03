@@ -177,7 +177,7 @@ export function MediaCard({
         </CardHeader>
 
         {/* Action Buttons */}
-        <div className="absolute right-1 top-1 flex flex-col gap-2 opacity-100 lg:opacity-0 transition-opacity lg:group-hover:opacity-100">
+        <div className="absolute right-1 top-1 z-20 flex flex-col gap-2 opacity-100 lg:opacity-0 transition-opacity lg:group-hover:opacity-100 pointer-events-auto">
           {/* Status Actions */}
           {onStatusChange && (
             <>
@@ -259,7 +259,7 @@ export function MediaCard({
           )}
         </div>
 
-        <CardContent className="space-y-3 text-sm text-slate-300">
+        <CardContent className="space-y-3 text-sm text-slate-300 relative z-10">
           {item.overview && (
             <div>
               <p

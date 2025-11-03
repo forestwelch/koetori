@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import Link from "next/link";
 import {
   ShoppingBag,
   CheckCircle2,
   Archive,
   RotateCcw,
   GripVertical,
+  BookOpen,
 } from "lucide-react";
 import { Card, CardContent } from "../ui/Card";
 import { Button } from "../ui/Button";
@@ -16,6 +16,7 @@ import { useShoppingActions } from "../../hooks/useShoppingActions";
 import { useToast } from "../../contexts/ToastContext";
 import { LoadingSpinner } from "../LoadingSpinner";
 import { useQueryClient } from "@tanstack/react-query";
+import { useModals } from "../../contexts/ModalContext";
 
 interface ShoppingListBoardProps {
   items: ShoppingListItem[];
@@ -544,9 +545,15 @@ function ShoppingItemCard({
   allItems: ShoppingListItem[];
   status: string;
 }) {
+  const { setShowMemoModal, setMemoModalId } = useModals();
   const isProcessing = processingId === item.memoId;
   const isDragging = draggedItemId === item.memoId;
   const isDragOver = dragOverId === item.memoId;
+
+  const handleViewMemo = () => {
+    setMemoModalId(item.memoId);
+    setShowMemoModal(true);
+  };
 
   return (
     <Card
@@ -669,13 +676,13 @@ function ShoppingItemCard({
                     Archive
                   </Button>
                 )}
-                <Link
-                  href={{ pathname: "/", hash: `memo-${item.memoId}` }}
-                  prefetch={false}
-                  className="rounded-full border border-slate-700/40 px-2 py-0.5 text-[11px] text-slate-300 transition hover:border-emerald-400/50 hover:text-white"
+                <button
+                  onClick={handleViewMemo}
+                  className="inline-flex items-center gap-1 rounded-full border border-slate-700/40 px-2 py-0.5 text-[11px] text-slate-300 transition hover:border-emerald-400/50 hover:text-white"
                 >
+                  <BookOpen className="w-3 h-3" />
                   View memo
-                </Link>
+                </button>
               </div>
             )}
           </div>

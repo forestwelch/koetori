@@ -60,11 +60,22 @@ export function TarotBoard({ items, isLoading, error }: TarotBoardProps) {
     return groups;
   }, [items]);
 
-  // Filter items
+  // Filter items by type and card selection
   const filteredItems = useMemo(() => {
-    if (filterType === "all") return items;
-    return items.filter((item) => item.cardType === filterType);
-  }, [items, filterType]);
+    let filtered = items;
+
+    // Filter by card type (Major/Minor/All)
+    if (filterType !== "all") {
+      filtered = filtered.filter((item) => item.cardType === filterType);
+    }
+
+    // Filter by selected card
+    if (selectedCard) {
+      filtered = filtered.filter((item) => item.cardName === selectedCard);
+    }
+
+    return filtered;
+  }, [items, filterType, selectedCard]);
 
   // Sort items by date (newest first)
   const sortedItems = useMemo(() => {
@@ -72,24 +83,6 @@ export function TarotBoard({ items, isLoading, error }: TarotBoardProps) {
       (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
     );
   }, [filteredItems]);
-
-  // Filter grouped items
-  const filteredGrouped = useMemo(() => {
-    if (selectedCard) {
-      return { [selectedCard]: groupedByCard[selectedCard] || [] };
-    }
-    const filtered: Record<string, TarotItem[]> = {};
-    Object.entries(groupedByCard).forEach(([cardName, cardItems]) => {
-      const matches = cardItems.filter((item) => {
-        if (filterType === "all") return true;
-        return item.cardType === filterType;
-      });
-      if (matches.length > 0) {
-        filtered[cardName] = matches;
-      }
-    });
-    return filtered;
-  }, [groupedByCard, selectedCard, filterType]);
 
   const toggleExpanded = (memoId: string) => {
     setExpandedCards((prev) => {
@@ -153,15 +146,37 @@ export function TarotBoard({ items, isLoading, error }: TarotBoardProps) {
             <div className="relative">
               <select
                 value={selectedCard || ""}
-                onChange={(e) => setSelectedCard(e.target.value || null)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSelectedCard(value || null);
+                }}
                 className="appearance-none bg-slate-800/50 border border-slate-700/50 rounded-lg px-4 py-2 text-sm text-white pr-8 hover:border-slate-600/50 focus:outline-none focus:border-purple-500/50"
               >
                 <option value="">All Cards</option>
-                {cardNames.map((cardName) => (
-                  <option key={cardName} value={cardName}>
-                    {cardName} ({groupedByCard[cardName].length})
-                  </option>
-                ))}
+                {cardNames
+                  .filter((cardName) => {
+                    // If type filter is active, only show cards that have items of that type
+                    if (filterType !== "all") {
+                      return groupedByCard[cardName].some(
+                        (item) => item.cardType === filterType
+                      );
+                    }
+                    return true;
+                  })
+                  .map((cardName) => {
+                    // Count items matching the current type filter
+                    const count =
+                      filterType === "all"
+                        ? groupedByCard[cardName].length
+                        : groupedByCard[cardName].filter(
+                            (item) => item.cardType === filterType
+                          ).length;
+                    return (
+                      <option key={cardName} value={cardName}>
+                        {cardName} ({count})
+                      </option>
+                    );
+                  })}
               </select>
               <Filter className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             </div>
