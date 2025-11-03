@@ -557,6 +557,7 @@ function ShoppingItemCard({
       onDragOver={(e) => !isSelectMode && onDragOver(e, item.memoId)}
       onDragEnd={onDragEnd}
       onDrop={(e) => !isSelectMode && onDrop(e, item.memoId, allItems, status)}
+      data-memo-id={item.memoId}
       className={`border-slate-700/30 transition-all ${
         item.status === "purchased"
           ? "bg-slate-900/30 opacity-75"

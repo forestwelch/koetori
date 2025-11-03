@@ -3,6 +3,7 @@
 import { useUser } from "../../contexts/UserContext";
 import { useShoppingList } from "../../hooks/useEnrichmentData";
 import { ShoppingListBoard } from "../../components/enrichment/ShoppingListBoard";
+import { useScrollToMemo } from "../../hooks/useScrollToMemo";
 
 export default function ShoppingDashboardPage() {
   const { username } = useUser();
@@ -13,6 +14,9 @@ export default function ShoppingDashboardPage() {
     isLoading: shoppingLoading,
     error: shoppingError,
   } = useShoppingList(username, { enabled });
+
+  // Handle scrolling to memo when memoId is in URL
+  useScrollToMemo();
 
   if (!enabled) {
     return null;

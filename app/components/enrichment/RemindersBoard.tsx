@@ -1,12 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { BellRing, Clock, Repeat, Slash } from "lucide-react";
+import { BellRing, Clock, Repeat, Slash, BookOpen } from "lucide-react";
 import { Card, CardContent } from "../ui/Card";
 import { ReminderItem } from "../../types/enrichment";
 import { useReminderActions } from "../../hooks/useReminderActions";
 import { useToast } from "../../contexts/ToastContext";
 import { LoadingSpinner } from "../LoadingSpinner";
+import { useModals } from "../../contexts/ModalContext";
 
 interface RemindersBoardProps {
   reminders: ReminderItem[];
@@ -148,6 +149,7 @@ export function RemindersBoard({
               variant="default"
               padding="md"
               className="border-slate-700/30 bg-[#141726]/70"
+              data-memo-id={reminder.memoId}
             >
               <CardContent className="flex items-start gap-3">
                 <span className="mt-1 flex h-9 w-9 items-center justify-center rounded-full bg-fuchsia-500/20 text-fuchsia-300">
@@ -217,14 +219,7 @@ export function RemindersBoard({
                     </blockquote>
                   )}
 
-                  <div className="flex items-center justify-between text-[11px] text-slate-400">
-                    <a
-                      href={`/#memo-${reminder.memoId}`}
-                      className="rounded-full border border-slate-700/40 px-2 py-0.5 transition hover:border-fuchsia-400/40 hover:text-white"
-                    >
-                      View memo
-                    </a>
-                  </div>
+                  <ViewMemoButton memoId={reminder.memoId} />
 
                   <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
                     <button
@@ -282,5 +277,27 @@ export function RemindersBoard({
         </div>
       )}
     </section>
+  );
+}
+
+function ViewMemoButton({ memoId }: { memoId: string }) {
+  const { setShowMemoModal, setMemoModalId } = useModals();
+
+  const handleViewMemo = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setMemoModalId(memoId);
+    setShowMemoModal(true);
+  };
+
+  return (
+    <div className="flex items-center justify-between text-[11px] text-slate-400">
+      <button
+        onClick={handleViewMemo}
+        className="rounded-full border border-slate-700/40 px-2 py-0.5 transition hover:border-fuchsia-400/40 hover:text-white flex items-center gap-1"
+      >
+        <BookOpen className="w-3 h-3" />
+        View memo
+      </button>
+    </div>
   );
 }

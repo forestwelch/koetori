@@ -3,6 +3,7 @@
 import { useUser } from "../../contexts/UserContext";
 import { useMemosQuery } from "../../hooks/useMemosQuery";
 import { TodosBoard } from "../../components/enrichment/TodosBoard";
+import { useScrollToMemo } from "../../hooks/useScrollToMemo";
 
 export default function TodosDashboardPage() {
   const { username } = useUser();
@@ -18,6 +19,8 @@ export default function TodosDashboardPage() {
     categoryFilter: "todo",
     starredOnly: false,
   });
+
+  useScrollToMemo();
 
   if (!enabled) {
     return null;

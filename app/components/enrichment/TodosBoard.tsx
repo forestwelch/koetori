@@ -499,6 +499,8 @@ export function TodosBoard({
             return (
               <div
                 key={todo.id}
+                id={`memo-${todo.id}`}
+                data-memo-id={todo.id}
                 draggable
                 onDragStart={(e) => handleDragStart(e, todo.id)}
                 onDragOver={(e) => handleDragOver(e, todo.id)}

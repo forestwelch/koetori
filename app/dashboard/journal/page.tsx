@@ -3,6 +3,7 @@
 import { JournalBoard } from "../../components/enrichment/JournalBoard";
 import { useUser } from "../../contexts/UserContext";
 import { useJournalItems } from "../../hooks/useEnrichmentData";
+import { useScrollToMemo } from "../../hooks/useScrollToMemo";
 
 export default function JournalDashboardPage() {
   const { username } = useUser();
@@ -13,6 +14,8 @@ export default function JournalDashboardPage() {
     isLoading: journalLoading,
     error: journalError,
   } = useJournalItems(username, { enabled });
+
+  useScrollToMemo();
 
   return (
     <JournalBoard

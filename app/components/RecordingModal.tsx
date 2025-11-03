@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { Modal } from "./ui/Modal";
 import { Button } from "./ui/Button";
 import { RecordButton } from "./RecordButton";
@@ -35,6 +36,31 @@ export default function RecordingModal({
     recordingTime,
     audioStream,
   } = useVoiceRecorder();
+
+  // Handle space key to stop recording when modal is open
+  useEffect(() => {
+    if (!isOpen || !isRecording) return;
+
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Space bar to stop recording
+      if (e.code === "Space" || e.key === " ") {
+        const target = e.target as HTMLElement;
+        // Don't trigger if user is typing in an input
+        if (
+          target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable
+        ) {
+          return;
+        }
+        e.preventDefault();
+        stopRecording();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, [isOpen, isRecording, stopRecording]);
 
   const handleClose = () => {
     clearTranscription();

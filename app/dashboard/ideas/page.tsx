@@ -3,6 +3,7 @@
 import { IdeasBoard } from "../../components/enrichment/IdeasBoard";
 import { useUser } from "../../contexts/UserContext";
 import { useIdeaItems } from "../../hooks/useEnrichmentData";
+import { useScrollToMemo } from "../../hooks/useScrollToMemo";
 
 export default function IdeasDashboardPage() {
   const { username } = useUser();
@@ -13,6 +14,8 @@ export default function IdeasDashboardPage() {
     isLoading: ideaLoading,
     error: ideaError,
   } = useIdeaItems(username, { enabled });
+
+  useScrollToMemo();
 
   return (
     <IdeasBoard

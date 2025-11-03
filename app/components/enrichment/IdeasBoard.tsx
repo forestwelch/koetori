@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { IdeaItem, IdeaStatus } from "../../types/enrichment";
 import { LoadingSpinner } from "../LoadingSpinner";
-import { Lightbulb, Calendar, Tag, Filter } from "lucide-react";
-import Link from "next/link";
+import { Lightbulb, Calendar, Tag, Filter, ExternalLink } from "lucide-react";
+import { useModals } from "../../contexts/ModalContext";
+import { Card } from "../ui/Card";
 
 function formatDate(date: Date): string {
   return date.toLocaleDateString("en-US", {
@@ -135,48 +136,70 @@ export function IdeasBoard({ items, isLoading, error }: IdeasBoardProps) {
 }
 
 function IdeaCard({ item }: { item: IdeaItem }) {
+  const { setShowMemoModal, setMemoModalId } = useModals();
+
+  const handleViewMemo = () => {
+    setMemoModalId(item.memoId);
+    setShowMemoModal(true);
+  };
+
   return (
-    <Link
-      href={`/#memo-${item.memoId}`}
-      className="group block rounded-xl border border-slate-700/30 bg-slate-800/30 backdrop-blur-sm p-6 hover:bg-slate-800/50 hover:border-slate-600/50 transition-all"
+    <Card
+      variant="default"
+      padding="lg"
+      interactive
+      className="group border-yellow-500/20 hover:border-yellow-500/40 transition-all"
+      data-memo-id={item.memoId}
     >
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-2 text-xs text-slate-500">
-          <Calendar className="h-3 w-3" />
-          <span>{formatDate(item.createdAt)}</span>
-        </div>
-        <span
-          className={`px-2 py-0.5 rounded-md text-xs border capitalize ${STATUS_COLORS[item.status]}`}
-        >
-          {STATUS_LABELS[item.status]}
-        </span>
-      </div>
-
-      <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-cyan-300 transition-colors">
-        {item.title}
-      </h3>
-
-      {item.description && (
-        <p className="text-slate-300 text-sm leading-relaxed mb-3 line-clamp-2">
-          {item.description}
-        </p>
-      )}
-
-      <div className="flex flex-wrap gap-2">
-        {item.category && (
-          <span className="px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-300 text-xs border border-cyan-500/20 capitalize">
-            {item.category}
-          </span>
-        )}
-        {item.tags.map((tag, idx) => (
+      <div className="space-y-4">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-2 text-xs text-slate-500">
+            <Calendar className="h-3 w-3" />
+            <span>{formatDate(item.createdAt)}</span>
+          </div>
           <span
-            key={idx}
-            className="px-2 py-0.5 rounded-md bg-slate-700/50 text-slate-300 text-xs"
+            className={`px-2 py-0.5 rounded-md text-xs border capitalize ${STATUS_COLORS[item.status]}`}
           >
-            {tag}
+            {STATUS_LABELS[item.status]}
           </span>
-        ))}
+        </div>
+
+        <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-yellow-300 transition-colors">
+          {item.title}
+        </h3>
+
+        {item.description && (
+          <p className="text-slate-300 text-sm leading-relaxed">
+            {item.description}
+          </p>
+        )}
+
+        <div className="flex flex-wrap gap-2">
+          {item.category && (
+            <span className="px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-300 text-xs border border-cyan-500/20 capitalize">
+              {item.category}
+            </span>
+          )}
+          {item.tags.map((tag, idx) => (
+            <span
+              key={idx}
+              className="px-2 py-0.5 rounded-md bg-slate-700/50 text-slate-300 text-xs"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        <div className="flex items-center justify-end pt-2 border-t border-slate-700/30">
+          <button
+            onClick={handleViewMemo}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs transition-colors"
+          >
+            <Lightbulb className="w-3.5 h-3.5" />
+            View Full Memo
+          </button>
+        </div>
       </div>
-    </Link>
+    </Card>
   );
 }

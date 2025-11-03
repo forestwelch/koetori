@@ -282,38 +282,41 @@ export function MediaLibrary({
             const isProvidersExpanded = expandedProviders.has(item.memoId);
 
             return (
-              <MediaCard
-                key={item.memoId}
-                item={item}
-                formattedTimeToBeat={formattedTimeToBeat}
-                isDescriptionExpanded={isDescriptionExpanded}
-                isProvidersExpanded={isProvidersExpanded}
-                onToggleDescription={() => {
-                  const newExpanded = new Set(expandedDescriptions);
-                  if (isDescriptionExpanded) {
-                    newExpanded.delete(item.memoId);
-                  } else {
-                    newExpanded.add(item.memoId);
+              <div key={item.memoId} data-memo-id={item.memoId}>
+                <MediaCard
+                  item={item}
+                  formattedTimeToBeat={formattedTimeToBeat}
+                  isDescriptionExpanded={isDescriptionExpanded}
+                  isProvidersExpanded={isProvidersExpanded}
+                  onToggleDescription={() => {
+                    const newExpanded = new Set(expandedDescriptions);
+                    if (isDescriptionExpanded) {
+                      newExpanded.delete(item.memoId);
+                    } else {
+                      newExpanded.add(item.memoId);
+                    }
+                    setExpandedDescriptions(newExpanded);
+                  }}
+                  onToggleProviders={() => {
+                    const newExpanded = new Set(expandedProviders);
+                    if (isProvidersExpanded) {
+                      newExpanded.delete(item.memoId);
+                    } else {
+                      newExpanded.add(item.memoId);
+                    }
+                    setExpandedProviders(newExpanded);
+                  }}
+                  onFixMatch={
+                    onRefresh ? () => setFixMatchItem(item) : undefined
                   }
-                  setExpandedDescriptions(newExpanded);
-                }}
-                onToggleProviders={() => {
-                  const newExpanded = new Set(expandedProviders);
-                  if (isProvidersExpanded) {
-                    newExpanded.delete(item.memoId);
-                  } else {
-                    newExpanded.add(item.memoId);
-                  }
-                  setExpandedProviders(newExpanded);
-                }}
-                onFixMatch={onRefresh ? () => setFixMatchItem(item) : undefined}
-                onRemove={onRemove ? () => handleRemove(item) : undefined}
-                onStatusChange={handleStatusChange}
-                isFixing={fixingId === item.memoId}
-                isRemoving={removingId === item.memoId}
-                isUpdatingStatus={updatingStatusId === item.memoId}
-                refreshingId={refreshingId}
-              />
+                  onRemove={onRemove ? () => handleRemove(item) : undefined}
+                  onStatusChange={handleStatusChange}
+                  isFixing={fixingId === item.memoId}
+                  isRemoving={removingId === item.memoId}
+                  isUpdatingStatus={updatingStatusId === item.memoId}
+                  refreshingId={refreshingId}
+                />
+              </div>
             );
           })}
         </div>

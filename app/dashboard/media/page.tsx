@@ -6,6 +6,7 @@ import { MediaLibrary } from "../../components/enrichment/MediaLibrary";
 import { useRequeueEnrichment } from "../../hooks/useRequeueEnrichment";
 import { useRemoveMediaItem } from "../../hooks/useRemoveMediaItem";
 import { useState } from "react";
+import { useScrollToMemo } from "../../hooks/useScrollToMemo";
 
 export default function MediaDashboardPage() {
   const { username } = useUser();
@@ -20,6 +21,9 @@ export default function MediaDashboardPage() {
     isLoading: mediaLoading,
     error: mediaError,
   } = useMediaItems(username, { enabled });
+
+  // Handle scrolling to memo when memoId is in URL
+  useScrollToMemo();
 
   if (!enabled) {
     return null;
