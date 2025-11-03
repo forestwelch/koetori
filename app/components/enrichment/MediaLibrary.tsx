@@ -51,7 +51,7 @@ interface MediaLibraryProps {
 type MediaFilter = "all" | "movie" | "tv" | "game" | "book" | "music";
 type StatusFilter = "all" | "to-watch" | "watched" | "backlog";
 type SortOption = "newest" | "oldest" | "title" | "year";
-type ViewMode = "grid" | "grouped";
+type ViewMode = "grid" | "list";
 
 const FILTER_OPTIONS: Array<{
   key: MediaFilter;
@@ -248,39 +248,6 @@ export function MediaLibrary({
     return sorted;
   }, [items, filter, statusFilter, genreFilter, sortBy]);
 
-  // Group items for grouped view
-  const groupedItems = useMemo(() => {
-    if (viewMode !== "grouped") return null;
-
-    const groups: Record<string, MediaItem[]> = {};
-    filteredItems.forEach((item) => {
-      // Group by status first, then by type
-      const groupKey = `${item.status}-${item.mediaType || "unknown"}`;
-      if (!groups[groupKey]) {
-        groups[groupKey] = [];
-      }
-      groups[groupKey].push(item);
-    });
-
-    // Sort groups: overdue first, then by status priority, then by type
-    const statusPriority: Record<string, number> = {
-      "to-watch": 1,
-      watched: 2,
-      backlog: 3,
-    };
-
-    return Object.fromEntries(
-      Object.entries(groups).sort(([keyA], [keyB]) => {
-        const [statusA, typeA] = keyA.split("-");
-        const [statusB, typeB] = keyB.split("-");
-        const priorityA = statusPriority[statusA] || 99;
-        const priorityB = statusPriority[statusB] || 99;
-        if (priorityA !== priorityB) return priorityA - priorityB;
-        return typeA.localeCompare(typeB);
-      })
-    );
-  }, [filteredItems, viewMode]);
-
   // Calculate stats
   const stats = useMemo(() => {
     const total = items.length;
@@ -300,7 +267,7 @@ export function MediaLibrary({
   }, [items]);
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-4 w-full max-w-full">
       <header className="flex flex-col gap-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -404,19 +371,19 @@ export function MediaLibrary({
                     : "text-slate-400 hover:text-white"
                 }`}
                 aria-label="Grid view"
-                title="Grid view - Show all items in a grid"
+                title="Grid view - Show items as cards in a grid"
               >
                 <Grid3x3 className="w-4 h-4" />
               </button>
               <button
-                onClick={() => setViewMode("grouped")}
+                onClick={() => setViewMode("list")}
                 className={`p-1.5 rounded transition-colors ${
-                  viewMode === "grouped"
+                  viewMode === "list"
                     ? "bg-indigo-500/20 text-indigo-300"
                     : "text-slate-400 hover:text-white"
                 }`}
-                aria-label="Grouped view"
-                title="Grouped view - Organize by status (To Watch, Watched, Backlog) and type (Movies, TV Shows, etc.)"
+                aria-label="List view"
+                title="List view - Show items as compact rows"
               >
                 <List className="w-4 h-4" />
               </button>
@@ -473,94 +440,105 @@ export function MediaLibrary({
             ? "No media enrichments yet. Capture a memo with a film, show, or book to see it here."
             : `No ${filter.toUpperCase()} entries yet.`}
         </div>
-      ) : viewMode === "grouped" && groupedItems ? (
-        <div className="space-y-6">
-          {Object.entries(groupedItems).map(([groupKey, groupItems]) => {
-            const [status, type] = groupKey.split("-");
-            const statusLabel =
-              status === "to-watch"
-                ? "To Watch"
-                : status === "watched"
-                  ? "Watched"
-                  : "Backlog";
+      ) : viewMode === "list" ? (
+        <div className="space-y-2 max-w-full">
+          {filteredItems.map((item) => {
+            const formattedTimeToBeat = formatTimeToBeat(
+              item.timeToBeatMinutes
+            );
             const typeLabel =
-              type === "movie"
-                ? "Movies"
-                : type === "tv"
-                  ? "TV Shows"
-                  : type === "game"
-                    ? "Games"
-                    : type === "book"
-                      ? "Books"
-                      : type === "music"
+              item.mediaType === "movie"
+                ? "Movie"
+                : item.mediaType === "tv"
+                  ? "TV Show"
+                  : item.mediaType === "game"
+                    ? "Game"
+                    : item.mediaType === "book"
+                      ? "Book"
+                      : item.mediaType === "music"
                         ? "Music"
-                        : type === "unknown" || !type
-                          ? "Uncategorized"
-                          : type.charAt(0).toUpperCase() + type.slice(1);
+                        : "Media";
 
             return (
-              <div key={groupKey} className="space-y-3">
-                <div className="flex items-center justify-between border-b border-slate-700/30 pb-2">
-                  <h3 className="text-sm font-semibold text-white">
-                    {statusLabel} • {typeLabel}
-                  </h3>
-                  <span className="text-xs text-slate-400">
-                    {groupItems.length} item
-                    {groupItems.length !== 1 ? "s" : ""}
-                  </span>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                  {groupItems.map((item) => {
-                    const formattedTimeToBeat = formatTimeToBeat(
-                      item.timeToBeatMinutes
-                    );
-                    const isDescriptionExpanded = expandedDescriptions.has(
-                      item.memoId
-                    );
-                    const isProvidersExpanded = expandedProviders.has(
-                      item.memoId
-                    );
+              <div
+                key={item.memoId}
+                data-memo-id={item.memoId}
+                className="group rounded-lg border border-slate-700/30 bg-slate-900/40 p-3 hover:border-slate-600/50 transition"
+              >
+                <div className="flex items-start gap-3">
+                  {/* Poster/Image */}
+                  {item.posterUrl ? (
+                    <img
+                      src={item.posterUrl}
+                      alt={item.title}
+                      className="w-12 h-16 object-cover rounded border border-slate-700/50 flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-12 h-16 rounded border border-slate-700/50 bg-slate-800/50 flex items-center justify-center flex-shrink-0">
+                      <Film className="h-6 w-6 text-slate-500" />
+                    </div>
+                  )}
 
-                    return (
-                      <div key={item.memoId} data-memo-id={item.memoId}>
-                        <MediaCard
-                          item={item}
-                          formattedTimeToBeat={formattedTimeToBeat}
-                          isDescriptionExpanded={isDescriptionExpanded}
-                          isProvidersExpanded={isProvidersExpanded}
-                          onToggleDescription={() => {
-                            const newExpanded = new Set(expandedDescriptions);
-                            if (isDescriptionExpanded) {
-                              newExpanded.delete(item.memoId);
-                            } else {
-                              newExpanded.add(item.memoId);
-                            }
-                            setExpandedDescriptions(newExpanded);
-                          }}
-                          onToggleProviders={() => {
-                            const newExpanded = new Set(expandedProviders);
-                            if (isProvidersExpanded) {
-                              newExpanded.delete(item.memoId);
-                            } else {
-                              newExpanded.add(item.memoId);
-                            }
-                            setExpandedProviders(newExpanded);
-                          }}
-                          onFixMatch={
-                            onRefresh ? () => setFixMatchItem(item) : undefined
-                          }
-                          onRemove={
-                            onRemove ? () => handleRemove(item) : undefined
-                          }
-                          onStatusChange={handleStatusChange}
-                          isFixing={fixingId === item.memoId}
-                          isRemoving={removingId === item.memoId}
-                          isUpdatingStatus={updatingStatusId === item.memoId}
-                          refreshingId={refreshingId}
-                        />
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-semibold text-white truncate">
+                          {item.title}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-1 text-xs text-slate-400">
+                          <span>{typeLabel}</span>
+                          {item.releaseYear && <span>•</span>}
+                          {item.releaseYear && <span>{item.releaseYear}</span>}
+                          {formattedTimeToBeat && (
+                            <>
+                              <span>•</span>
+                              <span>{formattedTimeToBeat}</span>
+                            </>
+                          )}
+                        </div>
                       </div>
-                    );
-                  })}
+                      {/* Status Badge */}
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {item.status === "to-watch" && (
+                          <span className="px-2 py-0.5 rounded-full text-xs bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                            To Watch
+                          </span>
+                        )}
+                        {item.status === "watched" && (
+                          <span className="px-2 py-0.5 rounded-full text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            Watched
+                          </span>
+                        )}
+                        {item.status === "backlog" && (
+                          <span className="px-2 py-0.5 rounded-full text-xs bg-slate-500/20 text-slate-300 border border-slate-500/30">
+                            Backlog
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Actions - Show on hover */}
+                    <div className="flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 transition">
+                      {onRemove && (
+                        <button
+                          onClick={() => handleRemove(item)}
+                          disabled={removingId === item.memoId}
+                          className="text-xs text-slate-400 hover:text-rose-400 transition"
+                        >
+                          Remove
+                        </button>
+                      )}
+                      {onRefresh && (
+                        <button
+                          onClick={() => setFixMatchItem(item)}
+                          className="text-xs text-slate-400 hover:text-indigo-400 transition"
+                        >
+                          Fix Match
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             );

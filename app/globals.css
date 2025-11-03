@@ -170,80 +170,49 @@ body::-webkit-scrollbar {
   }
 }
 
-/* Custom Scrollbar Styling - Always visible for scrollable containers */
-/* This prevents layout shift by always reserving space for scrollbars */
+/* Custom Scrollbar Styling */
 /* Note: body and html scrollbars are hidden separately above */
 
-/* Firefox - always show thin scrollbar */
-.scrollable-container,
-[class*="overflow"],
-[class*="scroll"] {
+/* Default scrollbar styling for all elements */
+* {
   scrollbar-width: thin;
   scrollbar-color: rgba(99, 102, 241, 0.3) rgba(20, 21, 31, 0.3);
-  /* Always reserve space for scrollbar */
-  scrollbar-gutter: stable;
 }
 
-/* Webkit browsers (Chrome, Safari, Edge) - always visible scrollbar */
-.scrollable-container::-webkit-scrollbar,
-[class*="overflow"]::-webkit-scrollbar,
-[class*="scroll"]::-webkit-scrollbar {
+/* Webkit browsers (Chrome, Safari, Edge) - scrollbar styling */
+*::-webkit-scrollbar {
   width: 10px;
   height: 10px;
-  /* Always visible */
-  display: block;
 }
 
-.scrollable-container::-webkit-scrollbar-track,
-[class*="overflow"]::-webkit-scrollbar-track,
-[class*="scroll"]::-webkit-scrollbar-track {
+*::-webkit-scrollbar-track {
   background: rgba(20, 21, 31, 0.3);
   border-radius: 5px;
 }
 
-.scrollable-container::-webkit-scrollbar-thumb,
-[class*="overflow"]::-webkit-scrollbar-thumb,
-[class*="scroll"]::-webkit-scrollbar-thumb {
+*::-webkit-scrollbar-thumb {
   background: rgba(99, 102, 241, 0.3);
   border-radius: 5px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
 
-.scrollable-container::-webkit-scrollbar-thumb:hover,
-[class*="overflow"]::-webkit-scrollbar-thumb:hover,
-[class*="scroll"]::-webkit-scrollbar-thumb:hover {
+*::-webkit-scrollbar-thumb:hover {
   background: rgba(99, 102, 241, 0.5);
 }
 
-.scrollable-container::-webkit-scrollbar-thumb:active,
-[class*="overflow"]::-webkit-scrollbar-thumb:active,
-[class*="scroll"]::-webkit-scrollbar-thumb:active {
+*::-webkit-scrollbar-thumb:active {
   background: rgba(99, 102, 241, 0.7);
 }
 
-.scrollable-container::-webkit-scrollbar-corner,
-[class*="overflow"]::-webkit-scrollbar-corner,
-[class*="scroll"]::-webkit-scrollbar-corner {
+*::-webkit-scrollbar-corner {
   background: rgba(20, 21, 31, 0.3);
 }
 
-/* For elements with overflow-y-auto or overflow-y-scroll, always show scrollbar */
-.overflow-y-auto::-webkit-scrollbar,
-.overflow-y-scroll::-webkit-scrollbar,
-.overflow-auto::-webkit-scrollbar,
-.overflow-scroll::-webkit-scrollbar {
-  width: 10px;
-  display: block;
-}
-
-.overflow-y-auto,
-.overflow-y-scroll,
-.overflow-auto,
-.overflow-scroll {
+/* Reserve space for scrollbar on main content (prevents layout shift) */
+/* But NOT on sidebar - sidebar should not have this */
+.scrollbar-gutter-stable {
   scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(99, 102, 241, 0.3) rgba(20, 21, 31, 0.3);
 }
 
 /* Hide scrollbar for horizontal filters */

@@ -238,8 +238,8 @@ export function AppLayout({ children }: AppLayoutProps) {
           </header>
 
           {/* Page Content */}
-          <main className="flex-1 overflow-y-auto overflow-x-hidden overscroll-none">
-            <div className="w-full px-3 sm:px-4 md:px-8 pt-6 sm:pt-8 pb-6 sm:pb-8">
+          <main className="flex-1 overflow-y-auto overflow-x-hidden overscroll-none scrollbar-gutter-stable">
+            <div className="w-full max-w-full px-3 sm:px-4 md:px-8 pt-6 sm:pt-8 pb-6 sm:pb-8">
               {children}
             </div>
           </main>
