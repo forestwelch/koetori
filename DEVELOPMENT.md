@@ -38,7 +38,10 @@ npm run test:all     # Run all tests (unit + e2e)
 ```bash
 npm run lint         # Run ESLint
 npm run format       # Format code with Prettier
+npm run type-check   # TypeScript type checking (fast, no build artifacts)
 ```
+
+**Tip**: Use `npm run type-check` during development to verify TypeScript without running a full build that could interfere with your dev server.
 
 ## Common Issues
 
@@ -83,11 +86,13 @@ npm run dev         # Just use regular dev mode
 ### Testing Production Build
 
 ```bash
-npm run build       # Build production
+npm run build       # Build production (automatically cleans first)
 npm run start       # Test production build
-npm run clean       # Clean up after testing
+npm run clean       # Clean up after testing (optional - dev will work anyway)
 npm run dev         # Back to development
 ```
+
+**Note**: The `build` command now automatically cleans before building, so you don't need to manually clean when switching back to dev mode.
 
 ### Pre-Deployment
 
