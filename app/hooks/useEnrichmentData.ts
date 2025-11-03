@@ -9,7 +9,9 @@ import {
   JournalItem,
   TarotItem,
   IdeaItem,
+  TodoItem,
 } from "../types/enrichment";
+import { Memo } from "../types/memo";
 
 interface QueryOptions {
   enabled: boolean;
@@ -19,9 +21,10 @@ async function fetchMediaItems(username: string): Promise<MediaItem[]> {
   const { data, error } = await supabase
     .from("media_items")
     .select(
-      `memo_id, title, release_year, runtime_minutes, poster_url, backdrop_url, overview, trailer_url, platforms, providers, genres, ratings, tmdb_id, imdb_id, media_type, auto_title, custom_title, auto_release_year, custom_release_year, search_debug, source, external_url, time_to_beat_minutes, status, updated_at, memos!inner(transcript_excerpt, tags, username)`
+      `memo_id, title, release_year, runtime_minutes, poster_url, backdrop_url, overview, trailer_url, platforms, providers, genres, ratings, tmdb_id, imdb_id, media_type, auto_title, custom_title, auto_release_year, custom_release_year, search_debug, source, external_url, time_to_beat_minutes, status, updated_at, memos!inner(transcript_excerpt, tags, username, deleted_at)`
     )
     .eq("memos.username", username)
+    .is("memos.deleted_at", null) // Only show non-deleted memos
     .order("updated_at", { ascending: false })
     .limit(30);
 
@@ -116,9 +119,10 @@ async function fetchReminders(username: string): Promise<ReminderItem[]> {
   const { data, error } = await supabase
     .from("reminders")
     .select(
-      `memo_id, title, due_date_text, recurrence_text, priority_score, status, is_recurring, due_at, recurrence_rule, updated_at, memos!inner(transcript_excerpt, username)`
+      `memo_id, title, due_date_text, recurrence_text, priority_score, status, is_recurring, due_at, recurrence_rule, updated_at, memos!inner(transcript_excerpt, username, deleted_at)`
     )
     .eq("memos.username", username)
+    .is("memos.deleted_at", null) // Only show non-deleted memos
     .order("updated_at", { ascending: false })
     .limit(40);
 
@@ -151,9 +155,10 @@ async function fetchShoppingItems(
   const { data, error } = await supabase
     .from("shopping_list_items")
     .select(
-      `memo_id, item_name, quantity, category, urgency_score, status, items, display_order, updated_at, memos!inner(transcript_excerpt, username)`
+      `memo_id, item_name, quantity, category, urgency_score, status, items, display_order, updated_at, memos!inner(transcript_excerpt, username, deleted_at)`
     )
     .eq("memos.username", username)
+    .is("memos.deleted_at", null) // Only show non-deleted memos
     .order("status", { ascending: true })
     .order("display_order", { ascending: true })
     .limit(40);
@@ -221,9 +226,10 @@ async function fetchJournalItems(username: string): Promise<JournalItem[]> {
   const { data, error } = await supabase
     .from("journal_items")
     .select(
-      `memo_id, entry_text, themes, mood, created_at, updated_at, memos!inner(transcript_excerpt, tags, username)`
+      `memo_id, entry_text, themes, mood, created_at, updated_at, memos!inner(transcript_excerpt, tags, username, deleted_at)`
     )
     .eq("memos.username", username)
+    .is("memos.deleted_at", null) // Only show non-deleted memos
     .order("created_at", { ascending: false })
     .limit(50);
 
@@ -253,9 +259,10 @@ async function fetchTarotItems(username: string): Promise<TarotItem[]> {
   const { data, error } = await supabase
     .from("tarot_items")
     .select(
-      `memo_id, card_name, card_type, suit, number, interpretation, reading_context, created_at, updated_at, memos!inner(transcript_excerpt, tags, username)`
+      `memo_id, card_name, card_type, suit, number, interpretation, reading_context, created_at, updated_at, memos!inner(transcript_excerpt, tags, username, deleted_at)`
     )
     .eq("memos.username", username)
+    .is("memos.deleted_at", null) // Only show non-deleted memos
     .order("created_at", { ascending: false })
     .limit(50);
 
@@ -287,9 +294,10 @@ async function fetchIdeaItems(username: string): Promise<IdeaItem[]> {
   const { data, error } = await supabase
     .from("idea_items")
     .select(
-      `memo_id, title, description, category, tags, status, created_at, updated_at, memos!inner(transcript_excerpt, tags, username)`
+      `memo_id, title, description, category, tags, status, created_at, updated_at, memos!inner(transcript_excerpt, tags, username, deleted_at)`
     )
     .eq("memos.username", username)
+    .is("memos.deleted_at", null) // Only show non-deleted memos
     .order("created_at", { ascending: false })
     .limit(50);
 
@@ -345,5 +353,54 @@ export function useIdeaItems(username: string | null, options: QueryOptions) {
     queryFn: () => fetchIdeaItems(username ?? ""),
     enabled: options.enabled && Boolean(username),
     staleTime: 60 * 1000,
+  });
+}
+
+async function fetchTodoItems(username: string): Promise<Memo[]> {
+  // Fetch todo_items joined with memos, only showing non-deleted memos
+  const { data, error } = await supabase
+    .from("todo_items")
+    .select(
+      `memo_id, summary, size, status, completed_at, created_at, updated_at, memos!inner(id, transcript, transcript_excerpt, category, confidence, needs_review, extracted, tags, timestamp, deleted_at, starred, source, input_type, device_id, username)`
+    )
+    .eq("memos.username", username)
+    .is("memos.deleted_at", null) // Only show non-deleted memos
+    .order("updated_at", { ascending: false })
+    .limit(100);
+
+  if (error) {
+    throw new Error(`Failed to fetch todo items: ${error.message}`);
+  }
+
+  // Transform to Memo[] format
+  return (data ?? []).map((row) => {
+    const memo = Array.isArray(row.memos) ? row.memos[0] : row.memos;
+
+    // Transform to Memo format
+    return {
+      id: memo.id,
+      transcript: memo.transcript,
+      transcript_excerpt: memo.transcript_excerpt ?? undefined,
+      category: memo.category,
+      confidence: memo.confidence,
+      needs_review: memo.needs_review,
+      extracted: memo.extracted || {},
+      tags: Array.isArray(memo.tags) ? memo.tags : [],
+      timestamp: new Date(memo.timestamp),
+      deleted_at: memo.deleted_at ? new Date(memo.deleted_at) : null,
+      starred: memo.starred ?? false,
+      source: memo.source,
+      input_type: memo.input_type,
+      device_id: memo.device_id ?? undefined,
+    } satisfies Memo;
+  });
+}
+
+export function useTodoItems(username: string | null, options: QueryOptions) {
+  return useQuery({
+    queryKey: ["todo-items", username],
+    queryFn: () => fetchTodoItems(username ?? ""),
+    enabled: options.enabled && Boolean(username),
+    staleTime: 30 * 1000,
   });
 }

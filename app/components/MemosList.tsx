@@ -32,6 +32,9 @@ interface MemosListProps {
   dismissReview: (memoId: string) => void;
   expandedId: string | null;
   setExpandedId: (id: string | null) => void;
+  // Selection props
+  selectedMemos?: string[];
+  onToggleSelect?: (memoId: string) => void;
 }
 
 export function MemosList({
@@ -57,6 +60,8 @@ export function MemosList({
   dismissReview,
   expandedId,
   setExpandedId,
+  selectedMemos = [],
+  onToggleSelect,
 }: MemosListProps) {
   // Auto-expand when exactly 1 memo matches filters
   useEffect(() => {
@@ -71,6 +76,7 @@ export function MemosList({
     <div className="space-y-5">
       {memos.map((memo) => {
         const isNew = memo.id === newMemoId;
+        const isSelected = selectedMemos.includes(memo.id);
 
         return (
           <MemoItem
@@ -99,6 +105,8 @@ export function MemosList({
             onToggleExpand={() =>
               setExpandedId(expandedId === memo.id ? null : memo.id)
             }
+            isSelected={isSelected}
+            onToggleSelect={onToggleSelect}
           />
         );
       })}

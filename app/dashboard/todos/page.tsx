@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "../../contexts/UserContext";
-import { useMemosQuery } from "../../hooks/useMemosQuery";
+import { useTodoItems } from "../../hooks/useEnrichmentData";
 import { TodosBoard } from "../../components/enrichment/TodosBoard";
 import { useScrollToMemo } from "../../hooks/useScrollToMemo";
 
@@ -14,11 +14,7 @@ export default function TodosDashboardPage() {
     isLoading: todosLoading,
     error: todosError,
     refetch: refetchTodos,
-  } = useMemosQuery({
-    username: username || "",
-    categoryFilter: "todo",
-    starredOnly: false,
-  });
+  } = useTodoItems(username, { enabled });
 
   useScrollToMemo();
 

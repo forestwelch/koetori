@@ -25,6 +25,8 @@ import Link from "next/link";
 
 import { SwipeIndicator } from "./SwipeIndicator";
 import { FullRecordingModal } from "./FullRecordingModal";
+import { MemoBadges } from "./inbox/MemoBadges";
+import { Checkbox } from "./ui/Checkbox";
 
 interface MemoItemProps {
   memo: Memo;
@@ -58,6 +60,9 @@ interface MemoItemProps {
   // Expansion props
   isExpanded?: boolean;
   onToggleExpand?: () => void;
+  // Selection props
+  isSelected?: boolean;
+  onToggleSelect?: (memoId: string) => void;
 }
 
 export function MemoItem({
@@ -85,6 +90,8 @@ export function MemoItem({
   isSearchMode = false,
   isExpanded: controlledExpanded,
   onToggleExpand,
+  isSelected = false,
+  onToggleSelect,
 }: MemoItemProps) {
   const { data: enrichments } = useMemoEnrichments(memo.id);
   const [swipeX, setSwipeX] = useState(0);
@@ -232,6 +239,17 @@ export function MemoItem({
         <div className="relative">
           {/* Compact header - always visible */}
           <div className="flex items-center gap-3">
+            {/* Selection checkbox */}
+            {onToggleSelect && (
+              <div onClick={(e) => e.stopPropagation()}>
+                <Checkbox
+                  checked={isSelected}
+                  onCheckedChange={() => onToggleSelect(memo.id)}
+                  className="w-5 h-5"
+                />
+              </div>
+            )}
+
             {/* Category - clickable badge that opens selector when expanded, static badge when collapsed */}
             <div onClick={(e) => e.stopPropagation()}>
               {isExpanded ? (
@@ -245,8 +263,12 @@ export function MemoItem({
               )}
             </div>
 
-            {/* Summary - Inline Editable */}
-            <div className="flex-1 min-w-0 flex items-start">
+            {/* Summary and Badges - Inline Editable */}
+            <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+              {/* Badges row */}
+              <MemoBadges memo={memo} />
+
+              {/* Summary */}
               {editingSummaryId === memo.id ? (
                 <input
                   type="text"

@@ -100,3 +100,17 @@ export interface IdeaItem {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export type TodoItemStatus = "open" | "in_progress" | "completed" | "archived";
+
+export interface TodoItem {
+  memoId: string;
+  summary: string;
+  size: "S" | "M" | "L";
+  status: TodoItemStatus;
+  completedAt: Date | null;
+  transcriptExcerpt: string | null;
+  tags: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}

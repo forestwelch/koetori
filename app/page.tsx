@@ -1,27 +1,36 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useVoiceRecorder } from "./hooks/useVoiceRecorder";
 import { useInboxQuery } from "./hooks/useInboxQuery";
 import { useMemoOperations } from "./hooks/useMemoOperations";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useSearch } from "./hooks/useSearch";
+import { useBulkMemoOperations } from "./hooks/useBulkMemoOperations";
 import { useUser } from "./contexts/UserContext";
 import { useModals } from "./contexts/ModalContext";
 import { useToast } from "./contexts/ToastContext";
-import { FeedbackService } from "./lib/feedback";
-import { FeedbackSubmission } from "./types/feedback";
+import { Memo } from "./types/memo";
 
-import { RecordingOverlay } from "./components/RecordingOverlay";
 import { LoadingState } from "./components/LoadingState";
 import { MemosList } from "./components/MemosList";
-import { ModalsContainer } from "./components/ModalsContainer";
+import {
+  PowerInboxSections,
+  InboxSection,
+  filterMemosBySection,
+} from "./components/inbox/PowerInboxSections";
+import {
+  InboxSortControls,
+  SortField,
+  SortDirection,
+} from "./components/inbox/InboxSortControls";
+import { QuickActions } from "./components/inbox/QuickActions";
 import Link from "next/link";
 import { LayoutDashboard } from "lucide-react";
 
 export default function InboxPage() {
   const { username } = useUser();
-  const { showError, showSuccess } = useToast();
+  const { showSuccess } = useToast();
   const {
     setTextInput,
     setShowTextInput,
@@ -29,12 +38,54 @@ export default function InboxPage() {
     setIsProcessingText,
   } = useModals();
 
+  // Power Inbox state
+  const [activeSection, setActiveSection] = useState<InboxSection>("all");
+  const [sortField, setSortField] = useState<SortField>("timestamp");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [selectedMemos, setSelectedMemos] = useState<string[]>([]);
+
   // Inbox query - shows only unprocessed memos
   const {
     data: inboxMemos = [],
     isLoading: loading,
     refetch: refetchInbox,
   } = useInboxQuery(username);
+
+  // Bulk operations
+  const { bulkArchive, bulkCategorize, bulkMarkReviewed } =
+    useBulkMemoOperations(username || "");
+
+  // Filter and sort memos
+  const filteredAndSortedMemos = useMemo(() => {
+    // First filter by section
+    let filtered = filterMemosBySection(inboxMemos, activeSection);
+
+    // Then sort
+    filtered = [...filtered].sort((a, b) => {
+      let comparison = 0;
+
+      switch (sortField) {
+        case "timestamp":
+          comparison = a.timestamp.getTime() - b.timestamp.getTime();
+          break;
+        case "confidence":
+          comparison = a.confidence - b.confidence;
+          break;
+        case "starred":
+          // Starred first (true = 1, false = 0)
+          comparison = (b.starred ? 1 : 0) - (a.starred ? 1 : 0);
+          // Then by timestamp
+          if (comparison === 0) {
+            comparison = b.timestamp.getTime() - a.timestamp.getTime();
+          }
+          break;
+      }
+
+      return sortDirection === "asc" ? comparison : -comparison;
+    });
+
+    return filtered;
+  }, [inboxMemos, activeSection, sortField, sortDirection]);
 
   // Memo operations
   const {
@@ -127,75 +178,7 @@ export default function InboxPage() {
     showSuccess,
   ]);
 
-  // Handle text input submission
-  const handleTextSubmit = async (text: string) => {
-    if (!text.trim() || isProcessingText || !username) return;
-
-    setIsProcessingText(true);
-    try {
-      const response = await fetch("/api/transcribe", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          text: text.trim(),
-          username: username,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to process text");
-      }
-
-      const result = await response.json();
-
-      // Refetch inbox
-      refetchInbox();
-      setNewMemoId(result.memo_id || crypto.randomUUID());
-
-      // Clear and close
-      setTextInput("");
-      setShowTextInput(false);
-
-      // Show success toast with click handler to scroll to top
-      showSuccess("Memo created", () => {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      });
-
-      // Clear highlight after delay
-      setTimeout(() => setNewMemoId(null), 3000);
-    } catch (error) {
-      showError(
-        error instanceof Error
-          ? `Failed to process text: ${error.message}`
-          : "Failed to process text. Please try again."
-      );
-    } finally {
-      setIsProcessingText(false);
-    }
-  };
-
-  // Handle feedback submission
-  const handleFeedbackSubmit = async (feedback: FeedbackSubmission) => {
-    try {
-      await FeedbackService.submitFeedback(feedback);
-    } catch (error) {
-      showError(
-        error instanceof Error
-          ? `Failed to submit feedback: ${error.message}`
-          : "Failed to submit feedback. Please try again."
-      );
-      throw error;
-    }
-  };
-
-  // Format time for recording overlay
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
+  // Text input and feedback submission are handled in AppLayout
 
   // Keyboard shortcuts for editing (record/pick random handled in AppLayout)
   useKeyboardShortcuts({
@@ -230,6 +213,52 @@ export default function InboxPage() {
         </div>
       )}
 
+      {/* Power Inbox Controls */}
+      {!loading && inboxMemos.length > 0 && (
+        <div className="space-y-4 mb-6">
+          {/* Sections */}
+          <PowerInboxSections
+            memos={inboxMemos}
+            activeSection={activeSection}
+            onSectionChange={(section) => {
+              setActiveSection(section);
+              setSelectedMemos([]); // Clear selection when changing section
+            }}
+          />
+
+          {/* Sort Controls */}
+          <div className="flex items-center justify-between">
+            <InboxSortControls
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSortChange={(field, direction) => {
+                setSortField(field);
+                setSortDirection(direction);
+              }}
+            />
+          </div>
+
+          {/* Quick Actions Bar */}
+          <QuickActions
+            selectedMemos={selectedMemos}
+            memos={filteredAndSortedMemos}
+            onBulkArchive={async (ids) => {
+              const success = await bulkArchive(ids);
+              if (success) setSelectedMemos([]);
+            }}
+            onBulkCategorize={async (ids, category) => {
+              const success = await bulkCategorize(ids, category);
+              if (success) setSelectedMemos([]);
+            }}
+            onBulkMarkReviewed={async (ids) => {
+              const success = await bulkMarkReviewed(ids);
+              if (success) setSelectedMemos([]);
+            }}
+            onClearSelection={() => setSelectedMemos([])}
+          />
+        </div>
+      )}
+
       {/* Inbox Content */}
       <div className="space-y-8">
         {/* Loading State */}
@@ -257,9 +286,9 @@ export default function InboxPage() {
         )}
 
         {/* Inbox Memos List */}
-        {!loading && inboxMemos.length > 0 && (
+        {!loading && filteredAndSortedMemos.length > 0 && (
           <MemosList
-            memos={inboxMemos}
+            memos={filteredAndSortedMemos}
             newMemoId={newMemoId}
             editingId={editingId}
             editText={editText}
@@ -281,49 +310,28 @@ export default function InboxPage() {
             dismissReview={dismissReview}
             expandedId={expandedId}
             setExpandedId={setExpandedId}
+            selectedMemos={selectedMemos}
+            onToggleSelect={(memoId) => {
+              setSelectedMemos((prev) =>
+                prev.includes(memoId)
+                  ? prev.filter((id) => id !== memoId)
+                  : [...prev, memoId]
+              );
+            }}
           />
         )}
+
+        {/* Empty Filter State */}
+        {!loading &&
+          inboxMemos.length > 0 &&
+          filteredAndSortedMemos.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-slate-400">
+                No memos match the current filters. Try a different section.
+              </p>
+            </div>
+          )}
       </div>
-
-      {/* Recording Overlay */}
-      <RecordingOverlay
-        isRecording={isRecording}
-        isProcessing={isProcessing}
-        recordingTime={recordingTime}
-        onStopRecording={stopRecording}
-        formatTime={formatTime}
-      />
-
-      {/* All Modals */}
-      <ModalsContainer
-        editingId={editingId}
-        editText={editText}
-        setEditText={setEditText}
-        startEdit={startEdit}
-        cancelEdit={cancelEdit}
-        saveEdit={saveEdit}
-        editingSummaryId={editingSummaryId}
-        summaryEditText={summaryEditText}
-        setSummaryEditText={setSummaryEditText}
-        startEditSummary={startEditSummary}
-        cancelEditSummary={cancelEditSummary}
-        saveSummary={saveSummary}
-        softDelete={softDelete}
-        toggleStar={toggleStar}
-        restoreMemo={restoreMemo}
-        hardDelete={hardDelete}
-        onCategoryChange={handleCategoryChange}
-        dismissReview={dismissReview}
-        onTextSubmit={handleTextSubmit}
-        onFeedbackSubmit={handleFeedbackSubmit}
-        onPickRandomMemo={() => {
-          // Handled in AppLayout
-        }}
-        username={username || ""}
-        isArchivedModalOpen={false}
-        onOpenArchivedModal={() => {}}
-        onCloseArchivedModal={() => {}}
-      />
     </>
   );
 }

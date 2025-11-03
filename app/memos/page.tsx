@@ -10,10 +10,7 @@ import { useUser } from "../contexts/UserContext";
 import { useFilters } from "../contexts/FilterContext";
 import { useModals } from "../contexts/ModalContext";
 import { useToast } from "../contexts/ToastContext";
-import { FeedbackService } from "../lib/feedback";
-import { FeedbackSubmission } from "../types/feedback";
 
-import { RecordingOverlay } from "../components/RecordingOverlay";
 import { LoadingState } from "../components/LoadingState";
 import { EmptyState } from "../components/EmptyState";
 import { MemosList } from "../components/MemosList";
@@ -37,7 +34,7 @@ export default function MemosPage() {
     setIsSpotlightMode,
   } = useFilters();
 
-  const { showError, showSuccess } = useToast();
+  const { showSuccess } = useToast();
   const {
     setTextInput,
     setShowTextInput,
@@ -147,75 +144,7 @@ export default function MemosPage() {
     showSuccess,
   ]);
 
-  // Handle text input submission
-  const handleTextSubmit = async (text: string) => {
-    if (!text.trim() || isProcessingText || !username) return;
-
-    setIsProcessingText(true);
-    try {
-      const response = await fetch("/api/transcribe", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          text: text.trim(),
-          username: username,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to process text");
-      }
-
-      const result = await response.json();
-
-      // Refetch memos
-      refetchMemos();
-      setNewMemoId(result.memo_id || crypto.randomUUID());
-
-      // Clear and close
-      setTextInput("");
-      setShowTextInput(false);
-
-      // Show success toast with click handler to scroll to top
-      showSuccess("Memo created", () => {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      });
-
-      // Clear highlight after delay
-      setTimeout(() => setNewMemoId(null), 3000);
-    } catch (error) {
-      showError(
-        error instanceof Error
-          ? `Failed to process text: ${error.message}`
-          : "Failed to process text. Please try again."
-      );
-    } finally {
-      setIsProcessingText(false);
-    }
-  };
-
-  // Handle feedback submission
-  const handleFeedbackSubmit = async (feedback: FeedbackSubmission) => {
-    try {
-      await FeedbackService.submitFeedback(feedback);
-    } catch (error) {
-      showError(
-        error instanceof Error
-          ? `Failed to submit feedback: ${error.message}`
-          : "Failed to submit feedback. Please try again."
-      );
-      throw error;
-    }
-  };
-
-  // Format time for recording overlay
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
+  // Text input and feedback submission are handled in AppLayout
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
@@ -357,15 +286,6 @@ export default function MemosPage() {
         )}
       </div>
 
-      {/* Recording Overlay */}
-      <RecordingOverlay
-        isRecording={isRecording}
-        isProcessing={isProcessing}
-        recordingTime={recordingTime}
-        onStopRecording={stopRecording}
-        formatTime={formatTime}
-      />
-
       {/* All Modals */}
       <ModalsContainer
         editingId={editingId}
@@ -386,8 +306,12 @@ export default function MemosPage() {
         hardDelete={hardDelete}
         onCategoryChange={handleCategoryChange}
         dismissReview={dismissReview}
-        onTextSubmit={handleTextSubmit}
-        onFeedbackSubmit={handleFeedbackSubmit}
+        onTextSubmit={async () => {
+          // Handled in AppLayout
+        }}
+        onFeedbackSubmit={async () => {
+          // Handled in AppLayout
+        }}
         onPickRandomMemo={() => {
           // Handled in AppLayout
         }}

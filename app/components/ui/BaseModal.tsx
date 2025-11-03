@@ -86,11 +86,21 @@ export function BaseModal({
           sizeClasses[size],
           className
         )}
+        onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
       >
-        <Dialog className="outline-none flex flex-col h-full sm:h-auto overflow-hidden">
+        <Dialog
+          className="outline-none flex flex-col h-full sm:h-auto overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+        >
           {/* Header */}
           {(header || title || showCloseButton) && (
-            <div className="flex items-center justify-between px-4 py-1.5 sm:px-4 sm:py-2 flex-shrink-0">
+            <div
+              className="flex items-center justify-between px-4 py-1.5 sm:px-4 sm:py-2 flex-shrink-0"
+              onClick={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+            >
               {header ? (
                 header
               ) : (
@@ -127,13 +137,21 @@ export function BaseModal({
           )}
 
           {/* Content */}
-          <div className="px-4 pt-0 pb-2 sm:px-4 sm:pt-0 sm:pb-3 flex-1 overflow-y-auto min-h-0">
+          <div
+            className="px-4 pt-0 pb-2 sm:px-4 sm:pt-0 sm:pb-3 flex-1 overflow-y-auto min-h-0"
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+          >
             {children}
           </div>
 
           {/* Footer */}
           {footer && (
-            <div className="flex-shrink-0 border-t border-slate-700/50 px-4 py-3">
+            <div
+              className="flex-shrink-0 border-t border-slate-700/50 px-4 py-3"
+              onClick={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+            >
               {footer}
             </div>
           )}

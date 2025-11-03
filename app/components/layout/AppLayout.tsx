@@ -8,6 +8,8 @@ import { useToast } from "../../contexts/ToastContext";
 import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 import { supabase } from "../../lib/supabase";
 import { Memo } from "../../types/memo";
+import { FeedbackService } from "../../lib/feedback";
+import { FeedbackSubmission } from "../../types/feedback";
 import { ActionButtons } from "../ActionButtons";
 import { UsernameInput } from "../UsernameInput";
 import { LoadingState } from "../LoadingState";
@@ -278,7 +280,19 @@ export function AppLayout({ children }: AppLayoutProps) {
         onCategoryChange={() => {}}
         dismissReview={() => {}}
         onTextSubmit={handleTextSubmit}
-        onFeedbackSubmit={async () => {}}
+        onFeedbackSubmit={async (feedback: FeedbackSubmission) => {
+          try {
+            await FeedbackService.submitFeedback(feedback);
+            showSuccess("Feedback submitted successfully!");
+          } catch (error) {
+            showError(
+              error instanceof Error
+                ? `Failed to submit feedback: ${error.message}`
+                : "Failed to submit feedback. Please try again."
+            );
+            throw error;
+          }
+        }}
         onPickRandomMemo={handlePickRandomMemo}
         username={username || ""}
         isArchivedModalOpen={false}

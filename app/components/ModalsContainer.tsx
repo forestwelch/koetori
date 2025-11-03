@@ -14,7 +14,6 @@ import { useFilters } from "../contexts/FilterContext";
 import { useMemoById } from "../hooks/useMemoById";
 import { Memo, Category } from "../types/memo";
 import { FeedbackSubmission } from "../types/feedback";
-import { useEffect } from "react";
 
 interface ModalsContainerProps {
   // Search modal props
@@ -115,22 +114,6 @@ export function ModalsContainer({
     memoModalId,
     username
   );
-
-  // Debug logging
-  useEffect(() => {
-    if (showMemoModal || memoModalId) {
-      console.log("📋 Memo modal state:", {
-        showMemoModal,
-        memoModalId,
-        username,
-        isLoadingMemo,
-        hasData: !!memoModalData,
-        memoData: memoModalData
-          ? { id: memoModalData.id, title: memoModalData.extracted?.title }
-          : null,
-      });
-    }
-  }, [showMemoModal, memoModalId, username, isLoadingMemo, memoModalData]);
 
   const { setCategoryFilter, setStarredOnly } = useFilters();
 
