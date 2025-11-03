@@ -13,6 +13,7 @@
 
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../../lib/ui-utils";
+import { forwardRef } from "react";
 
 const cardVariants = cva("rounded-xl border transition-all duration-200", {
   variants: {
@@ -50,20 +51,21 @@ export interface CardProps
   asChild?: boolean;
 }
 
-export function Card({
-  className,
-  variant,
-  padding,
-  interactive,
-  ...props
-}: CardProps) {
-  return (
-    <div
-      className={cn(cardVariants({ variant, padding, interactive, className }))}
-      {...props}
-    />
-  );
-}
+export const Card = forwardRef<HTMLDivElement, CardProps>(
+  ({ className, variant, padding, interactive, ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          cardVariants({ variant, padding, interactive, className })
+        )}
+        {...props}
+      />
+    );
+  }
+);
+
+Card.displayName = "Card";
 
 export function CardHeader({
   className,
