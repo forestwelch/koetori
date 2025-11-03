@@ -96,8 +96,11 @@ export function planEnrichmentTasks(input: PlannerInput): EnrichmentTask[] {
       transcriptExcerpt: memo.transcript_excerpt,
     };
 
-    // Check category-specific enrichment types FIRST (before generic media inference)
-    // This prevents tarot cards, journal entries, and ideas from being misclassified as media
+    // CRITICAL: If a memo has an explicit category, enrich it ONLY for that category
+    // This ensures that when the splitting logic creates separate memos (tarot, todo, media, etc.),
+    // each memo goes to its correct enrichment type without cross-contamination.
+    // We check category-specific types FIRST and skip all inference for these.
+
     if (TAROT_CATEGORIES.has(normalizedCategory)) {
       const cardName =
         inferStringField(memo.extracted, ["title", "card", "name"]) ||
@@ -162,13 +165,8 @@ export function planEnrichmentTasks(input: PlannerInput): EnrichmentTask[] {
       continue;
     }
 
-    // Now check for media (after category-specific types)
-    const inferredMediaType = inferMediaType(memo);
-    const looksLikeMedia =
-      MEDIA_CATEGORIES.has(normalizedCategory) ||
-      inferredMediaType !== "unknown";
-
-    if (looksLikeMedia) {
+    // For explicitly categorized media, use direct enrichment (no inference needed)
+    if (MEDIA_CATEGORIES.has(normalizedCategory)) {
       // Filter out non-media items like museums, galleries, restaurants
       const allText = [
         memo.transcript_excerpt,
@@ -201,6 +199,9 @@ export function planEnrichmentTasks(input: PlannerInput): EnrichmentTask[] {
         continue;
       }
 
+      // Use direct category-based media type (don't infer - category is already set)
+      const mediaType = inferMediaType(memo); // Still useful for extracting type hints from text
+
       const mediaPayload: MediaEnrichmentPayload = {
         ...basePayload,
         probableTitle,
@@ -213,7 +214,7 @@ export function planEnrichmentTasks(input: PlannerInput): EnrichmentTask[] {
           memo.tags,
           memo.transcript_excerpt
         ),
-        probableMediaType: inferredMediaType,
+        probableMediaType: mediaType,
       };
 
       tasks.push({
