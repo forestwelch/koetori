@@ -2,7 +2,14 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
-import { MediaItem, ReminderItem, ShoppingListItem } from "../types/enrichment";
+import {
+  MediaItem,
+  ReminderItem,
+  ShoppingListItem,
+  JournalItem,
+  TarotItem,
+  IdeaItem,
+} from "../types/enrichment";
 
 interface QueryOptions {
   enabled: boolean;
@@ -207,5 +214,136 @@ export function useShoppingList(
     queryFn: () => fetchShoppingItems(username ?? ""),
     enabled: options.enabled && Boolean(username),
     staleTime: 30 * 1000,
+  });
+}
+
+async function fetchJournalItems(username: string): Promise<JournalItem[]> {
+  const { data, error } = await supabase
+    .from("journal_items")
+    .select(
+      `memo_id, entry_text, themes, mood, created_at, updated_at, memos!inner(transcript_excerpt, tags, username)`
+    )
+    .eq("memos.username", username)
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (error) {
+    throw new Error(`Failed to fetch journal items: ${error.message}`);
+  }
+
+  return (data ?? []).map((row) => {
+    const memo = Array.isArray(row.memos) ? row.memos[0] : row.memos;
+    const tags = Array.isArray(memo?.tags) ? memo.tags : [];
+    const themes = Array.isArray(row.themes) ? row.themes : null;
+
+    return {
+      memoId: row.memo_id,
+      entryText: row.entry_text,
+      themes,
+      mood: row.mood ?? null,
+      transcriptExcerpt: memo?.transcript_excerpt ?? null,
+      tags,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+    } satisfies JournalItem;
+  });
+}
+
+async function fetchTarotItems(username: string): Promise<TarotItem[]> {
+  const { data, error } = await supabase
+    .from("tarot_items")
+    .select(
+      `memo_id, card_name, card_type, suit, number, interpretation, reading_context, created_at, updated_at, memos!inner(transcript_excerpt, tags, username)`
+    )
+    .eq("memos.username", username)
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (error) {
+    throw new Error(`Failed to fetch tarot items: ${error.message}`);
+  }
+
+  return (data ?? []).map((row) => {
+    const memo = Array.isArray(row.memos) ? row.memos[0] : row.memos;
+    const tags = Array.isArray(memo?.tags) ? memo.tags : [];
+
+    return {
+      memoId: row.memo_id,
+      cardName: row.card_name,
+      cardType: row.card_type as TarotItem["cardType"],
+      suit: row.suit as TarotItem["suit"],
+      number: row.number ?? null,
+      interpretation: row.interpretation ?? null,
+      readingContext: row.reading_context ?? null,
+      transcriptExcerpt: memo?.transcript_excerpt ?? null,
+      tags,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+    } satisfies TarotItem;
+  });
+}
+
+async function fetchIdeaItems(username: string): Promise<IdeaItem[]> {
+  const { data, error } = await supabase
+    .from("idea_items")
+    .select(
+      `memo_id, title, description, category, tags, status, created_at, updated_at, memos!inner(transcript_excerpt, tags, username)`
+    )
+    .eq("memos.username", username)
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (error) {
+    throw new Error(`Failed to fetch idea items: ${error.message}`);
+  }
+
+  return (data ?? []).map((row) => {
+    const memo = Array.isArray(row.memos) ? row.memos[0] : row.memos;
+    const memoTags = Array.isArray(memo?.tags) ? memo.tags : [];
+    const itemTags = Array.isArray(row.tags) ? row.tags : [];
+    // Combine tags from both memo and item
+    const tags = Array.from(new Set([...memoTags, ...itemTags]));
+
+    return {
+      memoId: row.memo_id,
+      title: row.title,
+      description: row.description ?? null,
+      category: row.category ?? null,
+      tags,
+      status: (row.status as IdeaItem["status"]) ?? "new",
+      transcriptExcerpt: memo?.transcript_excerpt ?? null,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+    } satisfies IdeaItem;
+  });
+}
+
+export function useJournalItems(
+  username: string | null,
+  options: QueryOptions
+) {
+  return useQuery({
+    queryKey: ["journal-items", username],
+    queryFn: () => fetchJournalItems(username ?? ""),
+    enabled: options.enabled && Boolean(username),
+    staleTime: 60 * 1000,
+  });
+}
+
+export function useTarotItems(username: string | null, options: QueryOptions) {
+  return useQuery({
+    queryKey: ["tarot-items", username],
+    queryFn: () => fetchTarotItems(username ?? ""),
+    enabled: options.enabled && Boolean(username),
+    staleTime: 60 * 1000,
+  });
+}
+
+export function useIdeaItems(username: string | null, options: QueryOptions) {
+  return useQuery({
+    queryKey: ["idea-items", username],
+    queryFn: () => fetchIdeaItems(username ?? ""),
+    enabled: options.enabled && Boolean(username),
+    staleTime: 60 * 1000,
   });
 }

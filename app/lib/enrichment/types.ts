@@ -3,6 +3,9 @@ import {
   ReminderEnrichmentPayload,
   ShoppingEnrichmentPayload,
   TodoEnrichmentPayload,
+  JournalEnrichmentPayload,
+  TarotEnrichmentPayload,
+  IdeaEnrichmentPayload,
   EnrichmentTask,
 } from "../pipeline/types";
 
@@ -54,11 +57,36 @@ export interface TodoItemDraft {
   size?: "S" | "M" | "L" | null;
 }
 
+export interface JournalItemDraft {
+  entryText: string;
+  themes?: string[] | null;
+  mood?: string | null;
+}
+
+export interface TarotItemDraft {
+  cardName: string;
+  cardType?: "major_arcana" | "minor_arcana" | null;
+  suit?: "wands" | "cups" | "swords" | "pentacles" | null;
+  number?: string | null;
+  interpretation?: string | null;
+  readingContext?: string | null;
+}
+
+export interface IdeaItemDraft {
+  title: string;
+  description?: string | null;
+  category?: string | null;
+  tags?: string[] | null;
+}
+
 export interface EnrichmentJobContext {
   media?: MediaEnrichmentPayload;
   reminder?: ReminderEnrichmentPayload;
   shopping?: ShoppingEnrichmentPayload;
   todo?: TodoEnrichmentPayload;
+  journal?: JournalEnrichmentPayload;
+  tarot?: TarotEnrichmentPayload;
+  idea?: IdeaEnrichmentPayload;
 }
 
 export type EnrichmentJobResult =
@@ -85,6 +113,24 @@ export type EnrichmentJobResult =
       type: "todo";
       draft: TodoItemDraft;
       payload: TodoEnrichmentPayload;
+    }
+  | {
+      status: "completed";
+      type: "journal";
+      draft: JournalItemDraft;
+      payload: JournalEnrichmentPayload;
+    }
+  | {
+      status: "completed";
+      type: "tarot";
+      draft: TarotItemDraft;
+      payload: TarotEnrichmentPayload;
+    }
+  | {
+      status: "completed";
+      type: "idea";
+      draft: IdeaItemDraft;
+      payload: IdeaEnrichmentPayload;
     }
   | {
       status: "skipped";

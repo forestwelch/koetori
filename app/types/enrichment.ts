@@ -56,3 +56,47 @@ export interface ShoppingListItem {
   displayOrder: number;
   updatedAt: Date;
 }
+
+export interface JournalItem {
+  memoId: string;
+  entryText: string;
+  themes: string[] | null;
+  mood: string | null;
+  transcriptExcerpt: string | null;
+  tags: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface TarotItem {
+  memoId: string;
+  cardName: string;
+  cardType: "major_arcana" | "minor_arcana" | null;
+  suit: "wands" | "cups" | "swords" | "pentacles" | null;
+  number: string | null;
+  interpretation: string | null;
+  readingContext: string | null;
+  transcriptExcerpt: string | null;
+  tags: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type IdeaStatus =
+  | "new"
+  | "exploring"
+  | "planning"
+  | "on-hold"
+  | "archived";
+
+export interface IdeaItem {
+  memoId: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  tags: string[];
+  status: IdeaStatus;
+  transcriptExcerpt: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}

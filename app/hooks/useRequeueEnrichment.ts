@@ -43,9 +43,13 @@ export function useRequeueEnrichment(username: string | null) {
       return response.json();
     },
     onSuccess: () => {
+      // Invalidate all enrichment queries
       queryClient.invalidateQueries({ queryKey: ["media-items", username] });
       queryClient.invalidateQueries({ queryKey: ["reminders", username] });
       queryClient.invalidateQueries({ queryKey: ["shopping-list", username] });
+      queryClient.invalidateQueries({ queryKey: ["journal-items", username] });
+      queryClient.invalidateQueries({ queryKey: ["tarot-items", username] });
+      queryClient.invalidateQueries({ queryKey: ["idea-items", username] });
     },
   });
 

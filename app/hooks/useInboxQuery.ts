@@ -34,16 +34,26 @@ async function fetchInboxMemos(username: string): Promise<Memo[]> {
   const memoIds = allMemos.map((m) => m.id);
 
   // Check which memos have enrichment items (all enrichment tables)
-  const [mediaResult, remindersResult, shoppingResult, todosResult] =
-    await Promise.all([
-      supabase.from("media_items").select("memo_id").in("memo_id", memoIds),
-      supabase.from("reminders").select("memo_id").in("memo_id", memoIds),
-      supabase
-        .from("shopping_list_items")
-        .select("memo_id")
-        .in("memo_id", memoIds),
-      supabase.from("todo_items").select("memo_id").in("memo_id", memoIds),
-    ]);
+  const [
+    mediaResult,
+    remindersResult,
+    shoppingResult,
+    todosResult,
+    journalResult,
+    tarotResult,
+    ideaResult,
+  ] = await Promise.all([
+    supabase.from("media_items").select("memo_id").in("memo_id", memoIds),
+    supabase.from("reminders").select("memo_id").in("memo_id", memoIds),
+    supabase
+      .from("shopping_list_items")
+      .select("memo_id")
+      .in("memo_id", memoIds),
+    supabase.from("todo_items").select("memo_id").in("memo_id", memoIds),
+    supabase.from("journal_items").select("memo_id").in("memo_id", memoIds),
+    supabase.from("tarot_items").select("memo_id").in("memo_id", memoIds),
+    supabase.from("idea_items").select("memo_id").in("memo_id", memoIds),
+  ]);
 
   // Collect all memo IDs that have enrichment items
   const memosWithEnrichment = new Set([
@@ -51,6 +61,9 @@ async function fetchInboxMemos(username: string): Promise<Memo[]> {
     ...(remindersResult.data || []).map((item) => item.memo_id),
     ...(shoppingResult.data || []).map((item) => item.memo_id),
     ...(todosResult.data || []).map((item) => item.memo_id),
+    ...(journalResult.data || []).map((item) => item.memo_id),
+    ...(tarotResult.data || []).map((item) => item.memo_id),
+    ...(ideaResult.data || []).map((item) => item.memo_id),
   ]);
 
   // Now fetch full memo data for potential inbox memos

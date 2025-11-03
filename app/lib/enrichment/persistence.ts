@@ -17,6 +17,15 @@ export async function persistEnrichmentResult(
     case "todo":
       await upsertTodoItem(result);
       break;
+    case "journal":
+      await upsertJournalItem(result);
+      break;
+    case "tarot":
+      await upsertTarotItem(result);
+      break;
+    case "idea":
+      await upsertIdeaItem(result);
+      break;
   }
 
   await markMemoProcessed(result.payload.memoId);
@@ -182,6 +191,95 @@ async function upsertTodoItem(
 
   if (error) {
     console.error("[enrichment] failed to upsert todo item", {
+      memoId: payload.memoId,
+      error: error.message,
+    });
+  }
+}
+
+async function upsertJournalItem(
+  result: Extract<EnrichmentJobResult, { type: "journal" }>
+) {
+  const draft = result.draft;
+  const payload = result.payload;
+  const { error } = await supabase.from("journal_items").upsert(
+    {
+      memo_id: payload.memoId,
+      entry_text: draft.entryText,
+      themes: draft.themes ?? null,
+      mood: draft.mood ?? null,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "memo_id" }
+  );
+
+  if (error) {
+    console.error("[enrichment] failed to upsert journal item", {
+      memoId: payload.memoId,
+      error: error.message,
+    });
+  }
+}
+
+async function upsertTarotItem(
+  result: Extract<EnrichmentJobResult, { type: "tarot" }>
+) {
+  const draft = result.draft;
+  const payload = result.payload;
+
+  // Ensure card_name is not empty (database constraint)
+  const cardName = draft.cardName?.trim() || "Unknown Card";
+
+  const { error } = await supabase.from("tarot_items").upsert(
+    {
+      memo_id: payload.memoId,
+      card_name: cardName,
+      card_type: draft.cardType ?? null,
+      suit: draft.suit ?? null,
+      number: draft.number ?? null,
+      interpretation: draft.interpretation ?? null,
+      reading_context: draft.readingContext ?? null,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "memo_id" }
+  );
+
+  if (error) {
+    console.error("[enrichment] failed to upsert tarot item", {
+      memoId: payload.memoId,
+      cardName,
+      error: error.message,
+      errorDetails: error,
+    });
+    throw new Error(`Failed to persist tarot item: ${error.message}`);
+  }
+
+  console.log("[enrichment] successfully persisted tarot item", {
+    memoId: payload.memoId,
+    cardName,
+  });
+}
+
+async function upsertIdeaItem(
+  result: Extract<EnrichmentJobResult, { type: "idea" }>
+) {
+  const draft = result.draft;
+  const payload = result.payload;
+  const { error } = await supabase.from("idea_items").upsert(
+    {
+      memo_id: payload.memoId,
+      title: draft.title,
+      description: draft.description ?? null,
+      category: draft.category ?? null,
+      tags: draft.tags ?? null,
+      status: "new",
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "memo_id" }
+  );
+
+  if (error) {
+    console.error("[enrichment] failed to upsert idea item", {
       memoId: payload.memoId,
       error: error.message,
     });

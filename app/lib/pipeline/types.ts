@@ -57,7 +57,14 @@ export interface UnderstandingResult {
   raw?: unknown;
 }
 
-export type EnrichmentTaskType = "media" | "reminder" | "shopping" | "todo";
+export type EnrichmentTaskType =
+  | "media"
+  | "reminder"
+  | "shopping"
+  | "todo"
+  | "journal"
+  | "tarot"
+  | "idea";
 
 export interface BaseEnrichmentPayload {
   transcriptionId: string;
@@ -100,6 +107,24 @@ export interface TodoEnrichmentPayload extends BaseEnrichmentPayload {
   estimatedSize?: "S" | "M" | "L" | null;
 }
 
+export interface JournalEnrichmentPayload extends BaseEnrichmentPayload {
+  entryText?: string | null;
+  themes?: string[] | null;
+  mood?: string | null;
+}
+
+export interface TarotEnrichmentPayload extends BaseEnrichmentPayload {
+  cardName?: string | null;
+  interpretation?: string | null;
+  readingContext?: string | null;
+}
+
+export interface IdeaEnrichmentPayload extends BaseEnrichmentPayload {
+  title?: string | null;
+  description?: string | null;
+  category?: string | null;
+}
+
 export type EnrichmentTask =
   | {
       type: "media";
@@ -116,6 +141,18 @@ export type EnrichmentTask =
   | {
       type: "todo";
       payload: TodoEnrichmentPayload;
+    }
+  | {
+      type: "journal";
+      payload: JournalEnrichmentPayload;
+    }
+  | {
+      type: "tarot";
+      payload: TarotEnrichmentPayload;
+    }
+  | {
+      type: "idea";
+      payload: IdeaEnrichmentPayload;
     };
 
 export interface MemoWriteRequest {

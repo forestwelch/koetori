@@ -4,6 +4,9 @@ import {
   ReminderEnrichmentPayload,
   ShoppingEnrichmentPayload,
   TodoEnrichmentPayload,
+  JournalEnrichmentPayload,
+  TarotEnrichmentPayload,
+  IdeaEnrichmentPayload,
 } from "../pipeline/types";
 import { sanitizeMediaTitle } from "../enrichment/mediaTitleUtils";
 
@@ -47,6 +50,9 @@ const MEDIA_KEYWORDS: Array<{
 const REMINDER_CATEGORIES = new Set(["reminder", "event"]);
 const TODO_CATEGORIES = new Set(["todo"]);
 const SHOPPING_CATEGORIES = new Set(["to buy", "shopping", "purchase"]);
+const JOURNAL_CATEGORIES = new Set(["journal"]);
+const TAROT_CATEGORIES = new Set(["tarot"]);
+const IDEA_CATEGORIES = new Set(["idea"]);
 const SHOPPING_STOPWORDS = new Set([
   "some",
   "a",
@@ -90,6 +96,73 @@ export function planEnrichmentTasks(input: PlannerInput): EnrichmentTask[] {
       transcriptExcerpt: memo.transcript_excerpt,
     };
 
+    // Check category-specific enrichment types FIRST (before generic media inference)
+    // This prevents tarot cards, journal entries, and ideas from being misclassified as media
+    if (TAROT_CATEGORIES.has(normalizedCategory)) {
+      const cardName =
+        inferStringField(memo.extracted, ["title", "card", "name"]) ||
+        memo.transcript_excerpt?.substring(0, 200) ||
+        null;
+
+      const tarotPayload: TarotEnrichmentPayload = {
+        ...basePayload,
+        cardName,
+        interpretation: inferStringField(memo.extracted, [
+          "what",
+          "interpretation",
+        ]),
+        readingContext: inferStringField(memo.extracted, ["context", "about"]),
+      };
+
+      tasks.push({
+        type: "tarot",
+        payload: tarotPayload,
+      });
+      continue;
+    }
+
+    if (JOURNAL_CATEGORIES.has(normalizedCategory)) {
+      const entryText =
+        inferStringField(memo.extracted, ["what", "summary", "entry"]) ||
+        memo.transcript_excerpt?.substring(0, 1000) ||
+        null;
+
+      const journalPayload: JournalEnrichmentPayload = {
+        ...basePayload,
+        entryText,
+      };
+
+      tasks.push({
+        type: "journal",
+        payload: journalPayload,
+      });
+      continue;
+    }
+
+    if (IDEA_CATEGORIES.has(normalizedCategory)) {
+      const title =
+        inferStringField(memo.extracted, ["title", "what", "idea"]) ||
+        memo.transcript_excerpt?.substring(0, 100) ||
+        null;
+
+      const ideaPayload: IdeaEnrichmentPayload = {
+        ...basePayload,
+        title,
+        description: inferStringField(memo.extracted, [
+          "description",
+          "details",
+        ]),
+        category: inferStringField(memo.extracted, ["category", "type"]),
+      };
+
+      tasks.push({
+        type: "idea",
+        payload: ideaPayload,
+      });
+      continue;
+    }
+
+    // Now check for media (after category-specific types)
     const inferredMediaType = inferMediaType(memo);
     const looksLikeMedia =
       MEDIA_CATEGORIES.has(normalizedCategory) ||
@@ -266,6 +339,7 @@ export function planEnrichmentTasks(input: PlannerInput): EnrichmentTask[] {
         type: "shopping",
         payload: shoppingPayload,
       });
+      continue;
     }
   }
 

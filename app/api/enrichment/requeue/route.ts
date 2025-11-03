@@ -67,9 +67,16 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  await supabase.from("media_items").delete().eq("memo_id", memoId);
-  await supabase.from("reminders").delete().eq("memo_id", memoId);
-  await supabase.from("shopping_list_items").delete().eq("memo_id", memoId);
+  // Delete all existing enrichment items for this memo
+  await Promise.all([
+    supabase.from("media_items").delete().eq("memo_id", memoId),
+    supabase.from("reminders").delete().eq("memo_id", memoId),
+    supabase.from("shopping_list_items").delete().eq("memo_id", memoId),
+    supabase.from("todo_items").delete().eq("memo_id", memoId),
+    supabase.from("journal_items").delete().eq("memo_id", memoId),
+    supabase.from("tarot_items").delete().eq("memo_id", memoId),
+    supabase.from("idea_items").delete().eq("memo_id", memoId),
+  ]);
 
   await supabase
     .from("memos")
