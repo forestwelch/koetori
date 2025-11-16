@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Camera, X, Upload } from "lucide-react";
 import { BaseModal } from "./ui/BaseModal";
 import { Button } from "./ui/Button";
+import { optimizeImageForGroq } from "@/app/lib/services/imageOptimizer";
 
 interface CameraModalProps {
   isOpen: boolean;
@@ -90,7 +91,14 @@ export function CameraModal({ isOpen, onClose, onCapture }: CameraModalProps) {
     try {
       setIsProcessing(true);
       setError(null);
-      await onCapture(file);
+
+      // Optimize image before upload
+      const optimizedBlob = await optimizeImageForGroq(file);
+      const optimizedFile = new File([optimizedBlob], file.name, {
+        type: optimizedBlob.type,
+      });
+
+      await onCapture(optimizedFile);
       handleClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to process image");
@@ -104,6 +112,7 @@ export function CameraModal({ isOpen, onClose, onCapture }: CameraModalProps) {
     try {
       setIsProcessing(true);
       setError(null);
+
       // Convert data URL to File
       const response = await fetch(capturedImage);
       const blob = await response.blob();
@@ -111,7 +120,13 @@ export function CameraModal({ isOpen, onClose, onCapture }: CameraModalProps) {
         type: "image/jpeg",
       });
 
-      await onCapture(file);
+      // Optimize image before upload
+      const optimizedBlob = await optimizeImageForGroq(file);
+      const optimizedFile = new File([optimizedBlob], file.name, {
+        type: optimizedBlob.type,
+      });
+
+      await onCapture(optimizedFile);
       handleClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to process image");

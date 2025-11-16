@@ -133,10 +133,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate base64 encoded size (Groq limit is 4MB for base64)
+    // Base64 encoding increases size by ~33%, so we check the encoded size
+    const MAX_BASE64_SIZE = 4 * 1024 * 1024; // 4MB
+    const estimatedBase64Size = Math.ceil(imageFile.size * 1.33);
+
+    if (estimatedBase64Size > MAX_BASE64_SIZE) {
+      logRequest("warn", "Image too large for base64 encoding", {
+        clientId,
+        fileSize: imageFile.size,
+        estimatedBase64Size,
+        maxSize: MAX_BASE64_SIZE,
+      });
+
+      return NextResponse.json(
+        {
+          error:
+            "Image too large. Please use a smaller image (max 4MB when encoded).",
+        },
+        { status: 400, headers }
+      );
+    }
+
     logRequest("info", "Processing image request", {
       clientId,
       fileType: imageFile.type,
       fileSize: imageFile.size,
+      estimatedBase64Size,
     });
 
     const pipeline = createDefaultPipeline();

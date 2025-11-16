@@ -5,6 +5,7 @@ import {
   TranscriptionResult,
 } from "../pipeline/types";
 import { TranscriptionService } from "../pipeline/interfaces";
+import { ModelRouter } from "./modelRouter";
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
@@ -46,11 +47,17 @@ export class GroqTranscriptionService implements TranscriptionService {
       },
     }) as File;
 
+    // Get optimal audio model configuration
+    const modelConfig = ModelRouter.getAudioModel();
+
     const transcription = await groq.audio.transcriptions.create({
       file,
-      model: "whisper-large-v3-turbo",
-      language: "en",
-      response_format: "json",
+      model: modelConfig.model,
+      language: modelConfig.language ?? "en",
+      response_format: (modelConfig.responseFormat ?? "json") as
+        | "json"
+        | "text"
+        | "verbose_json",
     });
 
     const wordEstimate = transcription.text?.length ?? 0;
@@ -60,7 +67,7 @@ export class GroqTranscriptionService implements TranscriptionService {
       language: "en", // We specify language in the request
       durationSeconds:
         wordEstimate > 0 ? Math.round(wordEstimate / 150) * 60 : null,
-      provider: "groq-whisper-large-v3-turbo",
+      provider: modelConfig.provider,
     };
   }
 
@@ -70,6 +77,9 @@ export class GroqTranscriptionService implements TranscriptionService {
     if (!request.imageFile) {
       throw new Error("No image file provided");
     }
+
+    // Get optimal vision model configuration
+    const modelConfig = ModelRouter.getImageModel();
 
     // Convert image to base64
     const arrayBuffer = await request.imageFile.arrayBuffer();
@@ -94,11 +104,10 @@ export class GroqTranscriptionService implements TranscriptionService {
 
 Write as if you are describing this image to create a memo entry for personal knowledge management.`;
 
+    // Try primary vision model
     try {
-      // Try using Groq's chat completions with vision support
-      // Using the same model we use for understanding
       const completion = await groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
+        model: modelConfig.model,
         messages: [
           {
             role: "user",
@@ -116,8 +125,8 @@ Write as if you are describing this image to create a memo entry for personal kn
             ],
           },
         ],
-        temperature: 0.3,
-        max_tokens: 1500,
+        temperature: modelConfig.temperature ?? 0.3,
+        max_tokens: modelConfig.maxTokens ?? 1500,
       });
 
       const transcript =
@@ -128,41 +137,61 @@ Write as if you are describing this image to create a memo entry for personal kn
         transcript,
         language: "en",
         durationSeconds: null,
-        provider: "groq-llama-3.3-vision",
+        provider: modelConfig.provider,
       };
     } catch (error) {
-      // If vision API format fails, try alternative approaches
-      console.warn("Vision API format failed, trying alternative:", error);
-
-      // Try with just the image URL in a different format
-      try {
-        const altCompletion = await groq.chat.completions.create({
-          model: "llama-3.3-70b-versatile",
-          messages: [
-            {
-              role: "user",
-              content: `${prompt}\n\n[Image data: ${mimeType}, ${Math.round(request.imageFile.size / 1024)}KB]`,
-            },
-          ],
-          temperature: 0.3,
-          max_tokens: 1000,
-        });
-
-        const transcript =
-          altCompletion.choices[0]?.message?.content ||
-          "Image uploaded - model may not support direct image input";
-
-        return {
-          transcript,
-          language: "en",
-          durationSeconds: null,
-          provider: "groq-llama-3.3-text-fallback",
-        };
-      } catch (fallbackError) {
-        throw new Error(
-          `Failed to process image: ${fallbackError instanceof Error ? fallbackError.message : "Unknown error"}`
+      // If primary model fails and we have a fallback, try it
+      if (modelConfig.fallback) {
+        console.warn(
+          `Primary vision model ${modelConfig.model} failed, trying fallback ${modelConfig.fallback}:`,
+          error
         );
+
+        try {
+          const fallbackCompletion = await groq.chat.completions.create({
+            model: modelConfig.fallback,
+            messages: [
+              {
+                role: "user",
+                content: [
+                  {
+                    type: "text",
+                    text: prompt,
+                  },
+                  {
+                    type: "image_url",
+                    image_url: {
+                      url: `data:${mimeType};base64,${base64Image}`,
+                    },
+                  },
+                ],
+              },
+            ],
+            temperature: modelConfig.temperature ?? 0.3,
+            max_tokens: modelConfig.maxTokens ?? 1500,
+          });
+
+          const transcript =
+            fallbackCompletion.choices[0]?.message?.content ||
+            "Unable to process image with fallback model.";
+
+          return {
+            transcript,
+            language: "en",
+            durationSeconds: null,
+            provider: `groq-${modelConfig.fallback}`,
+          };
+        } catch (fallbackError) {
+          throw new Error(
+            `Failed to process image with both primary (${modelConfig.model}) and fallback (${modelConfig.fallback}) models: ${fallbackError instanceof Error ? fallbackError.message : "Unknown error"}`
+          );
+        }
       }
+
+      // No fallback available, throw the original error
+      throw new Error(
+        `Failed to process image with model ${modelConfig.model}: ${error instanceof Error ? error.message : "Unknown error"}. Make sure you're using a vision-capable model.`
+      );
     }
   }
 }

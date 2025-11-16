@@ -202,8 +202,23 @@ export function useVoiceRecorder(username?: string): UseVoiceRecorderReturn {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       setAudioStream(stream);
 
-      // Create MediaRecorder instance
-      const mediaRecorder = new MediaRecorder(stream);
+      // Try to use optimized settings for smaller file sizes
+      const getOptimalRecorderOptions = ():
+        | MediaRecorderOptions
+        | undefined => {
+        // Check if browser supports audioBitsPerSecond
+        if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
+          return {
+            mimeType: "audio/webm;codecs=opus",
+            audioBitsPerSecond: 16000, // Lower bitrate = smaller files (16kbps is good for speech)
+          };
+        }
+        // Fallback to default if not supported
+        return undefined;
+      };
+
+      const options = getOptimalRecorderOptions();
+      const mediaRecorder = new MediaRecorder(stream, options);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
@@ -229,6 +244,11 @@ export function useVoiceRecorder(username?: string): UseVoiceRecorderReturn {
         const audioBlob = new Blob(audioChunksRef.current, {
           type: "audio/webm",
         });
+
+        // Log file size for monitoring compression effectiveness
+        console.log(
+          `Audio file size: ${(audioBlob.size / 1024).toFixed(2)} KB`
+        );
 
         // Upload audio and get transcription + categorization
         setIsProcessing(true);

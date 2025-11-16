@@ -21,7 +21,7 @@ export interface ExtractedData {
 }
 
 export type MemoSource = "app" | "device";
-export type MemoInputType = "audio" | "text";
+export type MemoInputType = "audio" | "text" | "image";
 
 export interface Memo {
   id: string;
@@ -37,7 +37,7 @@ export interface Memo {
   deleted_at?: Date | null; // For soft delete
   starred?: boolean; // Starred/priority items
   source: MemoSource; // Where the memo came from: app or device
-  input_type: MemoInputType; // How it was captured: audio or text
+  input_type: MemoInputType; // How it was captured: audio, text, or image
   device_id?: string; // Device identifier (only for device sources)
 }
 
