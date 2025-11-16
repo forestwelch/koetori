@@ -1,4 +1,4 @@
-export type CaptureInputType = "audio" | "text";
+export type CaptureInputType = "audio" | "text" | "image";
 
 export type CaptureSource = "app" | "device" | "web" | "import";
 
@@ -15,6 +15,7 @@ export interface CaptureRequest {
   metadata: CaptureMetadata;
   transcript?: string;
   audioFile?: Blob;
+  imageFile?: Blob;
   originalFilename?: string;
   contentType?: string | null;
 }

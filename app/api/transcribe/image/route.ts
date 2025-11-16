@@ -139,23 +139,17 @@ export async function POST(request: NextRequest) {
       fileSize: imageFile.size,
     });
 
-    // For now, create a simple text memo indicating an image was uploaded
-    // TODO: Add OCR/vision API integration to extract text from images
-    const transcript = "[Image uploaded - OCR coming soon]";
-
     const pipeline = createDefaultPipeline();
     const captureRequest: CaptureRequest = {
       metadata: {
         username: finalUsername,
         source: "app",
         deviceId: null,
-        inputType: "text", // Using text for now, could be "image" later
+        inputType: "image",
         clientId,
         requestId: createRequestId(),
       },
-      transcript,
-      // Store image reference for future OCR processing
-      audioFile: undefined,
+      imageFile,
       contentType: imageFile.type,
       originalFilename:
         ("name" in imageFile &&
