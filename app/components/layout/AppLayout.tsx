@@ -314,26 +314,8 @@ export function AppLayout({ children }: AppLayoutProps) {
         formatTime={formatTime}
       />
 
-      {/* Global Modals Container - for text input and other global modals */}
+      {/* Single Global Modals Container - reads editing state from EditingContext */}
       <ModalsContainer
-        editingId={null}
-        editText=""
-        setEditText={() => {}}
-        startEdit={() => {}}
-        cancelEdit={() => {}}
-        saveEdit={() => {}}
-        editingSummaryId={null}
-        summaryEditText=""
-        setSummaryEditText={() => {}}
-        startEditSummary={() => {}}
-        cancelEditSummary={() => {}}
-        saveSummary={() => {}}
-        softDelete={() => {}}
-        toggleStar={() => {}}
-        restoreMemo={async () => {}}
-        hardDelete={async () => {}}
-        onCategoryChange={() => {}}
-        dismissReview={() => {}}
         onTextSubmit={handleTextSubmit}
         onFeedbackSubmit={async (feedback: FeedbackSubmission) => {
           try {
@@ -351,9 +333,6 @@ export function AppLayout({ children }: AppLayoutProps) {
         onPickRandomMemo={handlePickRandomMemo}
         onImageCapture={handleImageCapture}
         username={username || ""}
-        isArchivedModalOpen={false}
-        onOpenArchivedModal={() => {}}
-        onCloseArchivedModal={() => {}}
       />
     </div>
   );

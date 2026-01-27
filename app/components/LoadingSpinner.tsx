@@ -4,7 +4,7 @@
  * Audio waveform-style bars animation
  */
 
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 
 interface LoadingSpinnerProps {
   message?: string;
@@ -33,52 +33,26 @@ export function LoadingSpinner({ message, size = "md" }: LoadingSpinnerProps) {
 
   const config = barConfig[size];
 
-  // Generate wave pattern with smooth transitions
-  // Uses a wave function to create peaks and valleys that flow naturally
-  const barAnimations = useMemo(() => {
-    const maxHeightValue = parseFloat(config.maxHeight);
-    const centerPoint = maxHeightValue / 2;
-
-    // Create a base wave pattern - multiple overlapping sine waves for natural variation
+  // Generate staggered wave pattern - cascading left to right
+  // Uses useState to initialize values once (fixes hydration mismatch)
+  // The function initializer only runs once on the client after hydration
+  const [barAnimations] = useState(() => {
+    // Staggered wave: bars animate in sequence with heights following a sine wave
     const wavePattern = Array.from({ length: barCount }).map((_, i) => {
       const position = i / barCount; // 0 to 1
 
-      // Multiple wave frequencies for complexity
-      const wave1 = Math.sin(position * Math.PI * 4) * 0.4; // Fast wave
-      const wave2 = Math.sin(position * Math.PI * 2) * 0.3; // Medium wave
-      const wave3 = Math.sin(position * Math.PI * 0.8) * 0.3; // Slow wave
-
-      // Combine waves with some randomness for organic feel
-      const waveValue = wave1 + wave2 + wave3 + (Math.random() - 0.5) * 0.2;
-
-      // Convert to height offset from center
-      const baseOffset = waveValue * (maxHeightValue / 2) * 0.8; // 80% of max range
-
-      // Each bar has different extents but related to neighbors
-      const upExtent = (0.3 + Math.abs(waveValue) * 0.7) * (maxHeightValue / 2);
-      const downExtent =
-        (0.3 + Math.abs(waveValue) * 0.7) * (maxHeightValue / 2);
-
-      // Smooth delays - bars near each other animate close together
-      const delay = i * 30 + Math.random() * 100; // Sequential with small random offset
-
-      // Duration varies but not too much
-      const duration = 0.5 + Math.random() * 0.4; // 0.5-0.9s for smoother feel
-
-      // Starting height follows the wave pattern
-      const startAboveCenter = baseOffset;
-      const startHeight = `${centerPoint + startAboveCenter}rem`;
-
-      // Peak oscillates around the wave pattern position
-      const oscillation = (Math.random() - 0.5) * (upExtent + downExtent) * 0.6;
-      const peakAboveCenter = baseOffset + oscillation;
-      const peakHeight = `${Math.max(0.2, Math.min(maxHeightValue - 0.2, centerPoint + peakAboveCenter))}rem`;
-
-      return { delay, duration, startHeight, peakHeight };
+      const lowHeight = 0.4 + Math.random() * 1;
+      const peakHeight = 2 + Math.random() * 4;
+      return {
+        delay: i * 40,
+        duration: 0.5 + Math.random() * 0.3,
+        startHeight: `${lowHeight}rem`,
+        peakHeight: `${peakHeight}rem`,
+      };
     });
 
     return wavePattern;
-  }, [barCount, config.maxHeight]);
+  });
 
   return (
     <>

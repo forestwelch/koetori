@@ -12,81 +12,26 @@ import { CameraModal } from "./CameraModal";
 import { Modal } from "./ui/Modal";
 import { useModals } from "../contexts/ModalContext";
 import { useFilters } from "../contexts/FilterContext";
+import { useEditingHandlers } from "../contexts/EditingContext";
 import { useMemoById } from "../hooks/useMemoById";
 import { Memo, Category } from "../types/memo";
 import { FeedbackSubmission } from "../types/feedback";
 
 interface ModalsContainerProps {
-  // Search modal props
-  editingId: string | null;
-  editText: string;
-  setEditText: (text: string) => void;
-  startEdit: (memo: Memo) => void;
-  cancelEdit: () => void;
-  saveEdit: (id: string) => void;
-  // Summary editing props
-  editingSummaryId: string | null;
-  summaryEditText: string;
-  setSummaryEditText: (text: string) => void;
-  startEditSummary: (memo: Memo) => void;
-  cancelEditSummary: () => void;
-  saveSummary: (id: string) => void;
-  softDelete: (id: string) => void;
-  toggleStar: (id: string, current: boolean) => void;
-  restoreMemo: (id: string, memoData?: Memo) => Promise<void>;
-  hardDelete: (id: string) => Promise<void>;
-  onCategoryChange: (
-    memoId: string,
-    newCategory: Category,
-    oldCategory: Category
-  ) => void;
-  dismissReview: (memoId: string) => void;
-
-  // Text input processing
+  // Global modal handlers
   onTextSubmit: (text: string) => Promise<void>;
-
-  // Feedback submission
   onFeedbackSubmit: (feedback: FeedbackSubmission) => Promise<void>;
-
-  // Random memo
   onPickRandomMemo: () => void;
-
-  // Image capture
   onImageCapture: (file: File) => Promise<void>;
-
   username: string;
-  isArchivedModalOpen: boolean;
-  onOpenArchivedModal: () => void;
-  onCloseArchivedModal: () => void;
 }
 
 export function ModalsContainer({
-  editingId,
-  editText,
-  setEditText,
-  startEdit,
-  cancelEdit,
-  saveEdit,
-  editingSummaryId,
-  summaryEditText,
-  setSummaryEditText,
-  startEditSummary,
-  cancelEditSummary,
-  saveSummary,
-  softDelete,
-  toggleStar,
-  restoreMemo,
-  hardDelete,
-  onCategoryChange,
-  dismissReview,
   onTextSubmit,
   onFeedbackSubmit,
   onPickRandomMemo,
   onImageCapture,
   username,
-  isArchivedModalOpen,
-  onOpenArchivedModal,
-  onCloseArchivedModal,
 }: ModalsContainerProps) {
   const {
     showSearch,
@@ -119,6 +64,9 @@ export function ModalsContainer({
     setMemoModalId,
   } = useModals();
 
+  // Get editing handlers from context (provided by pages)
+  const handlers = useEditingHandlers();
+
   const { data: memoModalData, isLoading: isLoadingMemo } = useMemoById(
     memoModalId,
     username
@@ -140,24 +88,24 @@ export function ModalsContainer({
           setSearchQuery("");
           setSearchResults([]);
         }}
-        editingId={editingId}
-        editText={editText}
-        setEditText={setEditText}
-        startEdit={startEdit}
-        cancelEdit={cancelEdit}
-        saveEdit={saveEdit}
-        editingSummaryId={editingSummaryId}
-        summaryEditText={summaryEditText}
-        setSummaryEditText={setSummaryEditText}
-        startEditSummary={startEditSummary}
-        cancelEditSummary={cancelEditSummary}
-        saveSummary={saveSummary}
-        softDelete={softDelete}
-        toggleStar={toggleStar}
-        restoreMemo={restoreMemo}
-        hardDelete={hardDelete}
-        onCategoryChange={onCategoryChange}
-        dismissReview={dismissReview}
+        editingId={handlers.editingId}
+        editText={handlers.editText}
+        setEditText={handlers.setEditText}
+        startEdit={handlers.startEdit}
+        cancelEdit={handlers.cancelEdit}
+        saveEdit={handlers.saveEdit}
+        editingSummaryId={handlers.editingSummaryId}
+        summaryEditText={handlers.summaryEditText}
+        setSummaryEditText={handlers.setSummaryEditText}
+        startEditSummary={handlers.startEditSummary}
+        cancelEditSummary={handlers.cancelEditSummary}
+        saveSummary={handlers.saveSummary}
+        softDelete={handlers.softDelete}
+        toggleStar={handlers.toggleStar}
+        restoreMemo={handlers.restoreMemo}
+        hardDelete={handlers.hardDelete}
+        onCategoryChange={handlers.onCategoryChange}
+        dismissReview={handlers.dismissReview}
       />
 
       {/* Text Input Modal */}
@@ -212,15 +160,6 @@ export function ModalsContainer({
         setStarredOnly={setStarredOnly}
       />
 
-      {/* Archived Memos */}
-      <ArchivedMemosModal
-        isOpen={isArchivedModalOpen}
-        onClose={onCloseArchivedModal}
-        username={username}
-        restoreMemo={restoreMemo}
-        hardDelete={hardDelete}
-      />
-
       {/* Memo Modal */}
       {showMemoModal && (
         <>
@@ -243,24 +182,24 @@ export function ModalsContainer({
                 setMemoModalId(null);
               }}
               memo={memoModalData ?? null}
-              editingId={editingId}
-              editText={editText}
-              setEditText={setEditText}
-              startEdit={startEdit}
-              cancelEdit={cancelEdit}
-              saveEdit={saveEdit}
-              editingSummaryId={editingSummaryId}
-              summaryEditText={summaryEditText}
-              setSummaryEditText={setSummaryEditText}
-              startEditSummary={startEditSummary}
-              cancelEditSummary={cancelEditSummary}
-              saveSummary={saveSummary}
-              softDelete={softDelete}
-              toggleStar={toggleStar}
-              restoreMemo={restoreMemo}
-              hardDelete={hardDelete}
-              onCategoryChange={onCategoryChange}
-              dismissReview={dismissReview}
+              editingId={handlers.editingId}
+              editText={handlers.editText}
+              setEditText={handlers.setEditText}
+              startEdit={handlers.startEdit}
+              cancelEdit={handlers.cancelEdit}
+              saveEdit={handlers.saveEdit}
+              editingSummaryId={handlers.editingSummaryId}
+              summaryEditText={handlers.summaryEditText}
+              setSummaryEditText={handlers.setSummaryEditText}
+              startEditSummary={handlers.startEditSummary}
+              cancelEditSummary={handlers.cancelEditSummary}
+              saveSummary={handlers.saveSummary}
+              softDelete={handlers.softDelete}
+              toggleStar={handlers.toggleStar}
+              restoreMemo={handlers.restoreMemo}
+              hardDelete={handlers.hardDelete}
+              onCategoryChange={handlers.onCategoryChange}
+              dismissReview={handlers.dismissReview}
             />
           )}
         </>

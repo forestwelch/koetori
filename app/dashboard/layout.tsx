@@ -1,9 +1,13 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "../lib/ui-utils";
+import { useUser } from "../contexts/UserContext";
+import { useEditing } from "../contexts/EditingContext";
+import { useMemoOperations } from "../hooks/useMemoOperations";
 import {
   Film,
   Bell,
@@ -30,9 +34,53 @@ const dashboardTabs = [
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
+  const { username } = useUser();
+  const { setHandlers } = useEditing();
+  const queryClient = useQueryClient();
 
   // Determine current tab (default to media if on /dashboard)
   const currentTab = pathname === "/dashboard" ? "/dashboard/media" : pathname;
+
+  // Refetch function that invalidates all enrichment queries
+  const refetchAll = () => {
+    queryClient.invalidateQueries({ queryKey: ["inbox"] });
+    queryClient.invalidateQueries({ queryKey: ["memos"] });
+    queryClient.invalidateQueries({ queryKey: ["enrichment"] });
+  };
+
+  // Memo operations - enables editing from search/modals on dashboard pages
+  const memoOperations = useMemoOperations(username || "", refetchAll);
+
+  // Register editing handlers with global EditingContext
+  // Handlers are stored in a ref, so we can update them on every render without causing re-renders
+  useEffect(() => {
+    // Update handlers ref on every render to ensure fresh function references
+    setHandlers({
+      editingId: memoOperations.editingId,
+      editText: memoOperations.editText,
+      setEditText: memoOperations.setEditText,
+      startEdit: memoOperations.startEdit,
+      cancelEdit: memoOperations.cancelEdit,
+      saveEdit: memoOperations.saveEdit,
+      editingSummaryId: memoOperations.editingSummaryId,
+      summaryEditText: memoOperations.summaryEditText,
+      setSummaryEditText: memoOperations.setSummaryEditText,
+      startEditSummary: memoOperations.startEditSummary,
+      cancelEditSummary: memoOperations.cancelEditSummary,
+      saveSummary: memoOperations.saveSummary,
+      softDelete: memoOperations.softDelete,
+      toggleStar: memoOperations.toggleStar,
+      restoreMemo: memoOperations.restoreMemo,
+      hardDelete: memoOperations.hardDelete,
+      onCategoryChange: memoOperations.handleCategoryChange,
+      dismissReview: memoOperations.dismissReview,
+    });
+  });
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => setHandlers(null);
+  }, [setHandlers]);
 
   return (
     <div className="space-y-6">

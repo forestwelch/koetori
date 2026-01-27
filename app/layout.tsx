@@ -6,6 +6,7 @@ import { FilterProvider } from "./contexts/FilterContext";
 import { ModalProvider } from "./contexts/ModalContext";
 import { ToastProvider } from "./contexts/ToastContext";
 import { FeedbackProvider } from "./contexts/FeedbackContext";
+import { EditingProvider } from "./contexts/EditingContext";
 import { QueryProvider } from "./providers/QueryProvider";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import { OfflineIndicator } from "./components/OfflineIndicator";
@@ -74,15 +75,17 @@ export default function RootLayout({
             <UserProvider>
               <FilterProvider>
                 <ModalProvider>
-                  <FeedbackProvider>
-                    <ErrorBoundary>
-                      <ClientLayout>{children}</ClientLayout>
-                      <ToastContainer />
-                      <EditFeedbackContainer />
-                      <PWAInstallPrompt />
-                      <OfflineIndicator />
-                    </ErrorBoundary>
-                  </FeedbackProvider>
+                  <EditingProvider>
+                    <FeedbackProvider>
+                      <ErrorBoundary>
+                        <ClientLayout>{children}</ClientLayout>
+                        <ToastContainer />
+                        <EditFeedbackContainer />
+                        <PWAInstallPrompt />
+                        <OfflineIndicator />
+                      </ErrorBoundary>
+                    </FeedbackProvider>
+                  </EditingProvider>
                 </ModalProvider>
               </FilterProvider>
             </UserProvider>

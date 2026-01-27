@@ -24,6 +24,7 @@ import {
   SortDirection,
 } from "./components/inbox/InboxSortControls";
 import { QuickActions } from "./components/inbox/QuickActions";
+import { useEditing } from "./contexts/EditingContext";
 import Link from "next/link";
 import { LayoutDashboard } from "lucide-react";
 
@@ -36,6 +37,7 @@ export default function InboxPage() {
     isProcessingText,
     setIsProcessingText,
   } = useModals();
+  const { setHandlers } = useEditing();
 
   // Power Inbox state
   const [activeSection, setActiveSection] = useState<InboxSection>("all");
@@ -87,6 +89,7 @@ export default function InboxPage() {
   }, [inboxMemos, activeSection, sortField, sortDirection]);
 
   // Memo operations
+  const memoOperations = useMemoOperations(username || "", refetchInbox);
   const {
     editingId,
     editText,
@@ -110,7 +113,38 @@ export default function InboxPage() {
     hardDelete,
     handleCategoryChange,
     dismissReview,
-  } = useMemoOperations(username || "", refetchInbox);
+  } = memoOperations;
+
+  // Register editing handlers with global EditingContext
+  // Handlers are stored in a ref, so we can update them on every render without causing re-renders
+  useEffect(() => {
+    // Update handlers ref on every render to ensure fresh function references
+    setHandlers({
+      editingId,
+      editText,
+      setEditText,
+      startEdit,
+      cancelEdit,
+      saveEdit,
+      editingSummaryId,
+      summaryEditText,
+      setSummaryEditText,
+      startEditSummary,
+      cancelEditSummary,
+      saveSummary,
+      softDelete,
+      toggleStar,
+      restoreMemo,
+      hardDelete,
+      onCategoryChange: handleCategoryChange,
+      dismissReview,
+    });
+  });
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => setHandlers(null);
+  }, [setHandlers]);
 
   // Voice recording
   const {

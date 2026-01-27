@@ -13,17 +13,17 @@ import { useToast } from "../contexts/ToastContext";
 import { LoadingState } from "../components/LoadingState";
 import { EmptyState } from "../components/EmptyState";
 import { MemosList } from "../components/MemosList";
-import { ModalsContainer } from "../components/ModalsContainer";
 import { QuickFilters } from "../components/QuickFilters";
 import { FiltersDrawer } from "../components/FiltersDrawer";
+import { useEditing } from "../contexts/EditingContext";
 import { Filter, Star, Archive } from "lucide-react";
 import { Button } from "../components/ui/Button";
 
 export default function MemosPage() {
   const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false);
-  const [isArchivedModalOpen, setIsArchivedModalOpen] = useState(false);
 
   const { username } = useUser();
+  const { setHandlers } = useEditing();
   const {
     categoryFilter,
     starredOnly,
@@ -53,6 +53,7 @@ export default function MemosPage() {
   });
 
   // Memo operations
+  const memoOperations = useMemoOperations(username || "", refetchMemos);
   const {
     editingId,
     editText,
@@ -76,7 +77,38 @@ export default function MemosPage() {
     hardDelete,
     handleCategoryChange,
     dismissReview,
-  } = useMemoOperations(username || "", refetchMemos);
+  } = memoOperations;
+
+  // Register editing handlers with global EditingContext
+  // Handlers are stored in a ref, so we can update them on every render without causing re-renders
+  useEffect(() => {
+    // Update handlers ref on every render to ensure fresh function references
+    setHandlers({
+      editingId,
+      editText,
+      setEditText,
+      startEdit,
+      cancelEdit,
+      saveEdit,
+      editingSummaryId,
+      summaryEditText,
+      setSummaryEditText,
+      startEditSummary,
+      cancelEditSummary,
+      saveSummary,
+      softDelete,
+      toggleStar,
+      restoreMemo,
+      hardDelete,
+      onCategoryChange: handleCategoryChange,
+      dismissReview,
+    });
+  });
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => setHandlers(null);
+  }, [setHandlers]);
 
   // Voice recording
   const {
@@ -168,14 +200,6 @@ export default function MemosPage() {
             Browse and filter all your memos
           </p>
         </div>
-        <Button
-          onClick={() => setIsArchivedModalOpen(true)}
-          variant="secondary"
-          size="sm"
-          leftIcon={<Archive className="w-4 h-4" />}
-        >
-          Archived
-        </Button>
       </div>
 
       {/* Voice Error Display */}
@@ -281,44 +305,6 @@ export default function MemosPage() {
           />
         )}
       </div>
-
-      {/* All Modals */}
-      <ModalsContainer
-        editingId={editingId}
-        editText={editText}
-        setEditText={setEditText}
-        startEdit={startEdit}
-        cancelEdit={cancelEdit}
-        saveEdit={saveEdit}
-        editingSummaryId={editingSummaryId}
-        summaryEditText={summaryEditText}
-        setSummaryEditText={setSummaryEditText}
-        startEditSummary={startEditSummary}
-        cancelEditSummary={cancelEditSummary}
-        saveSummary={saveSummary}
-        softDelete={softDelete}
-        toggleStar={toggleStar}
-        restoreMemo={restoreMemo}
-        hardDelete={hardDelete}
-        onCategoryChange={handleCategoryChange}
-        dismissReview={dismissReview}
-        onTextSubmit={async () => {
-          // Handled in AppLayout
-        }}
-        onFeedbackSubmit={async () => {
-          // Handled in AppLayout
-        }}
-        onPickRandomMemo={() => {
-          // Handled in AppLayout
-        }}
-        onImageCapture={async () => {
-          // Handled in AppLayout
-        }}
-        username={username || ""}
-        isArchivedModalOpen={isArchivedModalOpen}
-        onOpenArchivedModal={() => setIsArchivedModalOpen(true)}
-        onCloseArchivedModal={() => setIsArchivedModalOpen(false)}
-      />
 
       {/* Mobile/Tablet Filters Drawer */}
       <FiltersDrawer
