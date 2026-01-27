@@ -96,6 +96,8 @@ export function useInboxQuery(username: string | null) {
     queryKey: ["inbox", username],
     queryFn: () => fetchInboxMemos(username || ""),
     enabled: Boolean(username),
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 30 * 1000, // 30s - frequently changing data (new memos, enrichments)
+    gcTime: 5 * 60 * 1000, // 5min - keep in cache for quick navigation back
+    retry: 2, // Retry failed requests twice before giving up
   });
 }

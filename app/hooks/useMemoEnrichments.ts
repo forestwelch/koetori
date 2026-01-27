@@ -56,6 +56,8 @@ export function useMemoEnrichments(memoId: string | null) {
     queryKey: ["memo-enrichments", memoId, username],
     queryFn: () => fetchEnrichmentLinks(memoId || "", username || ""),
     enabled: Boolean(memoId && username),
-    staleTime: 60 * 1000, // 1 minute
+    staleTime: 60 * 1000, // 60s - enrichment links don't change often
+    gcTime: 10 * 60 * 1000, // 10min - keep enrichment info cached longer
+    retry: 2, // Retry failed requests twice before giving up
   });
 }

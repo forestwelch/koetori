@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useFilters } from "../contexts/FilterContext";
 import { useModals } from "../contexts/ModalContext";
 import { Category } from "../types/memo";
@@ -53,6 +53,20 @@ export function useKeyboardShortcuts({
     setShowCommandPalette,
   } = useModals();
 
+  // Use refs for callback props to avoid recreating event listener
+  const onRecordToggleRef = useRef(onRecordToggle);
+  const onPickRandomMemoRef = useRef(onPickRandomMemo);
+  const onCancelRecordingRef = useRef(onCancelRecording);
+  const cancelEditRef = useRef(cancelEdit);
+
+  // Update refs when callbacks change
+  useEffect(() => {
+    onRecordToggleRef.current = onRecordToggle;
+    onPickRandomMemoRef.current = onPickRandomMemo;
+    onCancelRecordingRef.current = onCancelRecording;
+    cancelEditRef.current = cancelEdit;
+  });
+
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -96,7 +110,7 @@ export function useKeyboardShortcuts({
       if (
         handleShortcut(
           e.code === "KeyR" && hasOnlyModifiers(true) && !isInputField,
-          onRecordToggle
+          () => onRecordToggleRef.current()
         )
       )
         return;
@@ -129,7 +143,7 @@ export function useKeyboardShortcuts({
       if (
         handleShortcut(
           e.code === "KeyJ" && hasOnlyModifiers(true) && !isInputField,
-          onPickRandomMemo
+          () => onPickRandomMemoRef.current()
         )
       )
         return;
@@ -190,10 +204,10 @@ export function useKeyboardShortcuts({
       if (e.code === "Escape") {
         e.preventDefault();
 
-        if (isRecording) return onCancelRecording();
+        if (isRecording) return onCancelRecordingRef.current();
         if (showSettings) return setShowSettings(false);
         if (isSpotlightMode) return setIsSpotlightMode(false);
-        if (editingId) return cancelEdit();
+        if (editingId) return cancelEditRef.current();
         if (showRandomMemo) return setShowRandomMemo(false);
         if (showTextInput) {
           setShowTextInput(false);
@@ -216,6 +230,7 @@ export function useKeyboardShortcuts({
     document.addEventListener("keydown", handleKeyPress);
     return () => document.removeEventListener("keydown", handleKeyPress);
   }, [
+    // State values that determine handler behavior
     isRecording,
     editingId,
     showRandomMemo,
@@ -224,11 +239,7 @@ export function useKeyboardShortcuts({
     showCommandPalette,
     isSpotlightMode,
     showSettings,
-    categoryFilter,
-    starredOnly,
-    searchQuery,
-    searchResults,
-    textInput,
+    // Setter functions (stable, from context)
     setCategoryFilter,
     setStarredOnly,
     setIsSpotlightMode,
@@ -241,10 +252,7 @@ export function useKeyboardShortcuts({
     setSearchResults,
     setTextInput,
     resetFilters,
-    cancelEdit,
-    onRecordToggle,
-    onPickRandomMemo,
-    onCancelRecording,
+    setShowCamera,
   ]);
 
   // Prevent scrolling when modals are open

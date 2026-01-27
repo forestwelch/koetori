@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useRef, memo } from "react";
+import { useState, memo } from "react";
 import { Memo, Category } from "../types/memo";
+import { useSwipeGesture } from "../hooks/useSwipeGesture";
+import { useMemoExpansion } from "../hooks/useMemoExpansion";
 
 import { CategoryBadge } from "./CategoryBadge";
 import {
@@ -94,47 +96,23 @@ function MemoItemComponent({
   onToggleSelect,
 }: MemoItemProps) {
   const { data: enrichments } = useMemoEnrichments(memo.id);
-  const [swipeX, setSwipeX] = useState(0);
-  const [isSwiping, setIsSwiping] = useState(false);
-  const [localExpanded, setLocalExpanded] = useState(false);
   const [isRecordingModalOpen, setIsRecordingModalOpen] = useState(false);
-  const startX = useRef(0);
 
-  // Use controlled expansion if provided, otherwise use local state
-  const isExpanded =
-    controlledExpanded !== undefined ? controlledExpanded : localExpanded;
-  const toggleExpanded =
-    onToggleExpand || (() => setLocalExpanded(!localExpanded));
+  // Swipe gesture handling
+  const {
+    swipeX,
+    isSwiping,
+    handlers: swipeHandlers,
+  } = useSwipeGesture(
+    () => softDelete(memo.id), // Swipe right = archive
+    () => toggleStar(memo.id, memo.starred || false) // Swipe left = star
+  );
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    startX.current = e.touches[0].clientX;
-    setIsSwiping(true);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isSwiping) return;
-    const currentX = e.touches[0].clientX;
-    const diff = currentX - startX.current;
-
-    // Prevent page scroll when swiping horizontally
-    if (Math.abs(diff) > 10) {
-      e.preventDefault();
-    }
-
-    setSwipeX(diff);
-  };
-
-  const handleTouchEnd = () => {
-    if (Math.abs(swipeX) > 100) {
-      if (swipeX < 0) {
-        toggleStar(memo.id, memo.starred || false);
-      } else {
-        softDelete(memo.id);
-      }
-    }
-    setSwipeX(0);
-    setIsSwiping(false);
-  };
+  // Expansion state handling
+  const { isExpanded, toggleExpanded } = useMemoExpansion(
+    controlledExpanded,
+    onToggleExpand
+  );
 
   const isEditing = editingId === memo.id;
   const summary = memo.extracted?.what || memo.transcript.slice(0, 100);
@@ -201,9 +179,7 @@ function MemoItemComponent({
         transform: `translateX(${swipeX}px)`,
         transition: isSwiping ? "none" : "transform 0.3s ease",
       }}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
+      {...swipeHandlers}
     >
       <SwipeIndicator swipeX={swipeX} />
 

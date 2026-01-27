@@ -36,6 +36,8 @@ export function useMemoById(memoId: string | null, username: string | null) {
       } as Memo;
     },
     enabled: !!memoId && !!username,
-    staleTime: 1000 * 60, // Consider data fresh for 1 minute
+    staleTime: 30 * 1000, // 30s - single memo may be edited frequently
+    gcTime: 5 * 60 * 1000, // 5min - keep in cache for quick navigation
+    retry: 2, // Retry failed requests twice before giving up
   });
 }

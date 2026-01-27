@@ -197,7 +197,9 @@ export function useMediaItems(username: string | null, options: QueryOptions) {
     queryKey: ["media-items", username],
     queryFn: () => fetchMediaItems(username ?? ""),
     enabled: options.enabled && Boolean(username),
-    staleTime: 60 * 1000,
+    staleTime: 60 * 1000, // 60s - relatively stable data (watch list changes infrequently)
+    gcTime: 10 * 60 * 1000, // 10min - longer cache for media metadata
+    retry: 2, // Retry failed requests twice before giving up
   });
 }
 
@@ -206,7 +208,9 @@ export function useReminders(username: string | null, options: QueryOptions) {
     queryKey: ["reminders", username],
     queryFn: () => fetchReminders(username ?? ""),
     enabled: options.enabled && Boolean(username),
-    staleTime: 30 * 1000,
+    staleTime: 30 * 1000, // 30s - frequently changing (due dates, completions)
+    gcTime: 5 * 60 * 1000, // 5min - keep in cache for quick navigation
+    retry: 2, // Retry failed requests twice before giving up
   });
 }
 
@@ -218,7 +222,9 @@ export function useShoppingList(
     queryKey: ["shopping-list", username],
     queryFn: () => fetchShoppingItems(username ?? ""),
     enabled: options.enabled && Boolean(username),
-    staleTime: 30 * 1000,
+    staleTime: 30 * 1000, // 30s - frequently changing (checking off items)
+    gcTime: 5 * 60 * 1000, // 5min - keep in cache for quick navigation
+    retry: 2, // Retry failed requests twice before giving up
   });
 }
 
@@ -334,7 +340,9 @@ export function useJournalItems(
     queryKey: ["journal-items", username],
     queryFn: () => fetchJournalItems(username ?? ""),
     enabled: options.enabled && Boolean(username),
-    staleTime: 60 * 1000,
+    staleTime: 60 * 1000, // 60s - relatively stable (journal entries don't change often)
+    gcTime: 10 * 60 * 1000, // 10min - longer cache for journal content
+    retry: 2, // Retry failed requests twice before giving up
   });
 }
 
@@ -343,7 +351,9 @@ export function useTarotItems(username: string | null, options: QueryOptions) {
     queryKey: ["tarot-items", username],
     queryFn: () => fetchTarotItems(username ?? ""),
     enabled: options.enabled && Boolean(username),
-    staleTime: 60 * 1000,
+    staleTime: 60 * 1000, // 60s - relatively stable (readings don't change often)
+    gcTime: 10 * 60 * 1000, // 10min - longer cache for tarot readings
+    retry: 2, // Retry failed requests twice before giving up
   });
 }
 
@@ -352,7 +362,9 @@ export function useIdeaItems(username: string | null, options: QueryOptions) {
     queryKey: ["idea-items", username],
     queryFn: () => fetchIdeaItems(username ?? ""),
     enabled: options.enabled && Boolean(username),
-    staleTime: 60 * 1000,
+    staleTime: 60 * 1000, // 60s - relatively stable (ideas don't change often)
+    gcTime: 10 * 60 * 1000, // 10min - longer cache for ideas
+    retry: 2, // Retry failed requests twice before giving up
   });
 }
 
@@ -401,6 +413,8 @@ export function useTodoItems(username: string | null, options: QueryOptions) {
     queryKey: ["todo-items", username],
     queryFn: () => fetchTodoItems(username ?? ""),
     enabled: options.enabled && Boolean(username),
-    staleTime: 30 * 1000,
+    staleTime: 30 * 1000, // 30s - frequently changing (completing tasks, new todos)
+    gcTime: 5 * 60 * 1000, // 5min - keep in cache for quick navigation
+    retry: 2, // Retry failed requests twice before giving up
   });
 }

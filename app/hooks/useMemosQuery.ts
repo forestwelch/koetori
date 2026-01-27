@@ -57,8 +57,9 @@ export function useMemosQuery(filters: MemoFilters) {
   return useQuery({
     queryKey: ["memos", filters],
     queryFn: () => fetchMemos(filters),
-    enabled: !!filters.username, // Only fetch when we have a username
-    staleTime: 30 * 1000, // 30 seconds
-    retry: 2,
+    enabled: !!filters.username,
+    staleTime: 30 * 1000, // 30s - frequently changing data (edits, filters, new memos)
+    gcTime: 5 * 60 * 1000, // 5min - keep filtered results in cache
+    retry: 2, // Retry failed requests twice before giving up
   });
 }

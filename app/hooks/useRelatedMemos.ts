@@ -32,7 +32,9 @@ export function useRelatedMemos(transcriptionId: string | undefined) {
         timestamp: new Date(memo.timestamp),
       })) as Memo[];
     },
-    enabled: !!transcriptionId, // Only run query if transcriptionId exists
-    staleTime: 1000 * 60, // Consider data fresh for 1 minute
+    enabled: !!transcriptionId,
+    staleTime: 60 * 1000, // 60s - related memos rarely change
+    gcTime: 10 * 60 * 1000, // 10min - keep related memos cached longer
+    retry: 2, // Retry failed requests twice before giving up
   });
 }
