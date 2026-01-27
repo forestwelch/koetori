@@ -5,7 +5,6 @@ import { useVoiceRecorder } from "../hooks/useVoiceRecorder";
 import { useMemosQuery } from "../hooks/useMemosQuery";
 import { useMemoOperations } from "../hooks/useMemoOperations";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
-import { useSearch } from "../hooks/useSearch";
 import { useUser } from "../contexts/UserContext";
 import { useFilters } from "../contexts/FilterContext";
 import { useModals } from "../contexts/ModalContext";
@@ -90,9 +89,6 @@ export default function MemosPage() {
     cancelRecording,
     clearTranscription,
   } = useVoiceRecorder(username || undefined);
-
-  // Search functionality
-  useSearch(username || "");
 
   // Hash navigation - handle memo links like /#memo-123
   const { setShowMemoModal, setMemoModalId } = useModals();

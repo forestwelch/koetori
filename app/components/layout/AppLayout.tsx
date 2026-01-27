@@ -6,6 +6,7 @@ import { useVoiceRecorder } from "../../hooks/useVoiceRecorder";
 import { useModals } from "../../contexts/ModalContext";
 import { useToast } from "../../contexts/ToastContext";
 import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
+import { useSearch } from "../../hooks/useSearch";
 import { supabase } from "../../lib/supabase";
 import { Memo } from "../../types/memo";
 import { FeedbackService } from "../../lib/feedback";
@@ -214,6 +215,9 @@ export function AppLayout({ children }: AppLayoutProps) {
       queryClient,
     ]
   );
+
+  // Search functionality - set up globally (prevents duplicate effects)
+  useSearch(username || "");
 
   // Keyboard shortcuts - set up globally
   useKeyboardShortcuts({

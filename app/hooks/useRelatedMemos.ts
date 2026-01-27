@@ -26,10 +26,6 @@ export function useRelatedMemos(transcriptionId: string | undefined) {
         throw error;
       }
 
-      console.log(
-        `Found ${data?.length || 0} related memos for transcription ${transcriptionId}`
-      );
-
       // Transform timestamp strings to Date objects
       return (data || []).map((memo) => ({
         ...memo,

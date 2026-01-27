@@ -245,11 +245,6 @@ export function useVoiceRecorder(username?: string): UseVoiceRecorderReturn {
           type: "audio/webm",
         });
 
-        // Log file size for monitoring compression effectiveness
-        console.log(
-          `Audio file size: ${(audioBlob.size / 1024).toFixed(2)} KB`
-        );
-
         // Upload audio and get transcription + categorization
         setIsProcessing(true);
 

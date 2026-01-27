@@ -37,7 +37,6 @@ export function getEnv(key: string, defaultValue?: string): string {
 if (process.env.NODE_ENV === "development") {
   try {
     validateEnv();
-    console.log("✅ Environment variables validated");
   } catch (error) {
     console.error("❌ Environment validation failed:");
     console.error(error);

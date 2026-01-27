@@ -5,7 +5,6 @@ import { useVoiceRecorder } from "./hooks/useVoiceRecorder";
 import { useInboxQuery } from "./hooks/useInboxQuery";
 import { useMemoOperations } from "./hooks/useMemoOperations";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
-import { useSearch } from "./hooks/useSearch";
 import { useBulkMemoOperations } from "./hooks/useBulkMemoOperations";
 import { useUser } from "./contexts/UserContext";
 import { useModals } from "./contexts/ModalContext";
@@ -124,9 +123,6 @@ export default function InboxPage() {
     cancelRecording,
     clearTranscription,
   } = useVoiceRecorder(username || undefined);
-
-  // Search functionality
-  useSearch(username || "");
 
   // Hash navigation - handle memo links like /#memo-123
   const { setShowMemoModal, setMemoModalId } = useModals();

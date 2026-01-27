@@ -72,14 +72,9 @@ export function MediaCard({
   const handleViewMemo = (e?: React.MouseEvent) => {
     e?.preventDefault();
     e?.stopPropagation();
-    console.log("🔍 View memo clicked", {
-      memoId: item.memoId,
-      hasModals: !!setShowMemoModal && !!setMemoModalId,
-    });
     try {
       setMemoModalId(item.memoId);
       setShowMemoModal(true);
-      console.log("✅ Modal state set", { memoId: item.memoId });
     } catch (error) {
       console.error("❌ Error opening modal:", error);
     }

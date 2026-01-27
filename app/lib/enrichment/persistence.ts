@@ -253,11 +253,6 @@ async function upsertTarotItem(
     });
     throw new Error(`Failed to persist tarot item: ${error.message}`);
   }
-
-  console.log("[enrichment] successfully persisted tarot item", {
-    memoId: payload.memoId,
-    cardName,
-  });
 }
 
 async function upsertIdeaItem(

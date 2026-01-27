@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, memo } from "react";
 import { Memo, Category } from "../types/memo";
 
 import { CategoryBadge } from "./CategoryBadge";
@@ -65,7 +65,7 @@ interface MemoItemProps {
   onToggleSelect?: (memoId: string) => void;
 }
 
-export function MemoItem({
+function MemoItemComponent({
   memo,
   isNew,
   editingId,
@@ -737,3 +737,60 @@ export function MemoItem({
     </div>
   );
 }
+
+// Custom comparison function to optimize re-renders
+function arePropsEqual(prevProps: MemoItemProps, nextProps: MemoItemProps) {
+  // Always re-render if it's the new memo
+  if (prevProps.isNew !== nextProps.isNew) return false;
+
+  // Re-render if memo content changed
+  if (prevProps.memo.id !== nextProps.memo.id) return false;
+  if (prevProps.memo.transcript !== nextProps.memo.transcript) return false;
+  if (prevProps.memo.extracted?.what !== nextProps.memo.extracted?.what)
+    return false;
+  if (prevProps.memo.category !== nextProps.memo.category) return false;
+  if (prevProps.memo.starred !== nextProps.memo.starred) return false;
+  if (prevProps.memo.needs_review !== nextProps.memo.needs_review) return false;
+  if (prevProps.memo.deleted_at !== nextProps.memo.deleted_at) return false;
+
+  // Re-render if this memo is being edited
+  if (
+    prevProps.editingId !== nextProps.editingId ||
+    prevProps.editingSummaryId !== nextProps.editingSummaryId
+  ) {
+    if (
+      prevProps.memo.id === prevProps.editingId ||
+      prevProps.memo.id === nextProps.editingId ||
+      prevProps.memo.id === prevProps.editingSummaryId ||
+      prevProps.memo.id === nextProps.editingSummaryId
+    ) {
+      return false;
+    }
+  }
+
+  // Re-render if edit text changed (only matters if editing this memo)
+  if (prevProps.memo.id === nextProps.editingId) {
+    if (prevProps.editText !== nextProps.editText) return false;
+  }
+
+  // Re-render if summary text changed (only matters if editing this memo's summary)
+  if (prevProps.memo.id === nextProps.editingSummaryId) {
+    if (prevProps.summaryEditText !== nextProps.summaryEditText) return false;
+  }
+
+  // Re-render if search query or mode changed
+  if (prevProps.searchQuery !== nextProps.searchQuery) return false;
+  if (prevProps.isSearchMode !== nextProps.isSearchMode) return false;
+
+  // Re-render if expansion state changed
+  if (prevProps.isExpanded !== nextProps.isExpanded) return false;
+
+  // Re-render if selection state changed
+  if (prevProps.isSelected !== nextProps.isSelected) return false;
+
+  // Otherwise, don't re-render (props are equal)
+  return true;
+}
+
+// Export memoized component
+export const MemoItem = memo(MemoItemComponent, arePropsEqual);
