@@ -1,16 +1,10 @@
 import { dirname } from "path";
 import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
 const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     ignores: [
       "node_modules/**",
@@ -18,13 +12,11 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
-      "test-device-api.js", // CommonJS test utility
+      "test-device-api.js",
     ],
   },
   {
     rules: {
-      // Disable unescaped entities rule - modern browsers handle apostrophes/quotes fine
-      // This rule causes too many false positives and interrupts workflow
       "react/no-unescaped-entities": "off",
     },
   },
