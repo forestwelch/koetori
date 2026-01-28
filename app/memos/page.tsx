@@ -21,6 +21,7 @@ import { Button } from "../components/ui/Button";
 
 export default function MemosPage() {
   const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
 
   const { username } = useUser();
   const { setHandlers } = useEditing();
@@ -50,6 +51,7 @@ export default function MemosPage() {
     username: username || "",
     categoryFilter,
     starredOnly,
+    showArchived,
   });
 
   // Memo operations
@@ -194,10 +196,12 @@ export default function MemosPage() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h2 className="text-2xl sm:text-3xl font-light text-white mb-2">
-            All Memos
+            {showArchived ? "Archived Memos" : "All Memos"}
           </h2>
           <p className="text-slate-400 text-sm">
-            Browse and filter all your memos
+            {showArchived
+              ? "Browse and manage your archived memos"
+              : "Browse and filter all your memos"}
           </p>
         </div>
       </div>
@@ -223,6 +227,21 @@ export default function MemosPage() {
             aria-label={starredOnly ? "Show all memos" : "Show starred only"}
           >
             <Star className="w-5 h-5" />
+          </button>
+
+          {/* Archive Toggle */}
+          <button
+            onClick={() => setShowArchived(!showArchived)}
+            className={`p-2 rounded-xl transition-all ${
+              showArchived
+                ? "bg-slate-500/20 border border-slate-500/40 text-slate-300"
+                : "bg-[#0d0e14]/40 border border-slate-700/20 text-slate-400 hover:bg-slate-700/30"
+            }`}
+            aria-label={
+              showArchived ? "Show active memos" : "Show archived memos"
+            }
+          >
+            <Archive className="w-5 h-5" />
           </button>
 
           {/* Drawer Trigger (mobile + tablet) */}

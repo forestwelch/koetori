@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useVoiceRecorder } from "./hooks/useVoiceRecorder";
 import { useInboxQuery } from "./hooks/useInboxQuery";
+import { useRecentlyArchivedMemos } from "./hooks/useRecentlyArchivedMemos";
 import { useMemoOperations } from "./hooks/useMemoOperations";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useBulkMemoOperations } from "./hooks/useBulkMemoOperations";
@@ -24,6 +25,7 @@ import {
   SortDirection,
 } from "./components/inbox/InboxSortControls";
 import { QuickActions } from "./components/inbox/QuickActions";
+import { RecentlyArchivedSection } from "./components/inbox/RecentlyArchivedSection";
 import { useEditing } from "./contexts/EditingContext";
 import Link from "next/link";
 import { LayoutDashboard } from "lucide-react";
@@ -44,6 +46,9 @@ export default function InboxPage() {
   const [sortField, setSortField] = useState<SortField>("timestamp");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [selectedMemos, setSelectedMemos] = useState<string[]>([]);
+  const [dismissedArchivedIds, setDismissedArchivedIds] = useState<string[]>(
+    []
+  );
 
   // Inbox query - shows only unprocessed memos
   const {
@@ -52,9 +57,34 @@ export default function InboxPage() {
     refetch: refetchInbox,
   } = useInboxQuery(username);
 
+  // Recently archived memos (last 24 hours)
+  const { data: recentlyArchivedMemos = [], refetch: refetchRecentlyArchived } =
+    useRecentlyArchivedMemos(username);
+
   // Bulk operations
   const { bulkArchive, bulkCategorize, bulkMarkReviewed } =
     useBulkMemoOperations(username || "");
+
+  // Filter out dismissed archived memos
+  const visibleArchivedMemos = useMemo(
+    () =>
+      recentlyArchivedMemos.filter(
+        (memo) => !dismissedArchivedIds.includes(memo.id)
+      ),
+    [recentlyArchivedMemos, dismissedArchivedIds]
+  );
+
+  // Handlers for recently archived memos
+  const handleDismissArchived = (memoId: string) => {
+    setDismissedArchivedIds((prev) => [...prev, memoId]);
+  };
+
+  const handleRestoreArchived = async (memoId: string) => {
+    await restoreMemo(memoId);
+    setDismissedArchivedIds((prev) => [...prev, memoId]);
+    refetchInbox();
+    refetchRecentlyArchived();
+  };
 
   // Filter and sort memos
   const filteredAndSortedMemos = useMemo(() => {
@@ -186,6 +216,7 @@ export default function InboxPage() {
       const timer = setTimeout(() => {
         setNewMemoId(voiceMemoId);
         refetchInbox();
+        refetchRecentlyArchived();
         clearTranscription();
 
         // Show success toast with click handler to scroll to top
@@ -203,6 +234,7 @@ export default function InboxPage() {
     voiceError,
     voiceMemoId,
     refetchInbox,
+    refetchRecentlyArchived,
     clearTranscription,
     setNewMemoId,
     showSuccess,
@@ -242,6 +274,13 @@ export default function InboxPage() {
           <p className="text-red-400 text-sm">{voiceError}</p>
         </div>
       )}
+
+      {/* Recently Archived Section */}
+      <RecentlyArchivedSection
+        archivedMemos={visibleArchivedMemos}
+        onDismiss={handleDismissArchived}
+        onRestore={handleRestoreArchived}
+      />
 
       {/* Power Inbox Controls */}
       {!loading && inboxMemos.length > 0 && (

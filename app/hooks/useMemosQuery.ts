@@ -8,14 +8,21 @@ export interface MemoFilters {
   username: string;
   categoryFilter: Category | "all";
   starredOnly: boolean;
+  showArchived: boolean;
 }
 
 async function fetchMemos(filters: MemoFilters): Promise<Memo[]> {
   let query = supabase
     .from("memos")
     .select("*")
-    .eq("username", filters.username)
-    .is("deleted_at", null); // Only show non-deleted memos
+    .eq("username", filters.username);
+
+  // Filter by archived status
+  if (filters.showArchived) {
+    query = query.not("deleted_at", "is", null); // Only show archived memos
+  } else {
+    query = query.is("deleted_at", null); // Only show non-archived memos
+  }
 
   // Apply starred filter
   if (filters.starredOnly) {
@@ -48,6 +55,7 @@ async function fetchMemos(filters: MemoFilters): Promise<Memo[]> {
   const transformedData = (data || []).map((memo) => ({
     ...memo,
     timestamp: new Date(memo.timestamp),
+    deleted_at: memo.deleted_at ? new Date(memo.deleted_at) : null,
   }));
 
   return transformedData;

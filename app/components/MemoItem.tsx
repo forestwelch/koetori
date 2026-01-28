@@ -371,12 +371,9 @@ function MemoItemComponent({
               {!isEditing && (
                 <Button
                   onClick={() => {
+                    // Expand memo before editing if not already expanded
                     if (!isExpanded) {
-                      if (!isExpanded && onToggleExpand) {
-                        onToggleExpand();
-                      } else if (!isExpanded) {
-                        setLocalExpanded(true);
-                      }
+                      toggleExpanded();
                     }
                     startEdit(memo);
                   }}
